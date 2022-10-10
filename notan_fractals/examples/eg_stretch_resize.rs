@@ -6,14 +6,12 @@
     I've hacked it here to scale the content, but NOT maintain aspect ration (i.e. content
     will stretch to match window).
 */
-
 use notan::draw::*;
 use notan::math::{vec2, vec3, Mat4, Vec2, Vec3};
 use notan::prelude::*;
 
-// This is the size of our content, no matter the size
-// of the window our content will always keep this aspect ratio
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
+
 
 #[notan_main]
 fn main() -> Result<(), String> {
@@ -25,6 +23,7 @@ fn main() -> Result<(), String> {
         .draw(draw)
         .build()
 }
+
 
 fn draw(gfx: &mut Graphics) {
     let (width, height) = gfx.size();
@@ -50,6 +49,7 @@ fn draw(gfx: &mut Graphics) {
     // draw to screen
     gfx.render(&draw);
 }
+
 
 // This returns a projection that DOES NOT keep the aspect ratio while scaling
 // and fitting the content in our window
