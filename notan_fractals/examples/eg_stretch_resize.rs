@@ -1,5 +1,14 @@
+/*
+    The example at https://github.com/Nazariglez/notan/blob/develop/examples/draw_projection.rs
+    shows how to set a projection that scales the content and maintains aspect ratio when the
+    window size is changed.
+
+    I've hacked it here to scale the content, but NOT maintain aspect ration (i.e. content
+    will stretch to match window).
+*/
+
 use notan::draw::*;
-use notan::math::{vec2, vec3, Mat4, Vec2};
+use notan::math::{vec2, vec3, Mat4, Vec2, Vec3};
 use notan::prelude::*;
 
 // This is the size of our content, no matter the size
@@ -22,7 +31,7 @@ fn draw(gfx: &mut Graphics) {
     let win_size = vec2(width as f32, height as f32);
 
     // get the projection that will fit and center our content in the screen
-    let (projection, _) = calc_projection(win_size, WORK_SIZE);
+    let projection = calc_projection(win_size, WORK_SIZE);
 
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
@@ -42,20 +51,17 @@ fn draw(gfx: &mut Graphics) {
     gfx.render(&draw);
 }
 
-// This returns a projection that keeps the aspect ratio while scaling
+// This returns a projection that DOES NOT keep the aspect ratio while scaling
 // and fitting the content in our window
-// It also returns the ratio in case we need it to calculate positions
-// or manually scale something
-fn calc_projection(win_size: Vec2, work_size: Vec2) -> (Mat4, f32) {
-    let ratio = (win_size.x / work_size.x).min(win_size.y / work_size.y);
-
+fn calc_projection(win_size: Vec2, work_size: Vec2) -> Mat4 {
     let projection = Mat4::orthographic_rh_gl(0.0, win_size.x, win_size.y, 0.0, -1.0, 1.0);
-    let scale = Mat4::from_scale(vec3(ratio, ratio, 1.0));
-    let position = vec3(
-        (win_size.x - work_size.x * ratio) * 0.5,
-        (win_size.y - work_size.y * ratio) * 0.5,
+    // let scale = Mat4::from_scale(vec3(ratio, ratio, 1.0));
+    let scale = Mat4::from_scale(vec3(
+        win_size.x / work_size.x,
+        win_size.y / work_size.y,
         1.0,
-    );
+    ));
+    let position = Vec3::splat(1.0);
     let translation = Mat4::from_translation(position);
-    (projection * translation * scale, ratio)
+    projection * translation * scale
 }
