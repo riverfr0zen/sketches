@@ -12,8 +12,8 @@
           margin: 0 !important; 
           padding: 0 !important;
           border: 0px;
-          /* height: 100%; */
-          /* overflow: hidden; */
+          height: 100%;
+          overflow: hidden;
         }
     </style>
 </head>
@@ -23,9 +23,14 @@
     let module = await init();
     module.notan_main();
 
-    let notan_canvas = document.getElementById('notan_canvas')
-    notan_canvas.style.width  = window.innerWidth;
-    notan_canvas.style.height = window.innerHeight;
+    function resize_canvas() {
+        let notan_canvas = document.getElementById('notan_canvas')
+        notan_canvas.style.width  = window.innerWidth;
+        notan_canvas.style.height = window.innerHeight;
+    }
+    window.onresize = resize_canvas;
+    resize_canvas();
+
 </script>
 <div id="examples">
     <canvas id="notan_canvas" width="100%" height="100%"></canvas>

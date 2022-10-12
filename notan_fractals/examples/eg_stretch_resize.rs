@@ -11,7 +11,8 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_fractals::utils::get_scaling_projection;
 
-const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
+// const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
+const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
 
 
 #[notan_main]
