@@ -7,8 +7,9 @@
     will stretch to match window).
 */
 use notan::draw::*;
-use notan::math::{vec2, vec3, Mat4, Vec2};
+use notan::math::{vec2, Vec2};
 use notan::prelude::*;
+use notan_fractals::utils::get_scaling_projection;
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 
@@ -30,7 +31,7 @@ fn draw(gfx: &mut Graphics) {
     let win_size = vec2(width as f32, height as f32);
 
     // get the projection that will fit and center our content in the screen
-    let projection = calc_projection(win_size, WORK_SIZE);
+    let projection = get_scaling_projection(win_size, WORK_SIZE);
 
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);
@@ -48,18 +49,4 @@ fn draw(gfx: &mut Graphics) {
 
     // draw to screen
     gfx.render(&draw);
-}
-
-
-// This returns a projection that DOES NOT keep the aspect ratio while scaling
-// and fitting the content in our window
-fn calc_projection(win_size: Vec2, work_size: Vec2) -> Mat4 {
-    let projection = Mat4::orthographic_rh_gl(0.0, win_size.x, win_size.y, 0.0, -1.0, 1.0);
-    // let scale = Mat4::from_scale(vec3(ratio, ratio, 1.0));
-    let scale = Mat4::from_scale(vec3(
-        win_size.x / work_size.x,
-        win_size.y / work_size.y,
-        1.0,
-    ));
-    projection * scale
 }
