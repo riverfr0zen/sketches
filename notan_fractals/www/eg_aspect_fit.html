@@ -30,8 +30,7 @@
             margin-right: auto;
         }
     </style>
-</head>
-<body>
+
     <script type="module">
         import init from './wasms/eg_aspect_fit.js'; // replace this 
         let module = await init();
@@ -42,13 +41,19 @@
             notan_canvas.style.width  = window.innerWidth;
             notan_canvas.style.height = window.innerHeight;
         }
-        window.onresize = resize_canvas;
-
-        window.onload = function () {
+        function mylog() {
             console.log("loaded!")
         }
+
+        window.onresize = resize_canvas;
+        window.addEventListener('load', mylog)
+        
         // resize_canvas()
     </script>
+
+
+</head>
+<body>
     <div id="examples">
         <canvas id="notan_canvas" width="100%" height="100%"></canvas>
     </div>
