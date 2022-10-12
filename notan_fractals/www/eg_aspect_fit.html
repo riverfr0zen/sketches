@@ -3,11 +3,8 @@
     <!-- 
         Note that this aspect fit example has some different styling and scripting
         than the stretch_resize example because for some reason the aspect_fit projection
-        gets spoiled if you call resize_canvas() in the body script. Probably because the
+        gets spoiled if you call resize_canvas() on first load. Probably because the
         resize is not taking the aspect ratio into account.
-
-        @TODO: The centering solution here works but is not perfect when first loaded, so could 
-        look into fixing this properly later.
     -->
     <title>Notan App</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
@@ -44,6 +41,8 @@
         }
         window.onresize = resize_canvas;
 
+        // Need to manage the aspect ratio a little differently the first time
+        // than we do on resize.
         let notan_canvas = document.getElementById('notan_canvas')
         let ratio = 1.0;
         if (window.innerWidth > window.innerHeight) {
@@ -55,7 +54,6 @@
         }
         notan_canvas.style.width  = notan_canvas.width * ratio;
         notan_canvas.style.height = notan_canvas.height * ratio;
-        // resize_canvas()
     </script>
 
 
