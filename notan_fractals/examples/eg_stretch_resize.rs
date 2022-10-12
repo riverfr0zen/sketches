@@ -1,4 +1,4 @@
-/*
+/**
     The example at https://github.com/Nazariglez/notan/blob/develop/examples/draw_projection.rs
     shows how to set a projection that scales the content and maintains aspect ratio when the
     window size is changed.
