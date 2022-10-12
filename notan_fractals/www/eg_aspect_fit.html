@@ -41,13 +41,11 @@
             notan_canvas.style.width  = window.innerWidth;
             notan_canvas.style.height = window.innerHeight;
         }
-        function mylog() {
-            console.log("loaded!")
-        }
 
         window.onresize = resize_canvas;
-        window.addEventListener('load', mylog)
-        
+
+        let notan_canvas = document.getElementById('notan_canvas')
+        console.log(notan_canvas.width, notan_canvas.height);
         // resize_canvas()
     </script>
 
