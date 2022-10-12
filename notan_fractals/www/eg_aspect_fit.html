@@ -46,10 +46,11 @@
         let notan_canvas = document.getElementById('notan_canvas')
         let ratio = 1.0;
         if (window.innerWidth > window.innerHeight) {
-            console.log('from height')
+            console.log(window.innerWidth, window.innerHeight, 'from height')
             ratio = window.innerHeight / notan_canvas.height;
-        } else {
-            console.log('from width')
+        } 
+        if (window.innerWidth < window.innerHeight) {
+            console.log(window.innerWidth, window.innerHeight, 'from width')
             ratio = window.innerWidth / notan_canvas.width;
         }
         notan_canvas.style.width  = notan_canvas.width * ratio;
