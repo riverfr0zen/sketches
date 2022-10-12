@@ -28,6 +28,7 @@
         #notan_canvas {
             margin-left: auto;
             margin-right: auto;
+            vertical-align: middle;
         }
     </style>
 
@@ -41,11 +42,19 @@
             notan_canvas.style.width  = window.innerWidth;
             notan_canvas.style.height = window.innerHeight;
         }
-
         window.onresize = resize_canvas;
 
         let notan_canvas = document.getElementById('notan_canvas')
-        console.log(notan_canvas.width, notan_canvas.height);
+        let ratio = 1.0;
+        if (window.innerWidth > window.innerHeight) {
+            console.log('from height')
+            ratio = window.innerHeight / notan_canvas.height;
+        } else {
+            console.log('from width')
+            ratio = window.innerWidth / notan_canvas.width;
+        }
+        notan_canvas.style.width  = notan_canvas.width * ratio;
+        notan_canvas.style.height = notan_canvas.height * ratio;
         // resize_canvas()
     </script>
 
