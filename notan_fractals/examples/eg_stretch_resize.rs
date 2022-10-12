@@ -7,7 +7,7 @@
     will stretch to match window).
 */
 use notan::draw::*;
-use notan::math::{vec2, vec3, Mat4, Vec2, Vec3};
+use notan::math::{vec2, vec3, Mat4, Vec2};
 use notan::prelude::*;
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
@@ -61,7 +61,5 @@ fn calc_projection(win_size: Vec2, work_size: Vec2) -> Mat4 {
         win_size.y / work_size.y,
         1.0,
     ));
-    let position = Vec3::splat(1.0);
-    let translation = Mat4::from_translation(position);
-    projection * translation * scale
+    projection * scale
 }
