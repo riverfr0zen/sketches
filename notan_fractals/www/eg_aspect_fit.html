@@ -1,5 +1,14 @@
 <html>
 <head>
+    <!-- 
+        Note that this aspect fit example has some different styling and scripting
+        than the stretch_resize example because for some reason the aspect_fit projection
+        gets spoiled if you call resize_canvas() in the body script. Probably because the
+        resize is not taking the aspect ratio into account.
+
+        @TODO: The centering solution here works but is not perfect when first loaded, so could 
+        look into fixing this properly later.
+    -->
     <title>Notan App</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,18 +17,23 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
         body {
-          background-color: white;
+          background-color: black;
           margin: 0 !important; 
           padding: 0 !important;
           border: 0px;
           height: 100%;
           overflow: hidden;
+          text-align: center;
+        }
+        #notan_canvas {
+            margin-left: auto;
+            margin-right: auto;
         }
     </style>
 </head>
 <body>
     <script type="module">
-        import init from './wasms/eg_stretch_resize.js'; // replace this 
+        import init from './wasms/eg_aspect_fit.js'; // replace this 
         let module = await init();
         module.notan_main();
 
@@ -29,7 +43,11 @@
             notan_canvas.style.height = window.innerHeight;
         }
         window.onresize = resize_canvas;
-        resize_canvas();
+
+        window.onload = function () {
+            console.log("loaded!")
+        }
+        // resize_canvas()
     </script>
     <div id="examples">
         <canvas id="notan_canvas" width="100%" height="100%"></canvas>
