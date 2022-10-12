@@ -1,67 +1,42 @@
+<!-- 
+    Using approach from discussion below to stretch canvas to window:
+    https://discord.com/channels/1020682760844742666/1020688536611065926/1029877611704361090
+-->
 <html>
 <head>
-    <!-- 
-        Note that this aspect fit example has some different styling and scripting
-        than the stretch_resize example because for some reason the aspect_fit projection
-        gets spoiled if you call resize_canvas() on first load. Probably because the
-        resize is not taking the aspect ratio into account.
-    -->
-    <title>Notan App</title>
+    <title>eg_aspect_fit</title>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport"
           content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
+
     <style>
-        body {
-          background-color: black;
-          margin: 0 !important; 
-          padding: 0 !important;
-          border: 0px;
-          height: 100%;
-          overflow: hidden;
-          text-align: center;
+        html, body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            background-color: #252526;
         }
-        #notan_canvas {
-            margin-left: auto;
-            margin-right: auto;
-            vertical-align: middle;
+
+        * {
+            outline: none;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
-
-    <script type="module">
-        import init from './wasms/eg_aspect_fit.js'; // replace this 
-        let module = await init();
-        module.notan_main();
-
-        function resize_canvas() {
-            let notan_canvas = document.getElementById('notan_canvas')
-            notan_canvas.style.width  = window.innerWidth;
-            notan_canvas.style.height = window.innerHeight;
-        }
-        window.onresize = resize_canvas;
-
-        // Need to manage the aspect ratio a little differently the first time
-        // than we do on resize.
-        let notan_canvas = document.getElementById('notan_canvas')
-        let ratio = 1.0;
-        if (window.innerWidth > window.innerHeight) {
-            console.log(window.innerWidth, window.innerHeight, 'from height')
-            ratio = window.innerHeight / notan_canvas.height;
-        } 
-        if (window.innerWidth < window.innerHeight) {
-            console.log(window.innerWidth, window.innerHeight, 'from width')
-            ratio = window.innerWidth / notan_canvas.width;
-        }
-        notan_canvas.style.width  = notan_canvas.width * ratio;
-        notan_canvas.style.height = notan_canvas.height * ratio;
-    </script>
-
-
 </head>
 <body>
-    <div id="examples">
-        <canvas id="notan_canvas" width="100%" height="100%"></canvas>
-    </div>
+    <script type="module">
+        import init from './wasms/eg_aspect_fit.js';
+        let module = await init();
+        module.notan_main();
+    </script>
+    <canvas id="notan_canvas"></canvas>
 </body>
 </html>
