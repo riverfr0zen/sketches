@@ -6,11 +6,16 @@ use notan::prelude::*;
 use notan_fractals::utils::{get_common_win_config, get_draw_setup};
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
-const CP_BODY_W: f32 = WORK_SIZE.x / 10.0;
-const CP_BODY_H: f32 = WORK_SIZE.x / 10.0;
+// const CP_BODY_W: f32 = WORK_SIZE.x / 10.0;
+// const CP_BODY_H: f32 = WORK_SIZE.x / 10.0;
+const CP_ROWS: f32 = 10.0;
+const CP_COLS: f32 = 10.0;
+const CP_BODY_W: f32 = WORK_SIZE.x / CP_COLS;
+const CP_BODY_H: f32 = WORK_SIZE.x / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 50.0;
 const CP_HEAD_H: f32 = CP_BODY_H + 50.0;
 const CP_STROKE: f32 = 1.0;
+
 
 enum Direction {
     UP,
@@ -39,7 +44,7 @@ impl Default for State {
         Self {
             // cp_head_pos: (CP_HEAD_W, CP_HEAD_H),
             cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
-            cp_speed: 0.1,
+            cp_speed: 0.5,
             cp_direction: Direction::RIGHT,
             cp_next_row: 1.0,
         }
@@ -74,17 +79,45 @@ fn update_head_movement(state: &mut State) {
         Direction::DOWN => {
             state.cp_head_pos.y += state.cp_speed;
 
-            log::debug!("{}, {}", state.cp_head_pos.y, state.cp_next_row);
-            if state.cp_head_pos.y >= CP_BODY_H * state.cp_next_row {
-                state.cp_direction = Direction::LEFT;
+            log::debug!(
+                "{}, {}, {}",
+                state.cp_head_pos.y,
+                state.cp_next_row,
+                CP_BODY_H * state.cp_next_row
+            );
+            if state.cp_head_pos.y > CP_BODY_H * state.cp_next_row {
+                if state.cp_head_pos.x < 0.0 {
+                    state.cp_direction = Direction::RIGHT;
+                }
+                if state.cp_head_pos.x > WORK_SIZE.x {
+                    state.cp_direction = Direction::LEFT;
+                }
+            }
+        }
+        Direction::UP => {
+            state.cp_head_pos.y -= state.cp_speed;
+
+            if state.cp_head_pos.y < CP_BODY_H * state.cp_next_row {
+                if state.cp_head_pos.x < 0.0 {
+                    state.cp_direction = Direction::RIGHT;
+                }
+                if state.cp_head_pos.x > WORK_SIZE.x {
+                    state.cp_direction = Direction::LEFT;
+                }
             }
         }
         Direction::LEFT => {
             state.cp_head_pos.x -= state.cp_speed;
 
             if state.cp_head_pos.x < 0.0 {
-                state.cp_direction = Direction::DOWN;
-                state.cp_next_row += 1.0;
+                if state.cp_head_pos.y > WORK_SIZE.y {
+                    state.cp_direction = Direction::UP;
+                    state.cp_next_row -= 1.0;
+                }
+                if state.cp_head_pos.y < WORK_SIZE.y {
+                    state.cp_direction = Direction::DOWN;
+                    state.cp_next_row += 1.0;
+                }
             }
         }
         _ => (),
