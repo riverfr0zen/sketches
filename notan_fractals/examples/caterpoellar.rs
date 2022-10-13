@@ -1,5 +1,6 @@
 /// `caterpoellar` is not a fractal app, just a simple idea to familiarize myself with Notan
 use notan::draw::*;
+use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_fractals::utils::{get_common_win_config, get_draw_setup};
@@ -26,27 +27,32 @@ enum Direction {
 // #[derive(AppState, Default)]
 #[derive(AppState)]
 struct State {
-    cp_head_pos: (f32, f32),
+    cp_head_pos: Vec2,
     cp_speed: f32,
     cp_direction: Direction,
+    cp_next_row: f32,
 }
+
 
 impl Default for State {
     fn default() -> Self {
         Self {
             // cp_head_pos: (CP_HEAD_W, CP_HEAD_H),
-            cp_head_pos: (CP_BODY_W, CP_BODY_H),
+            cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
             cp_speed: 0.1,
-            cp_direction: Direction::LEFT,
+            cp_direction: Direction::RIGHT,
+            cp_next_row: 1.0,
         }
     }
 }
+
 
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = get_common_win_config();
 
     notan::init_with(State::default)
+        .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .draw(draw)
@@ -56,16 +62,30 @@ fn main() -> Result<(), String> {
 
 
 fn update_head_movement(state: &mut State) {
-    if state.cp_head_pos.0 > WORK_SIZE.x {
-        state.cp_direction = Direction::DOWN;
-    }
-
     match &state.cp_direction {
-        Direction::LEFT => {
-            state.cp_head_pos = (state.cp_head_pos.0 + state.cp_speed, state.cp_head_pos.1);
+        Direction::RIGHT => {
+            state.cp_head_pos.x += state.cp_speed;
+
+            if state.cp_head_pos.x > WORK_SIZE.x {
+                state.cp_direction = Direction::DOWN;
+                state.cp_next_row += 1.0;
+            }
         }
         Direction::DOWN => {
-            state.cp_head_pos = (state.cp_head_pos.0, state.cp_head_pos.1 + state.cp_speed);
+            state.cp_head_pos.y += state.cp_speed;
+
+            log::debug!("{}, {}", state.cp_head_pos.y, state.cp_next_row);
+            if state.cp_head_pos.y >= CP_BODY_H * state.cp_next_row {
+                state.cp_direction = Direction::LEFT;
+            }
+        }
+        Direction::LEFT => {
+            state.cp_head_pos.x -= state.cp_speed;
+
+            if state.cp_head_pos.x < 0.0 {
+                state.cp_direction = Direction::DOWN;
+                state.cp_next_row += 1.0;
+            }
         }
         _ => (),
     }
@@ -80,11 +100,14 @@ fn update(state: &mut State) {
 fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, Color::WHITE);
 
-    draw.ellipse(state.cp_head_pos, (CP_BODY_W, CP_BODY_H))
-        .color(Color::BLUE)
-        .stroke(CP_STROKE)
-        .color(Color::ORANGE)
-        .fill();
+    draw.ellipse(
+        (state.cp_head_pos.x, state.cp_head_pos.y),
+        (CP_BODY_W, CP_BODY_H),
+    )
+    .color(Color::BLUE)
+    .stroke(CP_STROKE)
+    .color(Color::ORANGE)
+    .fill();
 
     // draw to screen
     gfx.render(&draw);
