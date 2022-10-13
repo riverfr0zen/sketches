@@ -11,7 +11,7 @@ const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 const CP_ROWS: f32 = 10.0;
 const CP_COLS: f32 = 10.0;
 const CP_BODY_W: f32 = WORK_SIZE.x / CP_COLS;
-const CP_BODY_H: f32 = WORK_SIZE.x / CP_ROWS;
+const CP_BODY_H: f32 = WORK_SIZE.y / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 50.0;
 const CP_HEAD_H: f32 = CP_BODY_H + 50.0;
 const CP_STROKE: f32 = 1.0;
@@ -35,6 +35,7 @@ struct State {
     cp_head_pos: Vec2,
     cp_speed: f32,
     cp_direction: Direction,
+    cp_reversing: bool,
     cp_next_row: f32,
 }
 
@@ -43,9 +44,11 @@ impl Default for State {
     fn default() -> Self {
         Self {
             // cp_head_pos: (CP_HEAD_W, CP_HEAD_H),
-            cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
+            // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
+            cp_head_pos: vec2(0.0, 0.0),
             cp_speed: 0.5,
             cp_direction: Direction::RIGHT,
+            cp_reversing: false,
             cp_next_row: 1.0,
         }
     }
@@ -67,6 +70,16 @@ fn main() -> Result<(), String> {
 
 
 fn update_head_movement(state: &mut State) {
+    log::debug!("{}, {}", state.cp_next_row, state.cp_reversing);
+
+    if state.cp_next_row > CP_ROWS - 1.0 {
+        state.cp_reversing = true;
+    }
+
+    if state.cp_next_row < 1.0 {
+        state.cp_reversing = false;
+    }
+
     match &state.cp_direction {
         Direction::RIGHT => {
             state.cp_head_pos.x += state.cp_speed;
@@ -81,12 +94,12 @@ fn update_head_movement(state: &mut State) {
             //     }
             // }
             if state.cp_head_pos.x > WORK_SIZE.x {
-                if state.cp_next_row < CP_ROWS {
-                    state.cp_direction = Direction::DOWN;
-                    state.cp_next_row += 1.0;
-                } else {
+                if state.cp_reversing {
                     state.cp_direction = Direction::UP;
                     state.cp_next_row -= 1.0;
+                } else {
+                    state.cp_direction = Direction::DOWN;
+                    state.cp_next_row += 1.0;
                 }
             }
         }
@@ -124,30 +137,13 @@ fn update_head_movement(state: &mut State) {
             state.cp_head_pos.x -= state.cp_speed;
 
             if state.cp_head_pos.x < 0.0 {
-                log::debug!(
-                    "{}, {}",
-                    state.cp_head_pos.y * state.cp_head_pos.x,
-                    CP_COLS * CP_ROWS,
-                );
-
-                // if state.cp_head_pos.y > state.cp_head_pos.x > CP_COLS * CP_ROWS {
-                //     state.cp_direction = Direction::DOWN;
-                //     state.cp_next_row += 1.0;
-                // }
-                // if state.cp_head_pos.y * state.cp_head_pos.x > CP_COLS * CP_ROWS {
-                //     state.cp_direction = Direction::UP;
-                //     state.cp_next_row -= 1.0;
-                //  }
-
-                if state.cp_head_pos.y > WORK_SIZE.y && CP_ROWS % 2.0 == 0.0 {
+                if state.cp_reversing {
                     state.cp_direction = Direction::UP;
                     state.cp_next_row -= 1.0;
                 } else {
                     state.cp_direction = Direction::DOWN;
                     state.cp_next_row += 1.0;
                 }
-                // if state.cp_head_pos.y < WORK_SIZE.y {
-                // }
             }
         }
         _ => (),
