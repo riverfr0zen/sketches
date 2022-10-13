@@ -71,20 +71,34 @@ fn update_head_movement(state: &mut State) {
         Direction::RIGHT => {
             state.cp_head_pos.x += state.cp_speed;
 
+            // if state.cp_head_pos.x > WORK_SIZE.x {
+            //     if state.cp_next_row < CP_ROWS {
+            //         state.cp_direction = Direction::DOWN;
+            //         state.cp_next_row += 1.0;
+            //     } else {
+            //         state.cp_direction = Direction::UP;
+            //         state.cp_next_row -= 1.0;
+            //     }
+            // }
             if state.cp_head_pos.x > WORK_SIZE.x {
-                state.cp_direction = Direction::DOWN;
-                state.cp_next_row += 1.0;
+                if state.cp_next_row < CP_ROWS {
+                    state.cp_direction = Direction::DOWN;
+                    state.cp_next_row += 1.0;
+                } else {
+                    state.cp_direction = Direction::UP;
+                    state.cp_next_row -= 1.0;
+                }
             }
         }
         Direction::DOWN => {
             state.cp_head_pos.y += state.cp_speed;
 
-            log::debug!(
-                "{}, {}, {}",
-                state.cp_head_pos.y,
-                state.cp_next_row,
-                CP_BODY_H * state.cp_next_row
-            );
+            // log::debug!(
+            //     "{}, {}, {}",
+            //     state.cp_head_pos.y,
+            //     state.cp_next_row,
+            //     CP_BODY_H * state.cp_next_row
+            // );
             if state.cp_head_pos.y > CP_BODY_H * state.cp_next_row {
                 if state.cp_head_pos.x < 0.0 {
                     state.cp_direction = Direction::RIGHT;
@@ -110,14 +124,30 @@ fn update_head_movement(state: &mut State) {
             state.cp_head_pos.x -= state.cp_speed;
 
             if state.cp_head_pos.x < 0.0 {
-                if state.cp_head_pos.y > WORK_SIZE.y {
+                log::debug!(
+                    "{}, {}",
+                    state.cp_head_pos.y * state.cp_head_pos.x,
+                    CP_COLS * CP_ROWS,
+                );
+
+                // if state.cp_head_pos.y > state.cp_head_pos.x > CP_COLS * CP_ROWS {
+                //     state.cp_direction = Direction::DOWN;
+                //     state.cp_next_row += 1.0;
+                // }
+                // if state.cp_head_pos.y * state.cp_head_pos.x > CP_COLS * CP_ROWS {
+                //     state.cp_direction = Direction::UP;
+                //     state.cp_next_row -= 1.0;
+                //  }
+
+                if state.cp_head_pos.y > WORK_SIZE.y && CP_ROWS % 2.0 == 0.0 {
                     state.cp_direction = Direction::UP;
                     state.cp_next_row -= 1.0;
-                }
-                if state.cp_head_pos.y < WORK_SIZE.y {
+                } else {
                     state.cp_direction = Direction::DOWN;
                     state.cp_next_row += 1.0;
                 }
+                // if state.cp_head_pos.y < WORK_SIZE.y {
+                // }
             }
         }
         _ => (),
