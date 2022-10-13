@@ -42,7 +42,7 @@ pub fn get_scaling_projection(win_size: Vec2, work_size: Vec2) -> Mat4 {
 
 
 /// Set up a Draw with some common basics
-pub fn get_draw_setup(gfx: &mut Graphics, work_size: Vec2) -> Draw {
+pub fn get_draw_setup(gfx: &mut Graphics, work_size: Vec2, clear_color: Color) -> Draw {
     let (width, height) = gfx.size();
     let win_size = vec2(width as f32, height as f32);
 
@@ -50,7 +50,7 @@ pub fn get_draw_setup(gfx: &mut Graphics, work_size: Vec2) -> Draw {
     let (projection, _) = get_aspect_fit_projection(win_size, work_size);
 
     let mut draw = gfx.create_draw();
-    draw.clear(Color::BLACK);
+    draw.clear(clear_color);
 
     // We set our projection here
     // Anything draw bellow will keep the aspect ratio
