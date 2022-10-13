@@ -6,10 +6,10 @@ use notan::prelude::*;
 #[notan_main]
 fn main() -> Result<(), String> {
     notan::init()
-        .initialize(starting_logs)
-        .draw(draw)
         .add_config(log::LogConfig::debug())
         .add_config(DrawConfig)
+        .initialize(starting_logs)
+        .draw(draw)
         .build()
 }
 
