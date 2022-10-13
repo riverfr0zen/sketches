@@ -8,8 +8,10 @@ use notan_fractals::utils::{get_common_win_config, get_draw_setup};
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const CP_BODY_W: f32 = WORK_SIZE.x / 10.0;
 // const CP_BODY_H: f32 = WORK_SIZE.x / 10.0;
-const CP_ROWS: f32 = 10.0;
-const CP_COLS: f32 = 10.0;
+const CP_ROWS: f32 = 20.0;
+const CP_COLS: f32 = 18.0;
+// const CP_ROWS: f32 = 5.0;
+// const CP_COLS: f32 = 3.0;
 const CP_BODY_W: f32 = WORK_SIZE.x / CP_COLS;
 const CP_BODY_H: f32 = WORK_SIZE.y / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 50.0;
@@ -44,8 +46,8 @@ impl Default for State {
     fn default() -> Self {
         Self {
             // cp_head_pos: (CP_HEAD_W, CP_HEAD_H),
-            // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
-            cp_head_pos: vec2(0.0, 0.0),
+            cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
+            // cp_head_pos: vec2(0.0, 0.0),
             cp_speed: 0.5,
             cp_direction: Direction::RIGHT,
             cp_reversing: false,
@@ -71,14 +73,6 @@ fn main() -> Result<(), String> {
 
 fn update_head_movement(state: &mut State) {
     log::debug!("{}, {}", state.cp_next_row, state.cp_reversing);
-
-    if state.cp_next_row > CP_ROWS - 1.0 {
-        state.cp_reversing = true;
-    }
-
-    if state.cp_next_row < 1.0 {
-        state.cp_reversing = false;
-    }
 
     match &state.cp_direction {
         Direction::RIGHT => {
@@ -148,6 +142,14 @@ fn update_head_movement(state: &mut State) {
         }
         _ => (),
     }
+
+    if state.cp_next_row > CP_ROWS - 2.0 {
+        state.cp_reversing = true;
+    }
+
+    if state.cp_next_row < 2.0 {
+        state.cp_reversing = false;
+    }
 }
 
 
@@ -157,7 +159,7 @@ fn update(state: &mut State) {
 
 
 fn draw(gfx: &mut Graphics, state: &mut State) {
-    let mut draw = get_draw_setup(gfx, WORK_SIZE, Color::WHITE);
+    let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
 
     draw.ellipse(
         (state.cp_head_pos.x, state.cp_head_pos.y),
