@@ -1,4 +1,6 @@
-use notan::math::{vec3, Mat4, Vec2};
+use notan::draw::*;
+use notan::math::{vec2, vec3, Mat4, Vec2};
+use notan::prelude::*;
 
 
 /// This returns a projection that keeps the aspect ratio while scaling
@@ -36,4 +38,32 @@ pub fn get_scaling_projection(win_size: Vec2, work_size: Vec2) -> Mat4 {
         1.0,
     ));
     projection * scale
+}
+
+
+/// Set up a Draw with some common basics
+pub fn get_draw_setup(gfx: &mut Graphics, work_size: Vec2) -> Draw {
+    let (width, height) = gfx.size();
+    let win_size = vec2(width as f32, height as f32);
+
+    // get the projection that will fit and center our content in the screen
+    let (projection, _) = get_aspect_fit_projection(win_size, work_size);
+
+    let mut draw = gfx.create_draw();
+    draw.clear(Color::BLACK);
+
+    // We set our projection here
+    // Anything draw bellow will keep the aspect ratio
+    draw.set_projection(Some(projection));
+    return draw;
+}
+
+
+pub fn get_common_win_config() -> WindowConfig {
+    let win_config = WindowConfig::default().resizable(true);
+
+    #[cfg(target_arch = "wasm32")]
+    win_config.maximized(true);
+
+    return win_config;
 }
