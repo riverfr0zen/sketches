@@ -21,7 +21,8 @@
 <script type="module">
     import init from './wasms/eg_notan.js'; // replace this 
     let module = await init();
-    module.notan_main();
+    // Don't need this. See: https://github.com/Nazariglez/notan/issues/157
+    // module.notan_main();
 </script>
 <div id="examples">
     <canvas id="notan_canvas"></canvas>

@@ -66,10 +66,16 @@ pub fn get_draw_setup(
 
 
 pub fn get_common_win_config() -> WindowConfig {
-    let win_config = WindowConfig::default().resizable(true);
+    // #[cfg(not(target_arch = "wasm32"))]
+    // let win_config = WindowConfig::default().resizable(true);
+
+    // #[cfg(target_arch = "wasm32")]
+    // let win_config = WindowConfig::default().resizable(true);
+
+    // return win_config;
+    #[cfg(not(target_arch = "wasm32"))]
+    return WindowConfig::default().resizable(true);
 
     #[cfg(target_arch = "wasm32")]
-    win_config.maximized(true);
-
-    return win_config;
+    return WindowConfig::default().resizable(true);
 }
