@@ -8,15 +8,15 @@ use notan_fractals::utils::{get_common_win_config, get_draw_setup};
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const CP_BODY_W: f32 = WORK_SIZE.x / 10.0;
 // const CP_BODY_H: f32 = WORK_SIZE.x / 10.0;
+// const CP_ROWS: f32 = 10.0;
+// const CP_COLS: f32 = 10.0;
 const CP_ROWS: f32 = 5.0;
-const CP_COLS: f32 = 5.0;
-// const CP_ROWS: f32 = 5.0;
-// const CP_COLS: f32 = 3.0;
+const CP_COLS: f32 = 4.0;
 const CP_BODY_W: f32 = WORK_SIZE.x / CP_COLS;
 const CP_BODY_H: f32 = WORK_SIZE.y / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 50.0;
 const CP_HEAD_H: f32 = CP_BODY_H + 50.0;
-// const CP_STROKE: f32 = 1.0;
+const CP_STROKE: f32 = 1.0;
 
 
 enum Direction {
@@ -52,9 +52,10 @@ struct State {
 impl Default for State {
     fn default() -> Self {
         Self {
-            cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
+            // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
             // cp_head_pos: vec2(0.0, 0.0),
-            cp_speed: 10.0,
+            cp_head_pos: vec2(0.0, CP_BODY_H),
+            cp_speed: 1.0,
             cp_direction: Direction::RIGHT,
             cp_reversing: false,
             cp_next_row: 1.0,
@@ -79,13 +80,14 @@ fn main() -> Result<(), String> {
 }
 
 fn spawn_body_segment(state: &mut State) {
-    log::debug!("new col after {}", state.cp_head_pos.x);
+    log::debug!("new seg at {} {}", state.cp_head_pos.x, state.cp_head_pos.y);
 
     if !state
         .cp_spawned_segs
         .iter()
         .any(|seg| seg.pos == state.cp_head_pos)
     {
+        log::debug!("new seg");
         state.cp_spawned_segs.push(BodySegment {
             color: Color::YELLOW,
             pos: state.cp_head_pos,
@@ -97,7 +99,10 @@ fn spawn_body_segment(state: &mut State) {
 fn update_head_movement(state: &mut State) {
     // log::debug!("{}, {}", state.cp_next_row, state.cp_reversing);
 
-    if state.cp_head_pos.x % (WORK_SIZE.x / CP_COLS) == 0.0 {
+    if state.cp_head_pos.x > 0.0
+        && state.cp_head_pos.x < WORK_SIZE.x
+        && state.cp_head_pos.x % (WORK_SIZE.x / CP_COLS) == 0.0
+    {
         spawn_body_segment(state);
     }
 
@@ -183,15 +188,17 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     // on every draw.
     for seg in state.cp_spawned_segs.iter() {
         draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
-            // .color(Color::BLUE)
-            // .stroke(CP_STROKE)
-            .color(seg.color)
-            .fill();
+            .fill()
+            .color(seg.color);
+        draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
+            .color(Color::BLUE)
+            .stroke(CP_STROKE);
     }
 
     draw.ellipse(
         (state.cp_head_pos.x, state.cp_head_pos.y),
-        (CP_BODY_W, CP_BODY_H),
+        // (CP_BODY_W, CP_BODY_H),
+        (CP_HEAD_W, CP_HEAD_H),
     )
     // .color(Color::BLUE)
     // .stroke(CP_STROKE)
