@@ -45,7 +45,8 @@ struct State {
     cp_reversing: bool,
     cp_next_row: f32,
     cp_spawn_seg_at: Vec2,
-    cp_spawned_segs: Vec<BodySegment>,
+    // cp_spawned_segs: Vec<BodySegment>,
+    cp_spawned_segs: Vec<Vec<BodySegment>>,
 }
 
 
@@ -80,18 +81,33 @@ fn main() -> Result<(), String> {
 }
 
 fn spawn_body_segment(state: &mut State) {
-    log::debug!("new seg at {} {}", state.cp_head_pos.x, state.cp_head_pos.y);
+    let col = (state.cp_head_pos.x / CP_BODY_W) as usize;
+    let row = (state.cp_head_pos.y / CP_BODY_H) as usize;
 
-    if !state
-        .cp_spawned_segs
-        .iter()
-        .any(|seg| seg.pos == state.cp_head_pos)
-    {
+    if state.cp_spawned_segs.len() < row {
+        log::debug!("xx {} {}", state.cp_spawned_segs.len(), row);
+        state.cp_spawned_segs.push(Vec::new());
+    }
+    log::debug!(
+        "At {} {} / {} {}",
+        state.cp_head_pos.x,
+        state.cp_head_pos.y,
+        col,
+        row
+    );
+
+    if state.cp_spawned_segs[row - 1].len() < col {
         log::debug!("new seg");
-        state.cp_spawned_segs.push(BodySegment {
+        state.cp_spawned_segs[row - 1].push(BodySegment {
             color: Color::YELLOW,
             pos: state.cp_head_pos,
         });
+    } else {
+        log::debug!("recycled seg");
+        state.cp_spawned_segs[row - 1][col - 1] = BodySegment {
+            color: Color::YELLOW,
+            pos: state.cp_head_pos,
+        };
     }
 }
 
@@ -183,17 +199,17 @@ fn update(state: &mut State) {
 fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
 
-    // XXX this is being drawn but not showing up because it is erased in the next draw.
-    // Need an array to store body part positions (and colors?) so that they can be drawn
-    // on every draw.
-    for seg in state.cp_spawned_segs.iter() {
-        draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
-            .fill()
-            .color(seg.color);
-        draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
-            .color(Color::BLUE)
-            .stroke(CP_STROKE);
+    for row in state.cp_spawned_segs.iter() {
+        for seg in row.iter() {
+            draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
+                .fill()
+                .color(seg.color);
+            draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
+                .color(Color::BLUE)
+                .stroke(CP_STROKE);
+        }
     }
+
 
     draw.ellipse(
         (state.cp_head_pos.x, state.cp_head_pos.y),
