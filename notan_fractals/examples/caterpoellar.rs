@@ -8,10 +8,10 @@ use notan_fractals::utils::{get_common_win_config, get_draw_setup};
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const CP_BODY_W: f32 = WORK_SIZE.x / 10.0;
 // const CP_BODY_H: f32 = WORK_SIZE.x / 10.0;
-// const CP_ROWS: f32 = 10.0;
-// const CP_COLS: f32 = 10.0;
-const CP_ROWS: f32 = 5.0;
-const CP_COLS: f32 = 4.0;
+const CP_ROWS: f32 = 10.0;
+const CP_COLS: f32 = 10.0;
+// const CP_ROWS: f32 = 5.0;
+// const CP_COLS: f32 = 4.0;
 const CP_BODY_W: f32 = WORK_SIZE.x / CP_COLS;
 const CP_BODY_H: f32 = WORK_SIZE.y / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 50.0;
@@ -129,7 +129,7 @@ fn update_head_movement(state: &mut State) {
             //     state.cp_next_row,
             //     CP_BODY_H * state.cp_next_row
             // );
-            if state.cp_head_pos.y > CP_BODY_H * state.cp_next_row {
+            if state.cp_head_pos.y >= CP_BODY_H * state.cp_next_row {
                 if state.cp_head_pos.x < 0.0 {
                     state.cp_direction = Direction::RIGHT;
                 }
@@ -141,7 +141,7 @@ fn update_head_movement(state: &mut State) {
         Direction::UP => {
             state.cp_head_pos.y -= state.cp_speed;
 
-            if state.cp_head_pos.y < CP_BODY_H * state.cp_next_row {
+            if state.cp_head_pos.y <= CP_BODY_H * state.cp_next_row {
                 if state.cp_head_pos.x < 0.0 {
                     state.cp_direction = Direction::RIGHT;
                 }
