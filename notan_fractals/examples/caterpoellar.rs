@@ -17,7 +17,7 @@ const CP_BODY_H: f32 = WORK_SIZE.y / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 50.0;
 const CP_HEAD_H: f32 = CP_BODY_H + 50.0;
 const CP_STROKE: f32 = 1.0;
-const CP_SPEED: f32 = 1.0;
+const CP_SPEED: f32 = 10.0;
 
 
 enum Direction {
@@ -80,7 +80,7 @@ impl Default for State {
             // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
             // cp_head_pos: vec2(0.0, 0.0),
             cp_head_pos: vec2(0.0, CP_BODY_H),
-            cp_speed: 1.0,
+            cp_speed: CP_SPEED,
             cp_direction: Direction::RIGHT,
             cp_reversing: false,
             cp_next_row: 1.0,
@@ -211,15 +211,34 @@ fn draw_seg(draw: &mut Draw, seg: &BodySegment) {
 fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
 
-    for row in state.cp_spawned_segs.iter() {
-        log::debug!("o");
-        for seg in row.iter() {
-            if seg.visible {
-                draw_seg(&mut draw, seg);
+    if !state.cp_reversing {
+        for row in state.cp_spawned_segs.iter() {
+            log::debug!("o");
+            for seg in row.iter() {
+                if seg.visible {
+                    draw_seg(&mut draw, seg);
+                }
+            }
+        }
+    } else {
+        for row in state.cp_spawned_segs.iter().rev() {
+            log::debug!("o");
+            for seg in row.iter().rev() {
+                if seg.visible {
+                    draw_seg(&mut draw, seg);
+                }
             }
         }
     }
 
+    // for row in state.cp_spawned_segs.iter() {
+    //     log::debug!("o");
+    //     for seg in row.iter() {
+    //         if seg.visible {
+    //             draw_seg(&mut draw, seg);
+    //         }
+    //     }
+    // }
 
     draw.ellipse(
         (state.cp_head_pos.x, state.cp_head_pos.y),
