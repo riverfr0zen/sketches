@@ -185,9 +185,15 @@ fn update_head_movement(state: &mut State) {
 
     if state.cp_next_row > CP_ROWS - 2.0 {
         state.cp_reversing = true;
+        // @TODO when revisiting reverse
+        // state.cp_spawned_segs = State::init_segs();
     }
 
     if state.cp_next_row < 2.0 {
+        // @TODO when revisiting reverse
+        // if state.cp_reversing == true {
+        //     state.cp_spawned_segs = State::init_segs();
+        // }
         state.cp_reversing = false;
     }
 }
@@ -211,34 +217,35 @@ fn draw_seg(draw: &mut Draw, seg: &BodySegment) {
 fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
 
-    if !state.cp_reversing {
-        for row in state.cp_spawned_segs.iter() {
-            log::debug!("o");
-            for seg in row.iter() {
-                if seg.visible {
-                    draw_seg(&mut draw, seg);
-                }
-            }
-        }
-    } else {
-        for row in state.cp_spawned_segs.iter().rev() {
-            log::debug!("o");
-            for seg in row.iter().rev() {
-                if seg.visible {
-                    draw_seg(&mut draw, seg);
-                }
-            }
-        }
-    }
-
-    // for row in state.cp_spawned_segs.iter() {
-    //     log::debug!("o");
-    //     for seg in row.iter() {
-    //         if seg.visible {
-    //             draw_seg(&mut draw, seg);
+    // @TODO when revisiting reverse
+    // if !state.cp_reversing {
+    //     for row in state.cp_spawned_segs.iter() {
+    //         log::debug!("o");
+    //         for seg in row.iter() {
+    //             if seg.visible {
+    //                 draw_seg(&mut draw, seg);
+    //             }
+    //         }
+    //     }
+    // } else {
+    //     for row in state.cp_spawned_segs.iter().rev() {
+    //         log::debug!("o");
+    //         for seg in row.iter().rev() {
+    //             if seg.visible {
+    //                 draw_seg(&mut draw, seg);
+    //             }
     //         }
     //     }
     // }
+
+    for row in state.cp_spawned_segs.iter() {
+        log::debug!("o");
+        for seg in row.iter() {
+            if seg.visible {
+                draw_seg(&mut draw, seg);
+            }
+        }
+    }
 
     draw.ellipse(
         (state.cp_head_pos.x, state.cp_head_pos.y),
