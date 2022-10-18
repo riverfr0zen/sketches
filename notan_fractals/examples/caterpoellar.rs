@@ -17,6 +17,7 @@ const CP_BODY_H: f32 = WORK_SIZE.y / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 50.0;
 const CP_HEAD_H: f32 = CP_BODY_H + 50.0;
 const CP_STROKE: f32 = 1.0;
+const CP_SPEED: f32 = 1.0;
 
 
 enum Direction {
@@ -33,6 +34,7 @@ enum Direction {
 struct BodySegment {
     color: Color,
     pos: Vec2,
+    visible: bool,
 }
 
 
@@ -49,6 +51,28 @@ struct State {
     cp_spawned_segs: Vec<Vec<BodySegment>>,
 }
 
+impl State {
+    fn init_segs() -> Vec<Vec<BodySegment>> {
+        let mut segs: Vec<Vec<BodySegment>> = Vec::new();
+        const COLS: usize = CP_COLS as usize;
+        const ROWS: usize = CP_ROWS as usize;
+
+        (1..ROWS).for_each(|rownum| {
+            let mut row: Vec<BodySegment> = Vec::new();
+            (1..COLS).for_each(|colnum| {
+                row.push(BodySegment {
+                    color: Color::WHITE,
+                    pos: Vec2::new((colnum) as f32 * CP_BODY_W, (rownum) as f32 * CP_BODY_H),
+                    visible: false,
+                })
+            });
+            segs.push(row);
+        });
+
+        return segs;
+    }
+}
+
 
 impl Default for State {
     fn default() -> Self {
@@ -61,7 +85,8 @@ impl Default for State {
             cp_reversing: false,
             cp_next_row: 1.0,
             cp_spawn_seg_at: vec2(0.0, 0.0),
-            cp_spawned_segs: Vec::new(),
+            // cp_spawned_segs: Vec::new(),
+            cp_spawned_segs: Self::init_segs(),
         }
     }
 }
@@ -84,31 +109,8 @@ fn spawn_body_segment(state: &mut State) {
     let col = (state.cp_head_pos.x / CP_BODY_W) as usize;
     let row = (state.cp_head_pos.y / CP_BODY_H) as usize;
 
-    if state.cp_spawned_segs.len() < row {
-        log::debug!("xx {} {}", state.cp_spawned_segs.len(), row);
-        state.cp_spawned_segs.push(Vec::new());
-    }
-    log::debug!(
-        "At {} {} / {} {}",
-        state.cp_head_pos.x,
-        state.cp_head_pos.y,
-        col,
-        row
-    );
-
-    if state.cp_spawned_segs[row - 1].len() < col {
-        log::debug!("new seg");
-        state.cp_spawned_segs[row - 1].push(BodySegment {
-            color: Color::YELLOW,
-            pos: state.cp_head_pos,
-        });
-    } else {
-        log::debug!("recycled seg");
-        state.cp_spawned_segs[row - 1][col - 1] = BodySegment {
-            color: Color::YELLOW,
-            pos: state.cp_head_pos,
-        };
-    }
+    state.cp_spawned_segs[row - 1][col - 1].color = Color::YELLOW;
+    state.cp_spawned_segs[row - 1][col - 1].visible = true;
 }
 
 
@@ -196,17 +198,25 @@ fn update(state: &mut State) {
 }
 
 
+fn draw_seg(draw: &mut Draw, seg: &BodySegment) {
+    draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
+        .fill()
+        .color(seg.color);
+
+    draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
+        .color(Color::BLUE)
+        .stroke(CP_STROKE);
+}
+
 fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
 
     for row in state.cp_spawned_segs.iter() {
+        log::debug!("o");
         for seg in row.iter() {
-            draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
-                .fill()
-                .color(seg.color);
-            draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
-                .color(Color::BLUE)
-                .stroke(CP_STROKE);
+            if seg.visible {
+                draw_seg(&mut draw, seg);
+            }
         }
     }
 
