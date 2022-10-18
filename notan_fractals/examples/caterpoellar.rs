@@ -17,7 +17,7 @@ const CP_BODY_H: f32 = WORK_SIZE.y / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 50.0;
 const CP_HEAD_H: f32 = CP_BODY_H + 50.0;
 const CP_STROKE: f32 = 1.0;
-const CP_SPEED: f32 = 10.0;
+const CP_SPEED: f32 = 1.0;
 
 
 enum Direction {
@@ -49,9 +49,33 @@ struct State {
     cp_spawn_seg_at: Vec2,
     // cp_spawned_segs: Vec<BodySegment>,
     cp_spawned_segs: Vec<Vec<BodySegment>>,
+    cp_seg_texture: Texture,
 }
 
 impl State {
+    fn new(gfx: &mut Graphics) -> Self {
+        let texture = gfx
+            .create_texture()
+            .from_image(include_bytes!("assets/seg.png"))
+            .build()
+            .unwrap();
+
+        Self {
+            // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
+            // cp_head_pos: vec2(0.0, 0.0),
+            cp_head_pos: vec2(0.0, CP_BODY_H),
+            cp_speed: CP_SPEED,
+            cp_direction: Direction::RIGHT,
+            cp_reversing: false,
+            cp_next_row: 1.0,
+            cp_spawn_seg_at: vec2(0.0, 0.0),
+            // cp_spawned_segs: Vec::new(),
+            cp_spawned_segs: Self::init_segs(),
+            cp_seg_texture: texture,
+        }
+    }
+
+
     fn init_segs() -> Vec<Vec<BodySegment>> {
         let mut segs: Vec<Vec<BodySegment>> = Vec::new();
         const COLS: usize = CP_COLS as usize;
@@ -74,29 +98,41 @@ impl State {
 }
 
 
-impl Default for State {
-    fn default() -> Self {
-        Self {
-            // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
-            // cp_head_pos: vec2(0.0, 0.0),
-            cp_head_pos: vec2(0.0, CP_BODY_H),
-            cp_speed: CP_SPEED,
-            cp_direction: Direction::RIGHT,
-            cp_reversing: false,
-            cp_next_row: 1.0,
-            cp_spawn_seg_at: vec2(0.0, 0.0),
-            // cp_spawned_segs: Vec::new(),
-            cp_spawned_segs: Self::init_segs(),
-        }
-    }
-}
+// impl Default for State {
+//     fn default() -> Self {
+//         let texture = gfx
+//             .create_texture()
+//             .from_image(include_bytes!("assets/bunny.png"))
+//             .build()
+//             .unwrap();
 
+//         }
+
+//         Self {
+//             // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
+//             // cp_head_pos: vec2(0.0, 0.0),
+//             cp_head_pos: vec2(0.0, CP_BODY_H),
+//             cp_speed: CP_SPEED,
+//             cp_direction: Direction::RIGHT,
+//             cp_reversing: false,
+//             cp_next_row: 1.0,
+//             cp_spawn_seg_at: vec2(0.0, 0.0),
+//             // cp_spawned_segs: Vec::new(),
+//             cp_spawned_segs: Self::init_segs(),
+//     }
+// }
+
+
+fn init(gfx: &mut Graphics) -> State {
+    let mut state = State::new(gfx);
+    state
+}
 
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = get_common_win_config();
 
-    notan::init_with(State::default)
+    notan::init_with(init)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
@@ -204,18 +240,22 @@ fn update(state: &mut State) {
 }
 
 
-fn draw_seg(draw: &mut Draw, seg: &BodySegment) {
-    draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
-        .fill()
-        .color(seg.color);
+fn draw_seg(draw: &mut Draw, seg: &BodySegment, texture: &Texture) {
+    // draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
+    //     .fill()
+    //     .color(seg.color);
 
-    draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
-        .color(Color::BLUE)
-        .stroke(CP_STROKE);
+    // draw.ellipse((seg.pos.x, seg.pos.y), (CP_BODY_W, CP_BODY_H))
+    //     .color(Color::BLUE)
+    //     .stroke(CP_STROKE);
+
+    draw.image(texture)
+        .position(seg.pos.x - CP_BODY_W, seg.pos.y - CP_BODY_H)
+        .size(CP_BODY_W * 2.0, CP_BODY_H * 2.0);
 }
 
 fn draw(gfx: &mut Graphics, state: &mut State) {
-    let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
+    let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::OLIVE);
 
     // @TODO when revisiting reverse
     // if !state.cp_reversing {
@@ -242,7 +282,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
         log::debug!("o");
         for seg in row.iter() {
             if seg.visible {
-                draw_seg(&mut draw, seg);
+                draw_seg(&mut draw, seg, &state.cp_seg_texture);
             }
         }
     }
