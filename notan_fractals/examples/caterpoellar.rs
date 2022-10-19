@@ -8,10 +8,12 @@ use notan_fractals::utils::{get_common_win_config, get_draw_setup};
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const CP_BODY_W: f32 = WORK_SIZE.x / 10.0;
 // const CP_BODY_H: f32 = WORK_SIZE.x / 10.0;
-// const CP_COLS: f32 = 10.0;
-// const CP_ROWS: f32 = 10.0;
-const CP_COLS: f32 = 5.0;
-const CP_ROWS: f32 = 4.0;
+const CP_COLS: f32 = 10.0;
+const CP_ROWS: f32 = 8.0;
+const CP_MAX_SEGS: usize = CP_COLS as usize * CP_ROWS as usize;
+// const CP_MAX_SEGS: usize = 10;
+// const CP_COLS: f32 = 5.0;
+// const CP_ROWS: f32 = 4.0;
 const CP_BODY_W: f32 = WORK_SIZE.x / CP_COLS;
 const CP_BODY_H: f32 = WORK_SIZE.y / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 20.0;
@@ -20,6 +22,7 @@ const CP_STROKE: f32 = 1.0;
 const CP_SPEED: f32 = 1.0;
 
 
+#[derive(Clone, Copy)]
 enum Direction {
     UP,
     DOWN,
@@ -34,7 +37,8 @@ enum Direction {
 struct BodySegment {
     color: Color,
     pos: Vec2,
-    visible: bool,
+    direction: Direction,
+    // visible: bool,
 }
 
 
@@ -47,9 +51,10 @@ struct State {
     cp_reversing: bool,
     cp_next_row: f32,
     cp_spawn_seg_at: Vec2,
-    // cp_spawned_segs: Vec<BodySegment>,
-    cp_spawned_segs: Vec<Vec<BodySegment>>,
+    cp_spawned_segs: Vec<BodySegment>,
+    // cp_spawned_segs: Vec<Vec<BodySegment>>,
     cp_seg_texture: Texture,
+    cp_seg_texture_hflip: Texture,
 }
 
 impl State {
@@ -57,6 +62,11 @@ impl State {
         let texture = gfx
             .create_texture()
             .from_image(include_bytes!("assets/seg.png"))
+            .build()
+            .unwrap();
+        let texture_hflip = gfx
+            .create_texture()
+            .from_image(include_bytes!("assets/seg_hflip.png"))
             .build()
             .unwrap();
 
@@ -69,58 +79,34 @@ impl State {
             cp_reversing: false,
             cp_next_row: 1.0,
             cp_spawn_seg_at: vec2(0.0, 0.0),
-            // cp_spawned_segs: Vec::new(),
-            cp_spawned_segs: Self::init_segs(),
+            cp_spawned_segs: Vec::new(),
+            // cp_spawned_segs: Self::init_segs(),
             cp_seg_texture: texture,
+            cp_seg_texture_hflip: texture_hflip,
         }
     }
 
 
-    fn init_segs() -> Vec<Vec<BodySegment>> {
-        let mut segs: Vec<Vec<BodySegment>> = Vec::new();
-        const COLS: usize = CP_COLS as usize;
-        const ROWS: usize = CP_ROWS as usize;
+    // fn init_segs() -> Vec<Vec<BodySegment>> {
+    //     let mut segs: Vec<Vec<BodySegment>> = Vec::new();
+    //     const COLS: usize = CP_COLS as usize;
+    //     const ROWS: usize = CP_ROWS as usize;
 
-        (1..ROWS).for_each(|rownum| {
-            let mut row: Vec<BodySegment> = Vec::new();
-            (1..COLS).for_each(|colnum| {
-                row.push(BodySegment {
-                    color: Color::WHITE,
-                    pos: Vec2::new((colnum) as f32 * CP_BODY_W, (rownum) as f32 * CP_BODY_H),
-                    visible: false,
-                })
-            });
-            segs.push(row);
-        });
+    //     (1..ROWS).for_each(|rownum| {
+    //         let mut row: Vec<BodySegment> = Vec::new();
+    //         (1..COLS).for_each(|colnum| {
+    //             row.push(BodySegment {
+    //                 color: Color::WHITE,
+    //                 pos: Vec2::new((colnum) as f32 * CP_BODY_W, (rownum) as f32 * CP_BODY_H),
+    //                 visible: false,
+    //             })
+    //         });
+    //         segs.push(row);
+    //     });
 
-        return segs;
-    }
+    //     return segs;
+    // }
 }
-
-
-// impl Default for State {
-//     fn default() -> Self {
-//         let texture = gfx
-//             .create_texture()
-//             .from_image(include_bytes!("assets/bunny.png"))
-//             .build()
-//             .unwrap();
-
-//         }
-
-//         Self {
-//             // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
-//             // cp_head_pos: vec2(0.0, 0.0),
-//             cp_head_pos: vec2(0.0, CP_BODY_H),
-//             cp_speed: CP_SPEED,
-//             cp_direction: Direction::RIGHT,
-//             cp_reversing: false,
-//             cp_next_row: 1.0,
-//             cp_spawn_seg_at: vec2(0.0, 0.0),
-//             // cp_spawned_segs: Vec::new(),
-//             cp_spawned_segs: Self::init_segs(),
-//     }
-// }
 
 
 fn init(gfx: &mut Graphics) -> State {
@@ -145,8 +131,40 @@ fn spawn_body_segment(state: &mut State) {
     let col = (state.cp_head_pos.x / CP_BODY_W) as usize;
     let row = (state.cp_head_pos.y / CP_BODY_H) as usize;
 
-    state.cp_spawned_segs[row - 1][col - 1].color = Color::YELLOW;
-    state.cp_spawned_segs[row - 1][col - 1].visible = true;
+    // state.cp_spawned_segs[row - 1][col - 1].color = Color::YELLOW;
+    // state.cp_spawned_segs[row - 1][col - 1].visible = true;
+
+    // if state.cp_spawned_segs.len() < row {
+    //     log::debug!("xx {} {}", state.cp_spawned_segs.len(), row);
+    //     state.cp_spawned_segs.push(Vec::new());
+    // }
+    log::debug!(
+        "At {} {} / {} {}",
+        state.cp_head_pos.x,
+        state.cp_head_pos.y,
+        col,
+        row
+    );
+
+    state.cp_spawned_segs.push(BodySegment {
+        color: Color::YELLOW,
+        pos: state.cp_head_pos,
+        direction: state.cp_direction,
+    });
+
+    // if state.cp_spawned_segs[row - 1].len() < col {
+    //     log::debug!("new seg");
+    //     state.cp_spawned_segs[row - 1].push(BodySegment {
+    //         color: Color::YELLOW,
+    //         pos: state.cp_head_pos,
+    //     });
+    // } else {
+    //     log::debug!("recycled seg");
+    //     state.cp_spawned_segs[row - 1][col - 1] = BodySegment {
+    //         color: Color::YELLOW,
+    //         pos: state.cp_head_pos,
+    //     };
+    // }
 }
 
 
@@ -221,21 +239,25 @@ fn update_head_movement(state: &mut State) {
 
     if state.cp_next_row > CP_ROWS - 2.0 {
         state.cp_reversing = true;
-        // @TODO when revisiting reverse
-        // state.cp_spawned_segs = State::init_segs();
     }
 
     if state.cp_next_row < 2.0 {
-        // @TODO when revisiting reverse
-        // if state.cp_reversing == true {
-        //     state.cp_spawned_segs = State::init_segs();
-        // }
         state.cp_reversing = false;
     }
 }
 
 
+fn manage_num_segs(state: &mut State) {
+    log::debug!("{} {}", state.cp_spawned_segs.len(), CP_MAX_SEGS);
+    if state.cp_spawned_segs.len() > CP_MAX_SEGS {
+        state.cp_spawned_segs.rotate_left(1);
+        state.cp_spawned_segs.pop();
+    }
+}
+
+
 fn update(state: &mut State) {
+    manage_num_segs(state);
     update_head_movement(state);
 }
 
@@ -257,35 +279,25 @@ fn draw_seg(draw: &mut Draw, seg: &BodySegment, texture: &Texture) {
 fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::OLIVE);
 
-    // @TODO when revisiting reverse
-    // if !state.cp_reversing {
-    //     for row in state.cp_spawned_segs.iter() {
-    //         log::debug!("o");
-    //         for seg in row.iter() {
-    //             if seg.visible {
-    //                 draw_seg(&mut draw, seg);
-    //             }
-    //         }
-    //     }
-    // } else {
-    //     for row in state.cp_spawned_segs.iter().rev() {
-    //         log::debug!("o");
-    //         for seg in row.iter().rev() {
-    //             if seg.visible {
-    //                 draw_seg(&mut draw, seg);
-    //             }
-    //         }
-    //     }
-    // }
-
-    for row in state.cp_spawned_segs.iter() {
-        log::debug!("o");
-        for seg in row.iter() {
-            if seg.visible {
+    for seg in state.cp_spawned_segs.iter() {
+        match seg.direction {
+            Direction::LEFT => {
+                draw_seg(&mut draw, seg, &state.cp_seg_texture_hflip);
+            }
+            _ => {
                 draw_seg(&mut draw, seg, &state.cp_seg_texture);
             }
         }
     }
+
+    // for row in state.cp_spawned_segs.iter() {
+    //     log::debug!("o");
+    //     for seg in row.iter() {
+    //         // if seg.visible {
+    //         draw_seg(&mut draw, seg, &state.cp_seg_texture);
+    //         // }
+    //     }
+    // }
 
     draw.ellipse(
         (state.cp_head_pos.x, state.cp_head_pos.y),
