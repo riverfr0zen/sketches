@@ -52,7 +52,6 @@ struct State {
     cp_next_row: f32,
     cp_spawn_seg_at: Vec2,
     cp_spawned_segs: Vec<BodySegment>,
-    // cp_spawned_segs: Vec<Vec<BodySegment>>,
     cp_seg_texture: Texture,
     cp_seg_texture_hflip: Texture,
 }
@@ -80,32 +79,10 @@ impl State {
             cp_next_row: 1.0,
             cp_spawn_seg_at: vec2(0.0, 0.0),
             cp_spawned_segs: Vec::new(),
-            // cp_spawned_segs: Self::init_segs(),
             cp_seg_texture: texture,
             cp_seg_texture_hflip: texture_hflip,
         }
     }
-
-
-    // fn init_segs() -> Vec<Vec<BodySegment>> {
-    //     let mut segs: Vec<Vec<BodySegment>> = Vec::new();
-    //     const COLS: usize = CP_COLS as usize;
-    //     const ROWS: usize = CP_ROWS as usize;
-
-    //     (1..ROWS).for_each(|rownum| {
-    //         let mut row: Vec<BodySegment> = Vec::new();
-    //         (1..COLS).for_each(|colnum| {
-    //             row.push(BodySegment {
-    //                 color: Color::WHITE,
-    //                 pos: Vec2::new((colnum) as f32 * CP_BODY_W, (rownum) as f32 * CP_BODY_H),
-    //                 visible: false,
-    //             })
-    //         });
-    //         segs.push(row);
-    //     });
-
-    //     return segs;
-    // }
 }
 
 
@@ -131,13 +108,6 @@ fn spawn_body_segment(state: &mut State) {
     let col = (state.cp_head_pos.x / CP_BODY_W) as usize;
     let row = (state.cp_head_pos.y / CP_BODY_H) as usize;
 
-    // state.cp_spawned_segs[row - 1][col - 1].color = Color::YELLOW;
-    // state.cp_spawned_segs[row - 1][col - 1].visible = true;
-
-    // if state.cp_spawned_segs.len() < row {
-    //     log::debug!("xx {} {}", state.cp_spawned_segs.len(), row);
-    //     state.cp_spawned_segs.push(Vec::new());
-    // }
     log::debug!(
         "At {} {} / {} {}",
         state.cp_head_pos.x,
@@ -151,20 +121,6 @@ fn spawn_body_segment(state: &mut State) {
         pos: state.cp_head_pos,
         direction: state.cp_direction,
     });
-
-    // if state.cp_spawned_segs[row - 1].len() < col {
-    //     log::debug!("new seg");
-    //     state.cp_spawned_segs[row - 1].push(BodySegment {
-    //         color: Color::YELLOW,
-    //         pos: state.cp_head_pos,
-    //     });
-    // } else {
-    //     log::debug!("recycled seg");
-    //     state.cp_spawned_segs[row - 1][col - 1] = BodySegment {
-    //         color: Color::YELLOW,
-    //         pos: state.cp_head_pos,
-    //     };
-    // }
 }
 
 
@@ -248,7 +204,7 @@ fn update_head_movement(state: &mut State) {
 
 
 fn manage_num_segs(state: &mut State) {
-    log::debug!("{} {}", state.cp_spawned_segs.len(), CP_MAX_SEGS);
+    // log::debug!("{} {}", state.cp_spawned_segs.len(), CP_MAX_SEGS);
     if state.cp_spawned_segs.len() > CP_MAX_SEGS {
         state.cp_spawned_segs.rotate_left(1);
         state.cp_spawned_segs.pop();
@@ -274,9 +230,14 @@ fn draw_seg(draw: &mut Draw, seg: &BodySegment, texture: &Texture) {
     draw.image(texture)
         .position(seg.pos.x - CP_BODY_W, seg.pos.y - CP_BODY_H)
         .size(CP_BODY_W * 2.0, CP_BODY_H * 2.0);
+    // .color(Color::TEAL);
 }
 
-fn draw(gfx: &mut Graphics, state: &mut State) {
+fn draw(
+    // app: &mut App,
+    gfx: &mut Graphics,
+    state: &mut State,
+) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::OLIVE);
 
     for seg in state.cp_spawned_segs.iter() {
@@ -289,15 +250,6 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             }
         }
     }
-
-    // for row in state.cp_spawned_segs.iter() {
-    //     log::debug!("o");
-    //     for seg in row.iter() {
-    //         // if seg.visible {
-    //         draw_seg(&mut draw, seg, &state.cp_seg_texture);
-    //         // }
-    //     }
-    // }
 
     draw.ellipse(
         (state.cp_head_pos.x, state.cp_head_pos.y),
@@ -312,4 +264,6 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
 
     // draw to screen
     gfx.render(&draw);
+
+    // log::debug!("fps: {}", app.timer.fps().round());
 }
