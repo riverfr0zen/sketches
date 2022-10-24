@@ -8,15 +8,38 @@ const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
 
 
-// // #[derive(AppState, Default)]
-// #[derive(AppState)]
-// struct State {}
+#[derive(AppState)]
+struct State {
+    max_depth: usize,
+}
 
 
-// fn update(state: &mut State) {
-//     manage_num_segs(state);
-//     update_head_movement(state);
-// }
+impl Default for State {
+    fn default() -> Self {
+        State { max_depth: 0 }
+    }
+}
+
+
+fn update(app: &mut App, state: &mut State) {
+    // if app.keyboard.is_down(KeyCode::W) {
+    //     state.y -= MOVE_SPEED * app.timer.delta_f32();
+    // }
+    if app.keyboard.was_pressed(KeyCode::Up) {
+        state.max_depth += 1;
+        log::debug!("state.max_depth increased: {}", state.max_depth);
+    }
+
+    if app.keyboard.was_pressed(KeyCode::Down) && state.max_depth > 0 {
+        state.max_depth -= 1;
+        log::debug!("state.max_depth decreased: {}", state.max_depth);
+    }
+
+    if app.keyboard.was_pressed(KeyCode::R) {
+        state.max_depth = State::default().max_depth;
+        log::debug!("state.max_depth reset: {}", state.max_depth);
+    }
+}
 
 
 fn get_vec2_midpoint(vec_a: Vec2, vec_b: Vec2) -> Vec2 {
@@ -24,8 +47,8 @@ fn get_vec2_midpoint(vec_a: Vec2, vec_b: Vec2) -> Vec2 {
 }
 
 
-fn draw_gasket(draw: &mut Draw, a: Vec2, b: Vec2, c: Vec2, curr_depth: usize, max_depth: usize) {
-    if max_depth == 0 {
+fn draw_gasket(draw: &mut Draw, state: &mut State, a: Vec2, b: Vec2, c: Vec2, curr_depth: usize) {
+    if state.max_depth == 0 {
         draw.triangle((a.x, a.y), (b.x, b.y), (c.x, c.y))
             .color(Color::BLACK)
             .fill();
@@ -44,7 +67,7 @@ fn draw_gasket(draw: &mut Draw, a: Vec2, b: Vec2, c: Vec2, curr_depth: usize, ma
         let a3 = vec2(mid_ac.x, mid_ac.y);
         let b3 = vec2(c.x, c.y);
         let c3 = vec2(a.x, c.y);
-        if curr_depth + 1 == max_depth {
+        if curr_depth + 1 == state.max_depth {
             draw.triangle((a1.x, a1.y), (b1.x, b1.y), (c1.x, c1.y))
                 .color(Color::BLACK)
                 .fill();
@@ -57,55 +80,28 @@ fn draw_gasket(draw: &mut Draw, a: Vec2, b: Vec2, c: Vec2, curr_depth: usize, ma
                 .color(Color::BLACK)
                 .fill();
         } else {
-            draw_gasket(draw, a1, b1, c1, curr_depth + 1, max_depth);
-            draw_gasket(draw, a2, b2, c2, curr_depth + 1, max_depth);
-            draw_gasket(draw, a3, b3, c3, curr_depth + 1, max_depth);
+            draw_gasket(draw, state, a1, b1, c1, curr_depth + 1);
+            draw_gasket(draw, state, a2, b2, c2, curr_depth + 1);
+            draw_gasket(draw, state, a3, b3, c3, curr_depth + 1);
         }
     }
 }
 
 
 fn draw(
-    // app: &mut App,
     gfx: &mut Graphics,
-    // state: &mut State,
+    state: &mut State,
+    // app: &mut App,
 ) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
 
     let a = vec2(WORK_SIZE.x / 2.0, 0.0);
     let b = vec2(WORK_SIZE.x, WORK_SIZE.y);
     let c = vec2(0.0, WORK_SIZE.y);
-    draw_gasket(&mut draw, a, b, c, 0, 3);
-
-    // depth == 0
-    // let a = vec2(WORK_SIZE.x / 2.0, 0.0);
-    // let b = vec2(WORK_SIZE.x, WORK_SIZE.y);
-    // let c = vec2(0.0, WORK_SIZE.y);
-    // draw.triangle((a.x, a.y), (b.x, b.y), (c.x, c.y))
-    //     .color(Color::BLACK)
-    //     .fill();
-
-    // depth == 1
-    // let mid_ab: Vec2 = get_vec2_midpoint(a, b);
-    // let mid_ac: Vec2 = get_vec2_midpoint(a, c);
-
-    // draw.triangle((a.x, a.y), (mid_ab.x, mid_ab.y), (mid_ac.x, mid_ac.y))
-    //     .color(Color::BLACK)
-    //     .fill();
-
-
-    // draw.triangle((mid_ab.x, mid_ab.y), (b.x, b.y), (a.x, b.y))
-    //     .color(Color::BLACK)
-    //     .fill();
-
-
-    // draw.triangle((mid_ac.x, mid_ac.y), (c.x, c.y), (a.x, c.y))
-    //     .color(Color::BLACK)
-    //     .fill();
+    draw_gasket(&mut draw, state, a, b, c, 0);
 
     // draw to screen
     gfx.render(&draw);
-
     // log::debug!("fps: {}", app.timer.fps().round());
 }
 
@@ -114,12 +110,13 @@ fn draw(
 fn main() -> Result<(), String> {
     let win_config = get_common_win_config();
 
+    // notan::init()
     // notan::init_with(init)
-    notan::init()
+    notan::init_with(State::default)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .draw(draw)
-        // .update(update)
+        .update(update)
         .build()
 }
