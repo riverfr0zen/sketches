@@ -18,7 +18,7 @@ const CP_BODY_W: f32 = WORK_SIZE.x / CP_COLS;
 const CP_BODY_H: f32 = WORK_SIZE.y / CP_ROWS;
 const CP_HEAD_W: f32 = CP_BODY_W + 20.0;
 const CP_HEAD_H: f32 = CP_BODY_H + 20.0;
-const CP_STROKE: f32 = 1.0;
+// const CP_STROKE: f32 = 1.0;
 const CP_SPEED: f32 = 1.0;
 
 
@@ -228,7 +228,7 @@ fn draw_seg(draw: &mut Draw, seg: &BodySegment, texture: &Texture) {
     draw.image(texture)
         .position(seg.pos.x - CP_BODY_W, seg.pos.y - CP_BODY_H)
         .size(CP_BODY_W * 2.0, CP_BODY_H * 2.0)
-        .color(Color::YELLOW);
+        .color(seg.color);
 }
 
 fn draw(
