@@ -50,7 +50,6 @@ struct State {
     cp_direction: Direction,
     cp_reversing: bool,
     cp_next_row: f32,
-    cp_spawn_seg_at: Vec2,
     cp_spawned_segs: Vec<BodySegment>,
     cp_seg_texture: Texture,
     cp_seg_texture_hflip: Texture,
@@ -77,7 +76,6 @@ impl State {
             cp_direction: Direction::RIGHT,
             cp_reversing: false,
             cp_next_row: 1.0,
-            cp_spawn_seg_at: vec2(0.0, 0.0),
             cp_spawned_segs: Vec::new(),
             cp_seg_texture: texture,
             cp_seg_texture_hflip: texture_hflip,
@@ -87,7 +85,7 @@ impl State {
 
 
 fn init(gfx: &mut Graphics) -> State {
-    let mut state = State::new(gfx);
+    let state = State::new(gfx);
     state
 }
 
@@ -229,8 +227,8 @@ fn draw_seg(draw: &mut Draw, seg: &BodySegment, texture: &Texture) {
 
     draw.image(texture)
         .position(seg.pos.x - CP_BODY_W, seg.pos.y - CP_BODY_H)
-        .size(CP_BODY_W * 2.0, CP_BODY_H * 2.0);
-    // .color(Color::TEAL);
+        .size(CP_BODY_W * 2.0, CP_BODY_H * 2.0)
+        .color(Color::YELLOW);
 }
 
 fn draw(
