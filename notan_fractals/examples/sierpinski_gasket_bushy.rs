@@ -61,6 +61,7 @@ fn draw_gasket(draw: &mut Draw, state: &mut State, a: Vec2, b: Vec2, c: Vec2, cu
         let c1 = vec2(mid_ac.x, mid_ac.y);
 
         let a2 = vec2(mid_ab.x, mid_ab.y);
+        // variation (+ 10.0)
         let b2 = vec2(b.x, b.y + 10.0);
         let c2 = vec2(a.x, b.y);
 
@@ -95,8 +96,10 @@ fn draw(
 ) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::BLACK);
 
+    // variation (/ 2.0 -> / 3.0)
     let a = vec2(WORK_SIZE.x / 3.0, 0.0);
     let b = vec2(WORK_SIZE.x, WORK_SIZE.y);
+    // variation (+ 20.0)
     let c = vec2(0.0, WORK_SIZE.y + 20.0);
     draw_gasket(&mut draw, state, a, b, c, 0);
 
