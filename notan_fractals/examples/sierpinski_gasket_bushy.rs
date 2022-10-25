@@ -93,7 +93,7 @@ fn draw(
     state: &mut State,
     // app: &mut App,
 ) {
-    let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
+    let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::BLACK);
 
     let a = vec2(WORK_SIZE.x / 3.0, 0.0);
     let b = vec2(WORK_SIZE.x, WORK_SIZE.y);
@@ -108,7 +108,8 @@ fn draw(
 
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = get_common_win_config();
+    let mut win_config = get_common_win_config();
+    win_config = win_config.title("sierpinski gasket (bushy)");
 
     // notan::init()
     // notan::init_with(init)
