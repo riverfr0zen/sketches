@@ -50,7 +50,7 @@ fn get_vec2_midpoint(vec_a: Vec2, vec_b: Vec2) -> Vec2 {
 fn draw_gasket(draw: &mut Draw, state: &mut State, a: Vec2, b: Vec2, c: Vec2, curr_depth: usize) {
     if state.max_depth == 0 {
         draw.triangle((a.x, a.y), (b.x, b.y), (c.x, c.y))
-            .color(Color::PURPLE)
+            .color(Color::PINK)
             .fill();
     } else {
         let mid_ab: Vec2 = get_vec2_midpoint(a, b);
@@ -70,7 +70,7 @@ fn draw_gasket(draw: &mut Draw, state: &mut State, a: Vec2, b: Vec2, c: Vec2, cu
         let c3 = vec2(a.x, c.y);
         if curr_depth + 1 == state.max_depth {
             draw.triangle((a1.x, a1.y), (b1.x, b1.y), (c1.x, c1.y))
-                .color(Color::PURPLE)
+                .color(Color::PINK)
                 .fill();
 
             draw.triangle((a2.x, a2.y), (b2.x, b2.y), (c2.x, c2.y))
@@ -78,7 +78,7 @@ fn draw_gasket(draw: &mut Draw, state: &mut State, a: Vec2, b: Vec2, c: Vec2, cu
                 .fill();
 
             draw.triangle((a3.x, a3.y), (b3.x, b3.y), (c3.x, c3.y))
-                .color(Color::ORANGE)
+                .color(Color::GREEN)
                 .fill();
         } else {
             draw_gasket(draw, state, a1, b1, c1, curr_depth + 1);
