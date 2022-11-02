@@ -52,8 +52,8 @@ struct State {
     cp_spawned_segs: Vec<BodySegment>,
     cp_seg_texture: Texture,
     cp_seg_texture_hflip: Texture,
+    cp_colors: Vec<Color>,
     rng: Random,
-    colors: Vec<Color>,
 }
 
 impl State {
@@ -69,6 +69,10 @@ impl State {
             .build()
             .unwrap();
 
+        let mut rng = Random::default();
+        let seed: u64 = rng.gen();
+        log::debug!("seed: {}", seed);
+        rng.reseed(seed);
         Self {
             // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
             // cp_head_pos: vec2(0.0, 0.0),
@@ -80,8 +84,8 @@ impl State {
             cp_spawned_segs: Vec::new(),
             cp_seg_texture: texture,
             cp_seg_texture_hflip: texture_hflip,
-            rng: Random::default(),
-            colors: vec![Color::YELLOW, Color::RED, Color::BLUE, Color::GREEN],
+            cp_colors: vec![Color::YELLOW, Color::RED, Color::BLUE, Color::GREEN],
+            rng: rng,
         }
     }
 }
@@ -106,20 +110,20 @@ fn main() -> Result<(), String> {
 }
 
 fn spawn_body_segment(state: &mut State) {
-    let col = (state.cp_head_pos.x / CP_BODY_W) as usize;
-    let row = (state.cp_head_pos.y / CP_BODY_H) as usize;
+    // let col = (state.cp_head_pos.x / CP_BODY_W) as usize;
+    // let row = (state.cp_head_pos.y / CP_BODY_H) as usize;
 
-    log::debug!(
-        "At {} {} / {} {}",
-        state.cp_head_pos.x,
-        state.cp_head_pos.y,
-        col,
-        row
-    );
+    // log::debug!(
+    //     "At {} {} / {} {}",
+    //     state.cp_head_pos.x,
+    //     state.cp_head_pos.y,
+    //     col,
+    //     row
+    // );
 
     state.cp_spawned_segs.push(BodySegment {
         // color: Color::YELLOW,
-        color: state.colors[state.rng.gen_range(0..state.colors.len())],
+        color: state.cp_colors[state.rng.gen_range(0..state.cp_colors.len())],
         pos: state.cp_head_pos,
         direction: state.cp_direction,
     });
