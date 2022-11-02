@@ -9,10 +9,9 @@
 use notan::draw::*;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan_fractals::utils::get_scaling_projection;
+use notan_sketches::utils::get_aspect_fit_projection;
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
-// const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
 
 
 #[notan_main]
@@ -32,7 +31,7 @@ fn draw(gfx: &mut Graphics) {
     let win_size = vec2(width as f32, height as f32);
 
     // get the projection that will fit and center our content in the screen
-    let projection = get_scaling_projection(win_size, WORK_SIZE);
+    let (projection, _) = get_aspect_fit_projection(win_size, WORK_SIZE);
 
     let mut draw = gfx.create_draw();
     draw.clear(Color::BLACK);

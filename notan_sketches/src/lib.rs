@@ -1,5 +1,5 @@
+pub mod fractals;
 pub mod mathutils;
-pub mod sierpinski;
 pub mod utils;
 
 

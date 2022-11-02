@@ -1,4 +1,4 @@
-use super::mathutils::get_vec2_midpoint;
+use crate::mathutils::get_vec2_midpoint;
 use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};

@@ -3,7 +3,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan_fractals::utils::{get_common_win_config, get_draw_setup};
+use notan_sketches::utils::{get_common_win_config, get_draw_setup};
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const CP_BODY_W: f32 = WORK_SIZE.x / 10.0;
