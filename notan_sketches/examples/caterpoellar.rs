@@ -1,4 +1,3 @@
-/// `caterpoellar` is not a fractal app, just a simple idea to familiarize myself with Notan
 use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
@@ -53,6 +52,8 @@ struct State {
     cp_spawned_segs: Vec<BodySegment>,
     cp_seg_texture: Texture,
     cp_seg_texture_hflip: Texture,
+    rng: Random,
+    colors: Vec<Color>,
 }
 
 impl State {
@@ -79,6 +80,8 @@ impl State {
             cp_spawned_segs: Vec::new(),
             cp_seg_texture: texture,
             cp_seg_texture_hflip: texture_hflip,
+            rng: Random::default(),
+            colors: vec![Color::YELLOW, Color::RED, Color::BLUE, Color::GREEN],
         }
     }
 }
@@ -115,7 +118,8 @@ fn spawn_body_segment(state: &mut State) {
     );
 
     state.cp_spawned_segs.push(BodySegment {
-        color: Color::YELLOW,
+        // color: Color::YELLOW,
+        color: state.colors[state.rng.gen_range(0..state.colors.len())],
         pos: state.cp_head_pos,
         direction: state.cp_direction,
     });
