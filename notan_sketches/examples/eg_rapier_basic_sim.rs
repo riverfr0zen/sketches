@@ -17,6 +17,7 @@ const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x * 0.5, WORK_SIZE.y * 0.1);
 const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
 // const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
 const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
+const BALL2_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.6, WORK_SIZE.y * 0.1);
 const GRAVITY: f32 = -9.81;
 // Notice how the effect of gravity changes when changing the physics scale
 // 1 meter = 50 work size units (objects, like the ball, are smaller in terms of meters):
@@ -63,6 +64,7 @@ struct State {
     rigid_body_set: RigidBodySet,
     collider_set: ColliderSet,
     ball_body_handle: RigidBodyHandle,
+    ball2_body_handle: RigidBodyHandle,
     gravity: Vector<f32>,
     integration_parameters: IntegrationParameters,
     physics_pipeline: PhysicsPipeline,
@@ -105,6 +107,20 @@ impl Default for State {
         collider_set.insert_with_parent(collider, ball_body_handle, &mut rigid_body_set);
 
 
+        /* Create second bouncing ball. */
+        let rigid_body2 = RigidBodyBuilder::dynamic()
+            .translation(vector![
+                to_phys_x(BALL2_START_POS.x),
+                to_phys_y(BALL2_START_POS.y)
+            ])
+            .build();
+        let collider2 = ColliderBuilder::ball(to_phys_scale(BALL_RADIUS))
+            .restitution(0.7)
+            .build();
+        let ball2_body_handle = rigid_body_set.insert(rigid_body2);
+        collider_set.insert_with_parent(collider2, ball2_body_handle, &mut rigid_body_set);
+
+
         /* Create other structures necessary for the simulation. */
         let gravity = vector![0.0, GRAVITY];
         let integration_parameters = IntegrationParameters::default();
@@ -122,6 +138,7 @@ impl Default for State {
             rigid_body_set: rigid_body_set,
             collider_set: collider_set,
             ball_body_handle: ball_body_handle,
+            ball2_body_handle: ball2_body_handle,
             gravity: gravity,
             integration_parameters: integration_parameters,
             physics_pipeline: physics_pipeline,
@@ -180,15 +197,28 @@ fn draw(
 
 
     let ball_body = &state.rigid_body_set[state.ball_body_handle];
-    log::debug!(
-        "Ball altitude: {}, to_gfx_y: {}",
-        ball_body.translation().y,
-        to_gfx_y(ball_body.translation().y)
-    );
+    let ball2_body = &state.rigid_body_set[state.ball2_body_handle];
+    // log::debug!(
+    //     "Ball altitude: {}, to_gfx_y: {}",
+    //     ball_body.translation().y,
+    //     to_gfx_y(ball_body.translation().y)
+    // );
+    // log::debug!(
+    //     "Ball2 altitude: {}, to_gfx_y: {}",
+    //     ball2_body.translation().y,
+    //     to_gfx_y(ball2_body.translation().y)
+    // );
 
     draw.circle(BALL_RADIUS)
         // .position(100.0, ball_body.translation().y)
         .position(BALL_START_POS.x, to_gfx_y(ball_body.translation().y))
+        .color(Color::ORANGE)
+        .fill();
+
+
+    draw.circle(BALL_RADIUS)
+        // .position(100.0, ball_body.translation().y)
+        .position(BALL2_START_POS.x, to_gfx_y(ball2_body.translation().y))
         .color(Color::ORANGE)
         .fill();
 
