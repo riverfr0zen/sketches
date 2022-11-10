@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 notan = "0.7.1"
+rapier2d = "0.16.0"
