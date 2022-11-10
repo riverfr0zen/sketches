@@ -137,13 +137,13 @@ impl Default for State {
         /* Create other structures necessary for the simulation. */
         let gravity = vector![0.0, GRAVITY];
         let integration_parameters = IntegrationParameters::default();
-        let mut physics_pipeline = PhysicsPipeline::new();
-        let mut island_manager = IslandManager::new();
-        let mut broad_phase = BroadPhase::new();
-        let mut narrow_phase = NarrowPhase::new();
-        let mut impulse_joint_set = ImpulseJointSet::new();
-        let mut multibody_joint_set = MultibodyJointSet::new();
-        let mut ccd_solver = CCDSolver::new();
+        let physics_pipeline = PhysicsPipeline::new();
+        let island_manager = IslandManager::new();
+        let broad_phase = BroadPhase::new();
+        let narrow_phase = NarrowPhase::new();
+        let impulse_joint_set = ImpulseJointSet::new();
+        let multibody_joint_set = MultibodyJointSet::new();
+        let ccd_solver = CCDSolver::new();
         let physics_hooks = ();
         let event_handler = ();
 
@@ -192,7 +192,11 @@ fn update(state: &mut State) {
 }
 
 
-fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+fn draw(
+    //app: &mut App,
+    gfx: &mut Graphics,
+    state: &mut State,
+) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::OLIVE);
 
 
@@ -234,7 +238,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     // draw to screen
     gfx.render(&draw);
 
-    log::debug!("fps: {}", app.timer.fps().round());
+    // log::debug!("fps: {}", app.timer.fps().round());
 }
 
 
