@@ -11,7 +11,7 @@ use rapier2d::prelude::*;
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.1);
-const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x * 0.5, WORK_SIZE.y * 0.1);
+const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x * 0.5, WORK_SIZE.y * 0.5);
 // const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.5);
 // Ball is a little smaller than ground elevation size
 const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
@@ -19,15 +19,16 @@ const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
 const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
 const BALL2_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.6, WORK_SIZE.y * 0.1);
 const GRAVITY: f32 = -9.81;
-// Notice how the effect of gravity changes when changing the physics scale
+// Notice how the effect of gravity changes when changing the physics scale.
+// NOTE: The physics scaling became more meaningful when vsync was enabled
 // 1 meter = 50 work size units (objects, like the ball, are smaller in terms of meters):
-// const PHYS_SCALE: f32 = 50.0;
+const PHYS_SCALE: f32 = 50.0;
 // 1 meter = 1 work size units (objects, like the ball, are larger in terms of meters):
-const PHYS_SCALE: f32 = 1.0;
+// const PHYS_SCALE: f32 = 1.0;
 // const PHYS_SCALE: f32 = 0.1;
 
 /// Converts game (WORK_SIZE) units to physics scale (meters)
-fn to_phys_scale(gfx_length: f32) -> f32 {
+fn to_phys_scale(gfx_length: f32) -> Real {
     gfx_length / PHYS_SCALE
 }
 
@@ -87,7 +88,8 @@ impl Default for State {
         /* Create the ground. */
         let collider =
             // TODO: Look into why although Rapier documentation says cuboid params are half-extents,
-            // we need to pass the full dimensions here. Otherwise the ball goes through the ground.
+            // it seems we need to pass the full dimensions here. Otherwise the ball falls halfway 
+            // through the ground.
             ColliderBuilder::cuboid(to_phys_scale(GROUND_SIZE.x), to_phys_scale(GROUND_SIZE.y))
                 .build();
         collider_set.insert(collider);
@@ -232,7 +234,8 @@ fn draw(
 
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = get_common_win_config();
+    // let win_config = get_common_win_config();
+    let win_config = get_common_win_config().vsync(true);
 
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
