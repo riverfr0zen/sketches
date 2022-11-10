@@ -60,9 +60,9 @@ fn to_gfx_scale(physics_length: Real) -> f32 {
 }
 
 
-fn to_gfx_x(physics_pos: Real) -> f32 {
-    return to_gfx_scale(physics_pos);
-}
+// fn to_gfx_x(physics_pos: Real) -> f32 {
+//     return to_gfx_scale(physics_pos);
+// }
 
 
 /// Compensates for coordinate system differences (from bottom-top to top-bottom)
@@ -168,7 +168,8 @@ impl Default for State {
 }
 
 
-fn init(gfx: &mut Graphics) -> State {
+// fn init(gfx: &mut Graphics) -> State {
+fn init() -> State {
     let state = State::default();
     state
 }
