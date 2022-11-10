@@ -1,7 +1,7 @@
-///
-/// Based on Rapier documentation at:
-/// https://rapier.rs/docs/user_guides/rust/getting_started
-///
+//!
+//! This is an adaptation of the Basic Simulation Example from Rapier documentation at:
+//! https://rapier.rs/docs/user_guides/rust/getting_started#basic-simulation-example
+//!
 use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
@@ -11,6 +11,39 @@ use rapier2d::prelude::*;
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.1);
+// const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x * 0.5, WORK_SIZE.y * 0.1);
+// const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.5);
+// Ball is a little smaller than ground elevation size
+const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
+const GRAVITY: f32 = -9.81;
+// Notice how the effect of gravity changes when changing the physics scale
+// 1 meter = 50 work size units (objects, like the ball, are smaller in terms of meters):
+// const PHYS_SCALE: f32 = 50.0;
+// 1 meter = 1 work size units (objects, like the ball, are larger in terms of meters):
+const PHYS_SCALE: f32 = 1.0;
+
+/// Converts game (WORK_SIZE) units to physics scale (meters)
+fn to_phys_scale(length: f32) -> f32 {
+    length / PHYS_SCALE
+}
+
+
+/// For our purposes here this is just an alias for to_phys_scale
+fn to_phys_x(gfx_pos: f32) -> Real {
+    return to_phys_scale(gfx_pos);
+}
+
+
+/// Compensates for coordinate system differences (from top-bottom to bottom-top)
+fn to_phys_y(gfx_pos: f32) -> Real {
+    return (WORK_SIZE.y - gfx_pos) / PHYS_SCALE;
+}
+
+
+fn to_gfx_y(physics_pos: Real) -> f32 {
+    return WORK_SIZE.y - (physics_pos * PHYS_SCALE);
+}
+
 
 #[derive(AppState)]
 struct State {
@@ -36,20 +69,28 @@ impl Default for State {
         let mut collider_set = ColliderSet::new();
 
         /* Create the ground. */
-        let collider = ColliderBuilder::cuboid(GROUND_SIZE.x * 0.5, GROUND_SIZE.y * 0.5).build();
+        let collider =
+            // TODO: Look into why although Rapier documentation says cuboid params are half-extents,
+            // we need to pass the full dimensions here. Otherwise the ball goes through the ground.
+            ColliderBuilder::cuboid(to_phys_scale(GROUND_SIZE.x), to_phys_scale(GROUND_SIZE.y))
+                .build();
         collider_set.insert(collider);
 
         /* Create the bouncing ball. */
         let rigid_body = RigidBodyBuilder::dynamic()
-            .translation(vector![0.0, 10.0])
+            // .translation(vector![0.0, 10.0])
+            // .translation(vector![0.0, to_phys_y(100.0)])
+            .translation(vector![to_phys_x(600.0), to_phys_y(100.0)])
             .build();
-        let collider = ColliderBuilder::ball(0.5).restitution(0.7).build();
+        let collider = ColliderBuilder::ball(to_phys_scale(BALL_RADIUS))
+            .restitution(0.7)
+            .build();
         let ball_body_handle = rigid_body_set.insert(rigid_body);
         collider_set.insert_with_parent(collider, ball_body_handle, &mut rigid_body_set);
 
 
         /* Create other structures necessary for the simulation. */
-        let gravity = vector![0.0, -9.81];
+        let gravity = vector![0.0, GRAVITY];
         let integration_parameters = IntegrationParameters::default();
         let mut physics_pipeline = PhysicsPipeline::new();
         let mut island_manager = IslandManager::new();
@@ -102,9 +143,6 @@ fn update(state: &mut State) {
         &state.physics_hooks,
         &state.event_handler,
     );
-
-    let ball_body = &state.rigid_body_set[state.ball_body_handle];
-    println!("Ball altitude: {}", ball_body.translation().y);
 }
 
 
@@ -123,6 +161,20 @@ fn draw(
     .color(Color::BLUE)
     // .stroke(1.0);
     .fill();
+
+
+    let ball_body = &state.rigid_body_set[state.ball_body_handle];
+    log::debug!(
+        "Ball altitude: {}, to_gfx_y: {}",
+        ball_body.translation().y,
+        to_gfx_y(ball_body.translation().y)
+    );
+
+    draw.circle(BALL_RADIUS)
+        // .position(100.0, ball_body.translation().y)
+        .position(600.0, to_gfx_y(ball_body.translation().y))
+        .color(Color::ORANGE)
+        .fill();
 
     // draw to screen
     gfx.render(&draw);
@@ -145,6 +197,8 @@ fn main() -> Result<(), String> {
 }
 
 
+// Original example code
+//
 // fn main() {
 //     let mut rigid_body_set = RigidBodySet::new();
 //     let mut collider_set = ColliderSet::new();
