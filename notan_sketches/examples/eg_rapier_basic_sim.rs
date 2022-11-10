@@ -24,6 +24,7 @@ const GRAVITY: f32 = -9.81;
 // const PHYS_SCALE: f32 = 50.0;
 // 1 meter = 1 work size units (objects, like the ball, are larger in terms of meters):
 const PHYS_SCALE: f32 = 1.0;
+// const PHYS_SCALE: f32 = 0.1;
 
 /// Converts game (WORK_SIZE) units to physics scale (meters)
 fn to_phys_scale(gfx_length: f32) -> f32 {
