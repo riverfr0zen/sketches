@@ -19,11 +19,13 @@ const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
 const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
 const BALL2_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.6, WORK_SIZE.y * 0.1);
 const GRAVITY: f32 = -9.81;
-// Notice how the effect of gravity changes when changing the physics scale.
-// NOTE: The physics scaling became more meaningful when vsync was enabled
-// 1 meter = 50 work size units (objects, like the ball, are smaller in terms of meters):
+// (NOTE: The physics scaling became more meaningful when vsync was enabled)
+// 1 meter = 50 work size units
 const PHYS_SCALE: f32 = 50.0;
-// 1 meter = 1 work size units (objects, like the ball, are larger in terms of meters):
+// Notice how the effect of gravity reduces when the physics scale is brought down.
+// This is because the gravity value remains constant but the objects and distances
+// between them are now larger in terms of meters.
+// 1 meter = 1 work size units
 // const PHYS_SCALE: f32 = 1.0;
 // const PHYS_SCALE: f32 = 0.1;
 
