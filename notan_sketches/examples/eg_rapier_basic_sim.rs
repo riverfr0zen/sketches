@@ -10,11 +10,13 @@ use notan_sketches::utils::{get_common_win_config, get_draw_setup};
 use rapier2d::prelude::*;
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
-const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.1);
-// const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x * 0.5, WORK_SIZE.y * 0.1);
+// const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.1);
+const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x * 0.5, WORK_SIZE.y * 0.1);
 // const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.5);
 // Ball is a little smaller than ground elevation size
 const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
+// const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
+const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
 const GRAVITY: f32 = -9.81;
 // Notice how the effect of gravity changes when changing the physics scale
 // 1 meter = 50 work size units (objects, like the ball, are smaller in terms of meters):
@@ -23,8 +25,8 @@ const GRAVITY: f32 = -9.81;
 const PHYS_SCALE: f32 = 1.0;
 
 /// Converts game (WORK_SIZE) units to physics scale (meters)
-fn to_phys_scale(length: f32) -> f32 {
-    length / PHYS_SCALE
+fn to_phys_scale(gfx_length: f32) -> f32 {
+    gfx_length / PHYS_SCALE
 }
 
 
@@ -36,12 +38,23 @@ fn to_phys_x(gfx_pos: f32) -> Real {
 
 /// Compensates for coordinate system differences (from top-bottom to bottom-top)
 fn to_phys_y(gfx_pos: f32) -> Real {
-    return (WORK_SIZE.y - gfx_pos) / PHYS_SCALE;
+    return to_phys_scale(WORK_SIZE.y - gfx_pos);
 }
 
 
+fn to_gfx_scale(physics_length: Real) -> f32 {
+    return physics_length * PHYS_SCALE;
+}
+
+
+fn to_gfx_x(physics_pos: Real) -> f32 {
+    return to_gfx_scale(physics_pos);
+}
+
+
+/// Compensates for coordinate system differences (from bottom-top to top-bottom)
 fn to_gfx_y(physics_pos: Real) -> f32 {
-    return WORK_SIZE.y - (physics_pos * PHYS_SCALE);
+    return WORK_SIZE.y - to_gfx_scale(physics_pos);
 }
 
 
@@ -80,7 +93,10 @@ impl Default for State {
         let rigid_body = RigidBodyBuilder::dynamic()
             // .translation(vector![0.0, 10.0])
             // .translation(vector![0.0, to_phys_y(100.0)])
-            .translation(vector![to_phys_x(600.0), to_phys_y(100.0)])
+            .translation(vector![
+                to_phys_x(BALL_START_POS.x),
+                to_phys_y(BALL_START_POS.y)
+            ])
             .build();
         let collider = ColliderBuilder::ball(to_phys_scale(BALL_RADIUS))
             .restitution(0.7)
@@ -172,7 +188,7 @@ fn draw(
 
     draw.circle(BALL_RADIUS)
         // .position(100.0, ball_body.translation().y)
-        .position(600.0, to_gfx_y(ball_body.translation().y))
+        .position(BALL_START_POS.x, to_gfx_y(ball_body.translation().y))
         .color(Color::ORANGE)
         .fill();
 
