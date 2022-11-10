@@ -23,8 +23,8 @@ const GRAVITY: f32 = -9.81;
 // 1 meter = 50 work size units
 const PHYS_SCALE: f32 = 50.0;
 // Notice how the effect of gravity reduces when the physics scale is brought down.
-// This is because the gravity value remains constant but the objects and distances
-// between them are now larger in terms of meters.
+// This is because the gravity value remains constant (is not scaled) but the
+// objects and distances between them are now greater in terms of meters.
 // 1 meter = 1 work size units
 // const PHYS_SCALE: f32 = 1.0;
 // const PHYS_SCALE: f32 = 0.1;
