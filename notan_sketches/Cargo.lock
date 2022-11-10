@@ -1301,6 +1301,7 @@ dependencies = [
  "notan_backend",
  "notan_core",
  "notan_draw",
+ "notan_extra",
  "notan_graphics",
  "notan_input",
  "notan_log",
@@ -1364,6 +1365,16 @@ dependencies = [
  "notan_text",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "notan_extra"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c8b5acba560825c561e7477405c422e62b88ff9745137f450c5ff8532ad542b"
+dependencies = [
+ "notan_app",
+ "spin_sleep",
 ]
 
 [[package]]
@@ -2170,6 +2181,16 @@ dependencies = [
  "optional",
  "robust",
  "smallvec",
+]
+
+[[package]]
+name = "spin_sleep"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cafa7900db085f4354dbc7025e25d7a839a14360ea13b5fc4fd717f2d3b23134"
+dependencies = [
+ "once_cell",
+ "winapi",
 ]
 
 [[package]]

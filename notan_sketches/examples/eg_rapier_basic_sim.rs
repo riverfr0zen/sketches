@@ -2,13 +2,18 @@
 //! This is an adaptation of the Basic Simulation Example from Rapier documentation at:
 //! https://rapier.rs/docs/user_guides/rust/getting_started#basic-simulation-example
 //!
+//! Notan FPS limiting from:
+//! https://github.com/Nazariglez/ngt/blob/main/src/game.rs
+//!
 use notan::draw::*;
+use notan::extra::FpsLimit;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup};
 use rapier2d::prelude::*;
 
+const MAX_FPS: u8 = 60;
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.1);
 const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x * 0.5, WORK_SIZE.y * 0.5);
@@ -19,7 +24,10 @@ const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
 const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
 const BALL2_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.6, WORK_SIZE.y * 0.1);
 const GRAVITY: f32 = -9.81;
-// (NOTE: The physics scaling became more meaningful when vsync was enabled)
+// NOTE: The physics scaling below became more meaningful when framerate was controlled,
+// for e.g. by enabling vsync or by introducing an explicit frame limit. (In this example
+// I am doing both).
+//
 // 1 meter = 50 work size units
 const PHYS_SCALE: f32 = 50.0;
 // Notice how the effect of gravity reduces when the physics scale is brought down.
@@ -184,11 +192,7 @@ fn update(state: &mut State) {
 }
 
 
-fn draw(
-    // app: &mut App,
-    gfx: &mut Graphics,
-    state: &mut State,
-) {
+fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::OLIVE);
 
 
@@ -230,7 +234,7 @@ fn draw(
     // draw to screen
     gfx.render(&draw);
 
-    // log::debug!("fps: {}", app.timer.fps().round());
+    log::debug!("fps: {}", app.timer.fps().round());
 }
 
 
@@ -243,6 +247,7 @@ fn main() -> Result<(), String> {
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
+        .add_plugin(FpsLimit::new(MAX_FPS))
         .draw(draw)
         .update(update)
         .build()
