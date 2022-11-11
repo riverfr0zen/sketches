@@ -170,12 +170,20 @@ impl Default for State {
 
 // fn init(gfx: &mut Graphics) -> State {
 fn init() -> State {
+    log::info!("Press \'R\' to reset");
+
     let state = State::default();
     state
 }
 
 
-fn update(state: &mut State) {
+fn update(app: &mut App, state: &mut State) {
+    if app.keyboard.was_pressed(KeyCode::R) {
+        log::debug!("State reset");
+        *state = State::default();
+    }
+
+
     state.physics_pipeline.step(
         &state.gravity,
         &state.integration_parameters,
@@ -238,8 +246,6 @@ fn draw(
 
     // draw to screen
     gfx.render(&draw);
-
-    // log::debug!("fps: {}", app.timer.fps().round());
 }
 
 
