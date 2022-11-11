@@ -71,8 +71,17 @@ fn to_gfx_y(physics_pos: Real) -> f32 {
 }
 
 
+#[derive(Debug, Clone, Copy)]
+enum SimulationMode {
+    PAUSED,
+    RUNNING,
+    STEP,
+}
+
+
 #[derive(AppState)]
 struct State {
+    sim_mode: SimulationMode,
     rigid_body_set: RigidBodySet,
     collider_set: ColliderSet,
     ball_body_handle: RigidBodyHandle,
@@ -137,6 +146,8 @@ impl Default for State {
         /* Create other structures necessary for the simulation. */
         let gravity = vector![0.0, GRAVITY];
         let integration_parameters = IntegrationParameters::default();
+        // NOTE: Normally many of the items below would be declared as mutable (see original example)
+        // but here they don't have to be because this is a simple example.
         let physics_pipeline = PhysicsPipeline::new();
         let island_manager = IslandManager::new();
         let broad_phase = BroadPhase::new();
@@ -148,6 +159,7 @@ impl Default for State {
         let event_handler = ();
 
         Self {
+            sim_mode: SimulationMode::RUNNING,
             rigid_body_set: rigid_body_set,
             collider_set: collider_set,
             ball_body_handle: ball_body_handle,
@@ -170,7 +182,10 @@ impl Default for State {
 
 // fn init(gfx: &mut Graphics) -> State {
 fn init() -> State {
-    log::info!("Press \'R\' to reset");
+    log::info!("Press \'x\' to reset");
+    log::info!("Press \'p\' to pause");
+    log::info!("Press \'s\' to step");
+    log::info!("Press \'r\' to run (default)");
 
     let state = State::default();
     state
@@ -178,26 +193,51 @@ fn init() -> State {
 
 
 fn update(app: &mut App, state: &mut State) {
-    if app.keyboard.was_pressed(KeyCode::R) {
+    if app.keyboard.was_pressed(KeyCode::X) {
         log::debug!("State reset");
+        // Reset everything except sim_mode
+        let prev_mode = state.sim_mode;
         *state = State::default();
+        state.sim_mode = prev_mode;
     }
 
+    if app.keyboard.was_pressed(KeyCode::P) {
+        log::debug!("Simulation paused");
+        state.sim_mode = SimulationMode::PAUSED;
+    }
 
-    state.physics_pipeline.step(
-        &state.gravity,
-        &state.integration_parameters,
-        &mut state.island_manager,
-        &mut state.broad_phase,
-        &mut state.narrow_phase,
-        &mut state.rigid_body_set,
-        &mut state.collider_set,
-        &mut state.impulse_joint_set,
-        &mut state.multibody_joint_set,
-        &mut state.ccd_solver,
-        &state.physics_hooks,
-        &state.event_handler,
-    );
+    if app.keyboard.was_pressed(KeyCode::R) {
+        log::debug!("Simulation running");
+        state.sim_mode = SimulationMode::RUNNING;
+    }
+
+    if app.keyboard.was_pressed(KeyCode::S) {
+        log::debug!("Simulation stepping. Press 's' for next step.");
+        state.sim_mode = SimulationMode::STEP;
+    }
+
+    match state.sim_mode {
+        SimulationMode::RUNNING | SimulationMode::STEP => {
+            state.physics_pipeline.step(
+                &state.gravity,
+                &state.integration_parameters,
+                &mut state.island_manager,
+                &mut state.broad_phase,
+                &mut state.narrow_phase,
+                &mut state.rigid_body_set,
+                &mut state.collider_set,
+                &mut state.impulse_joint_set,
+                &mut state.multibody_joint_set,
+                &mut state.ccd_solver,
+                &state.physics_hooks,
+                &state.event_handler,
+            );
+            if let SimulationMode::STEP = state.sim_mode {
+                state.sim_mode = SimulationMode::PAUSED;
+            }
+        }
+        SimulationMode::PAUSED => (),
+    }
 }
 
 
