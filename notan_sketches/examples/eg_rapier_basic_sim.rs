@@ -11,7 +11,6 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup};
-use rapier2d::na::Isometry2;
 use rapier2d::prelude::*;
 
 const MAX_FPS: u8 = 60;
@@ -22,8 +21,8 @@ const GROUND_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y - GROUND_SIZE.y);
 // const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
 const BALL_RADIUS: f32 = WORK_SIZE.y * 0.05;
 // const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
-const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.16, WORK_SIZE.y * 0.1);
-const BALL2_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.6, WORK_SIZE.y * 0.1);
+const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.162, WORK_SIZE.y * 0.1);
+const BALL2_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.666, WORK_SIZE.y * 0.1);
 const GRAVITY: f32 = -9.81;
 // NOTE: The physics scaling below became more meaningful when framerate was controlled,
 // for e.g. by enabling vsync or by introducing an explicit frame limit. (In this example
@@ -304,7 +303,7 @@ fn draw(
 #[notan_main]
 fn main() -> Result<(), String> {
     // let win_config = get_common_win_config();
-    let win_config = get_common_win_config().vsync(true);
+    let win_config = get_common_win_config().vsync(true).high_dpi(true);
 
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
