@@ -11,17 +11,18 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup};
+use rapier2d::na::Isometry2;
 use rapier2d::prelude::*;
 
 const MAX_FPS: u8 = 60;
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.1);
 const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x * 0.5, WORK_SIZE.y * 0.5);
-// const GROUND_SIZE: Vec2 = vec2(WORK_SIZE.x, WORK_SIZE.y * 0.5);
-// Ball is a little smaller than ground elevation size
-const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
+const GROUND_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y - GROUND_SIZE.y);
+// const BALL_RADIUS: f32 = WORK_SIZE.y * 0.025;
+const BALL_RADIUS: f32 = WORK_SIZE.y * 0.05;
 // const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
-const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.2, WORK_SIZE.y * 0.1);
+const BALL_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.16, WORK_SIZE.y * 0.1);
 const BALL2_START_POS: Vec2 = vec2(WORK_SIZE.x * 0.6, WORK_SIZE.y * 0.1);
 const GRAVITY: f32 = -9.81;
 // NOTE: The physics scaling below became more meaningful when framerate was controlled,
@@ -60,9 +61,9 @@ fn to_gfx_scale(physics_length: Real) -> f32 {
 }
 
 
-// fn to_gfx_x(physics_pos: Real) -> f32 {
-//     return to_gfx_scale(physics_pos);
-// }
+fn to_gfx_x(physics_pos: Real) -> f32 {
+    return to_gfx_scale(physics_pos);
+}
 
 
 /// Compensates for coordinate system differences (from bottom-top to top-bottom)
@@ -105,21 +106,29 @@ impl Default for State {
         let mut collider_set = ColliderSet::new();
 
         /* Create the ground. */
-        let collider =
-            // TODO: Look into why although Rapier documentation says cuboid params are half-extents,
-            // it seems we need to pass the full dimensions here. Otherwise the ball falls halfway 
-            // through the ground.
-            ColliderBuilder::cuboid(to_phys_scale(GROUND_SIZE.x), to_phys_scale(GROUND_SIZE.y))
-                .build();
+        let collider = ColliderBuilder::cuboid(
+            to_phys_scale(GROUND_SIZE.x) * 0.5,
+            to_phys_scale(GROUND_SIZE.y) * 0.5,
+        )
+        // Have to translate the object like this because of differences in origin
+        // between render objects and physics objects.
+        //
+        // @TODO: Move these compensations to the phys_x/y fns. Will need to pass in
+        // object's size (half extents). Also note that right now we aren't doing the
+        // complementary adjustments on the gfx side (in to_gfx_x/y). It seems to look okay,
+        // but that's probably because the off values are negligible.
+        .translation(vector![
+            to_phys_x(GROUND_POS.x + (GROUND_SIZE.x * 0.5)),
+            to_phys_y(GROUND_POS.y + GROUND_SIZE.y * 0.5)
+        ])
+        .build();
         collider_set.insert(collider);
 
         /* Create the bouncing ball. */
         let rigid_body = RigidBodyBuilder::dynamic()
-            // .translation(vector![0.0, 10.0])
-            // .translation(vector![0.0, to_phys_y(100.0)])
             .translation(vector![
-                to_phys_x(BALL_START_POS.x),
-                to_phys_y(BALL_START_POS.y)
+                to_phys_x(BALL_START_POS.x + BALL_RADIUS),
+                to_phys_y(BALL_START_POS.y - BALL_RADIUS)
             ])
             .build();
         let collider = ColliderBuilder::ball(to_phys_scale(BALL_RADIUS))
@@ -132,8 +141,8 @@ impl Default for State {
         /* Create second bouncing ball. */
         let rigid_body2 = RigidBodyBuilder::dynamic()
             .translation(vector![
-                to_phys_x(BALL2_START_POS.x),
-                to_phys_y(BALL2_START_POS.y)
+                to_phys_x(BALL2_START_POS.x + BALL_RADIUS),
+                to_phys_y(BALL2_START_POS.y - BALL_RADIUS)
             ])
             .build();
         let collider2 = ColliderBuilder::ball(to_phys_scale(BALL_RADIUS))
@@ -249,13 +258,10 @@ fn draw(
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::OLIVE);
 
 
-    draw.rect(
-        (0.0, WORK_SIZE.y - GROUND_SIZE.y),
-        (GROUND_SIZE.x, GROUND_SIZE.y),
-    )
-    .color(Color::BLUE)
-    // .stroke(1.0);
-    .fill();
+    draw.rect((GROUND_POS.x, GROUND_POS.y), (GROUND_SIZE.x, GROUND_SIZE.y))
+        .color(Color::BLUE)
+        // .stroke(1.0);
+        .fill();
 
 
     let ball_body = &state.rigid_body_set[state.ball_body_handle];
@@ -273,14 +279,20 @@ fn draw(
 
     draw.circle(BALL_RADIUS)
         // .position(100.0, ball_body.translation().y)
-        .position(BALL_START_POS.x, to_gfx_y(ball_body.translation().y))
+        .position(
+            to_gfx_x(ball_body.translation().x),
+            to_gfx_y(ball_body.translation().y),
+        )
         .color(Color::ORANGE)
         .fill();
 
 
     draw.circle(BALL_RADIUS)
         // .position(100.0, ball_body.translation().y)
-        .position(BALL2_START_POS.x, to_gfx_y(ball2_body.translation().y))
+        .position(
+            to_gfx_x(ball2_body.translation().x),
+            to_gfx_y(ball2_body.translation().y),
+        )
         .color(Color::ORANGE)
         .fill();
 
