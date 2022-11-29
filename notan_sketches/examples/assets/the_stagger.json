@@ -1,0 +1,335 @@
+{
+    "title": "Excerpt from \"Handwashing\"",
+    "author": "Irfan Baig",
+    "analyses": [
+        {
+            "text": "So furiously blinding was it to step out into the clearing that I had to consciously unfasten my grip from the clammy moss laden wall of the cave in my wake. When my eyesight caught up, it showed in the distance a lush forest which drew me out further for its sparkling diffusion of the afternoon light; a cool sashaying of the branches and leaves with the open air. Towards some new serenity and friendship promised by this verdant shade did I advance, yet with every few steps I would still glance back, briefly, to the cave.\n",
+            "meta": {
+                "paragraph": 1,
+                "from_line": 1,
+                "to_line": 1,
+                "file": "samples/the_stagger.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.05263157894736842,
+                    "anger": 0.05263157894736842,
+                    "anticipation": 0.10526315789473684,
+                    "trust": 0.10526315789473684,
+                    "surprise": 0.05263157894736842,
+                    "positive": 0.2631578947368421,
+                    "negative": 0.10526315789473684,
+                    "sadness": 0.05263157894736842,
+                    "disgust": 0.05263157894736842,
+                    "joy": 0.15789473684210525
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.38,
+                    "anger": 0.12,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.0,
+                    "sadness": 0.38,
+                    "disgust": 0.0,
+                    "joy": 0.12
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.0,
+                    "anger": 0.25,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.0,
+                    "sadness": 0.5,
+                    "disgust": 0.0,
+                    "joy": 0.25
+                }
+            }
+        },
+        {
+            "text": "This cave, the obsidian maw splashed agape upon the sun-shimmered rock behind me, was my cave, the cave I had just stepped out from. The cave of my dwelling for so many years, in darkness. I knew what it was -- I had been very familiar with that darkness. Yet for some reason, with every few steps in the goodness of sunlight, I would turn to look back. Why?\n",
+            "meta": {
+                "paragraph": 2,
+                "from_line": 3,
+                "to_line": 3,
+                "file": "samples/the_stagger.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.11764705882352941,
+                    "anger": 0.11764705882352941,
+                    "anticipation": 0.058823529411764705,
+                    "trust": 0.11764705882352941,
+                    "surprise": 0.058823529411764705,
+                    "positive": 0.23529411764705882,
+                    "negative": 0.11764705882352941,
+                    "sadness": 0.11764705882352941,
+                    "disgust": 0.0,
+                    "joy": 0.058823529411764705
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.67,
+                    "sadness": 0.33,
+                    "disgust": 0.0,
+                    "joy": 0.0
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 1.0,
+                    "sadness": 0.0,
+                    "disgust": 0.0,
+                    "joy": 0.0
+                }
+            }
+        },
+        {
+            "text": "Something made me. And slowly, even as I graduated further in my pursuit of recovery, I would keep looking back at that cave I knew so well, and over time my glances would grow ponderous for it would seem I knew the suffocating cave less.\n",
+            "meta": {
+                "paragraph": 3,
+                "from_line": 5,
+                "to_line": 5,
+                "file": "samples/the_stagger.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.09090909090909091,
+                    "anger": 0.0,
+                    "anticipation": 0.18181818181818182,
+                    "trust": 0.09090909090909091,
+                    "surprise": 0.0,
+                    "positive": 0.18181818181818182,
+                    "negative": 0.18181818181818182,
+                    "sadness": 0.09090909090909091,
+                    "disgust": 0.09090909090909091,
+                    "joy": 0.09090909090909091
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.0,
+                    "sadness": 1.0,
+                    "disgust": 0.0,
+                    "joy": 0.0
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0,
+                    "anger": 0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0,
+                    "sadness": 0,
+                    "disgust": 0.0,
+                    "joy": 0
+                }
+            }
+        },
+        {
+            "text": "Was there really an opening there? That black mass on my retina -- could it truly be the portal through which I had just emerged? Perhaps from bath of my body in the white light, or the irrigating qualities of fresh air coursing the passageways of my soul, but with each turn to glance behind me, less did I seem a part of the eternal darkness festering therein. Less real did it seem that such a place could even exist, or for I to have existed within it.\n",
+            "meta": {
+                "paragraph": 4,
+                "from_line": 7,
+                "to_line": 7,
+                "file": "samples/the_stagger.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.07142857142857142,
+                    "anger": 0.07142857142857142,
+                    "anticipation": 0.07142857142857142,
+                    "trust": 0.14285714285714285,
+                    "surprise": 0.0,
+                    "positive": 0.21428571428571427,
+                    "negative": 0.21428571428571427,
+                    "sadness": 0.14285714285714285,
+                    "disgust": 0.0,
+                    "joy": 0.07142857142857142
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.43,
+                    "anger": 0.14,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.29,
+                    "sadness": 0.14,
+                    "disgust": 0.0,
+                    "joy": 0.0
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.0,
+                    "anger": 0.25,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.5,
+                    "sadness": 0.25,
+                    "disgust": 0.0,
+                    "joy": 0.0
+                }
+            }
+        },
+        {
+            "text": "Finally, I reached the end of the clearing, and here the beginnings of the lush forest stroked me enticingly, calling me into their leafy outstretches and soft embrace. Dedications of love sang out from its bird inhabitants, as balms for the tortured soul. I had made the right decision, said these nightingales and canaries to me. Brown flurries of squirrel, chipmunk, and some such wild energies darted among the bushy secrets at my feet, promising life and rejuvenation.\n",
+            "meta": {
+                "paragraph": 5,
+                "from_line": 9,
+                "to_line": 9,
+                "file": "samples/the_stagger.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.10526315789473684,
+                    "trust": 0.10526315789473684,
+                    "surprise": 0.10526315789473684,
+                    "positive": 0.2631578947368421,
+                    "negative": 0.15789473684210525,
+                    "sadness": 0.05263157894736842,
+                    "disgust": 0.05263157894736842,
+                    "joy": 0.15789473684210525
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.25,
+                    "anger": 0.08,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.17,
+                    "sadness": 0.42,
+                    "disgust": 0.0,
+                    "joy": 0.08
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.11,
+                    "anger": 0.11,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.22,
+                    "sadness": 0.33,
+                    "disgust": 0.0,
+                    "joy": 0.22
+                }
+            }
+        },
+        {
+            "text": "I turned once again, perhaps for one last time, to look at the cave now far behind. This time a large black bear ran out of it. For a moment, as the bear searched left and right at the mouth of the cave, sand billowing under its heaving breath, it seemed as though the birds stopped singing and the bushes and leaves of the forest went still, all to collectively glance at it. Then the bear found me and started to bound in my direction.\n",
+            "meta": {
+                "paragraph": 6,
+                "from_line": 11,
+                "to_line": 11,
+                "file": "samples/the_stagger.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.17647058823529413,
+                    "anger": 0.17647058823529413,
+                    "anticipation": 0.11764705882352941,
+                    "trust": 0.11764705882352941,
+                    "surprise": 0.058823529411764705,
+                    "positive": 0.11764705882352941,
+                    "negative": 0.11764705882352941,
+                    "sadness": 0.058823529411764705,
+                    "disgust": 0.0,
+                    "joy": 0.058823529411764705
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.12,
+                    "anger": 0.12,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.25,
+                    "sadness": 0.5,
+                    "disgust": 0.0,
+                    "joy": 0.0
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.12,
+                    "anger": 0.12,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.25,
+                    "sadness": 0.5,
+                    "disgust": 0.0,
+                    "joy": 0.0
+                }
+            }
+        },
+        {
+            "text": "I ran screaming for the cool safety of the forest, away from the cave, away from that darkness forever. Arriving at the woods' thickening, I could not help but turn around one last time and glance across the clearing that separated my imminent restoration from the incoming gloom of the past.\n",
+            "meta": {
+                "paragraph": 7,
+                "from_line": 13,
+                "to_line": 13,
+                "file": "samples/the_stagger.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.21428571428571427,
+                    "anger": 0.14285714285714285,
+                    "anticipation": 0.14285714285714285,
+                    "trust": 0.0,
+                    "surprise": 0.0,
+                    "positive": 0.07142857142857142,
+                    "negative": 0.21428571428571427,
+                    "sadness": 0.14285714285714285,
+                    "disgust": 0.07142857142857142,
+                    "joy": 0.0
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.38,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.12,
+                    "sadness": 0.38,
+                    "disgust": 0.0,
+                    "joy": 0.12
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.11,
+                    "anger": 0.22,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.11,
+                    "sadness": 0.33,
+                    "disgust": 0.0,
+                    "joy": 0.22
+                }
+            }
+        }
+    ]
+}

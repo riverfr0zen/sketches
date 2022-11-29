@@ -1,0 +1,194 @@
+{
+    "title": "Excerpt from \"The Picture of Dorian Gray\"",
+    "author": "Oscar Wilde",
+    "analyses": [
+        {
+            "text": "As the painter looked at the gracious and comely form he had so skilfully mirrored in his art, a smile of pleasure passed across his face, and seemed about to linger there. But he suddenly started up, and closing his eyes, placed his fingers upon the lids, as though he sought to imprison within his brain some curious dream from which he feared he might awake.\n",
+            "meta": {
+                "paragraph": 1,
+                "from_line": 1,
+                "to_line": 1,
+                "file": "samples/wilde01.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.15384615384615385,
+                    "trust": 0.07692307692307693,
+                    "surprise": 0.23076923076923078,
+                    "positive": 0.23076923076923078,
+                    "negative": 0.07692307692307693,
+                    "sadness": 0.07692307692307693,
+                    "disgust": 0.0,
+                    "joy": 0.15384615384615385
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.29,
+                    "sadness": 0.14,
+                    "disgust": 0.0,
+                    "joy": 0.57
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.29,
+                    "sadness": 0.14,
+                    "disgust": 0.0,
+                    "joy": 0.57
+                }
+            }
+        },
+        {
+            "text": "\u201cIt is your best work, Basil, the best thing you have ever done,\u201d said Lord Henry languidly. \u201cYou must certainly send it next year to the Grosvenor. The Academy is too large and too vulgar. Whenever I have gone there, there have been either so many people that I have not been able to see the pictures, which was dreadful, or so many pictures that I have not been able to see the people, which was worse. The Grosvenor is really the only place.\u201d\n",
+            "meta": {
+                "paragraph": 2,
+                "from_line": 3,
+                "to_line": 3,
+                "file": "samples/wilde01.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.18181818181818182,
+                    "anger": 0.09090909090909091,
+                    "anticipation": 0.09090909090909091,
+                    "trust": 0.0,
+                    "surprise": 0.0,
+                    "positive": 0.0,
+                    "negative": 0.2727272727272727,
+                    "sadness": 0.18181818181818182,
+                    "disgust": 0.18181818181818182,
+                    "joy": 0.0
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.6,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.0,
+                    "sadness": 0.4,
+                    "disgust": 0.0,
+                    "joy": 0.0
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.0,
+                    "sadness": 1.0,
+                    "disgust": 0.0,
+                    "joy": 0.0
+                }
+            }
+        },
+        {
+            "text": "\u201cI don\u2019t think I shall send it anywhere,\u201d he answered, tossing his head back in that odd way that used to make his friends laugh at him at Oxford. \u201cNo, I won\u2019t send it anywhere.\u201d\n",
+            "meta": {
+                "paragraph": 3,
+                "from_line": 5,
+                "to_line": 5,
+                "file": "samples/wilde01.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.25,
+                    "surprise": 0.125,
+                    "positive": 0.375,
+                    "negative": 0.0,
+                    "sadness": 0.0,
+                    "disgust": 0.0,
+                    "joy": 0.25
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.5,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.0,
+                    "sadness": 0.33,
+                    "disgust": 0.0,
+                    "joy": 0.17
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.0,
+                    "anger": 0.0,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.0,
+                    "sadness": 0.0,
+                    "disgust": 0.0,
+                    "joy": 1.0
+                }
+            }
+        },
+        {
+            "text": "Lord Henry elevated his eyebrows and looked at him in amazement through the thin blue wreaths of smoke that curled up in such fanciful whorls from his heavy, opium- tainted cigarette. \u201cNot send it anywhere? My dear fellow, why? Have you any reason? What odd chaps you painters are! You do anything in the world to gain a reputation. As soon as you have one, you seem to want to throw it away. It is silly of you, for there is only one thing in the world worse than being talked about, and that is not being talked about. A portrait like this would set you far above all the young men in England, and make the old men quite jealous, if old men are ever capable of any emotion.\u201d",
+            "meta": {
+                "paragraph": 4,
+                "from_line": 7,
+                "to_line": 7,
+                "file": "samples/wilde01.txt"
+            },
+            "results": {
+                "nrclex": {
+                    "fear": 0.07692307692307693,
+                    "anger": 0.07692307692307693,
+                    "anticipation": 0.07692307692307693,
+                    "trust": 0.038461538461538464,
+                    "surprise": 0.038461538461538464,
+                    "positive": 0.19230769230769232,
+                    "negative": 0.19230769230769232,
+                    "sadness": 0.11538461538461539,
+                    "disgust": 0.07692307692307693,
+                    "joy": 0.11538461538461539
+                },
+                "t2e_repo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.28,
+                    "anger": 0.06,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.22,
+                    "sadness": 0.39,
+                    "disgust": 0.0,
+                    "joy": 0.06
+                },
+                "t2e_demo": {
+                    "positive": 0.0,
+                    "negative": 0.0,
+                    "fear": 0.21,
+                    "anger": 0.14,
+                    "anticipation": 0.0,
+                    "trust": 0.0,
+                    "surprise": 0.29,
+                    "sadness": 0.29,
+                    "disgust": 0.0,
+                    "joy": 0.07
+                }
+            }
+        }
+    ]
+}
