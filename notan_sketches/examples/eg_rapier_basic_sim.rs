@@ -302,8 +302,17 @@ fn draw(
 
 #[notan_main]
 fn main() -> Result<(), String> {
-    // let win_config = get_common_win_config();
-    let win_config = get_common_win_config().vsync(true).high_dpi(true);
+    // Trying to call .vsync(true) in Wayland results in a crash
+    // probably because Wayland already has vsync on.
+    //
+    // Looks like the issue happens here:
+    // https://github.com/rust-windowing/glutin/issues/1444
+    //
+    // I've created an issue for Notan at:
+    // https://github.com/Nazariglez/notan/issues/187
+    //
+    // let win_config = get_common_win_config().vsync(true).high_dpi(true);
+    let win_config = get_common_win_config().high_dpi(true);
 
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
