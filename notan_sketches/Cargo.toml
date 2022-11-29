@@ -6,4 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-notan = "0.7.1"
+# notan = "0.7.1"
+notan = { version = "0.7.1", features = ["extra"] }
+rapier2d = "0.16.0"
