@@ -2,6 +2,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
+use notan::text::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup};
 use serde::{Deserialize, Serialize};
 use serde_json::{Result as JsonResult, Value};
@@ -58,8 +59,8 @@ struct EmocatTextAnalysis {
 
 
 #[derive(Serialize, Deserialize, Debug)]
-/// Represents an `emocat` results document
-struct EmocatDoc {
+/// Represents an `emocat` output document
+struct EmocatOutputDoc {
     title: String,
     author: String,
     analyses: Vec<EmocatTextAnalysis>,
@@ -68,7 +69,27 @@ struct EmocatDoc {
 
 #[derive(AppState)]
 struct State {
-    emodoc: EmocatDoc,
+    emodoc: EmocatOutputDoc,
+    font: Font,
+}
+
+
+fn init(gfx: &mut Graphics) -> State {
+    let font = gfx
+        .create_font(include_bytes!(
+            // "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
+            "./assets/fonts/Ubuntu-B.ttf"
+        ))
+        .unwrap();
+
+    let analyses_str = include_str!(EMOCAT_OUTPUT_FILE!());
+    let emodoc: EmocatOutputDoc =
+        serde_json::from_str(analyses_str).expect("Could not open emocat document");
+    let state = State {
+        emodoc: emodoc,
+        font: font,
+    };
+    state
 }
 
 
@@ -78,20 +99,33 @@ fn draw(
     // app: &mut App,
 ) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, true, Color::GRAY);
-    print!("{}", state.emodoc.title);
+    // print!("{}", state.emodoc.title);
+
+    let mut text = gfx.create_text();
+    text.add(&state.emodoc.title)
+        .font(&state.font)
+        .color(Color::PURPLE)
+        .size(60.0)
+        .max_width(WORK_SIZE.x * 0.5)
+        .position(WORK_SIZE.x * 0.25, 200.0)
+        .h_align_left()
+        .v_align_middle();
+
+    draw.text(&state.font, &state.emodoc.title)
+        .color(Color::PURPLE)
+        .size(60.0)
+        .max_width(WORK_SIZE.x * 0.5)
+        .position(WORK_SIZE.x * 0.25, 400.0)
+        .h_align_left()
+        .v_align_middle();
+
+    print!("{:?}", draw.last_text_bounds());
 
     // draw to screen
     gfx.render(&draw);
+    // gfx.render(&text);
+
     // log::debug!("fps: {}", app.timer.fps().round());
-}
-
-
-fn init() -> State {
-    let analyses_str = include_str!(EMOCAT_OUTPUT_FILE!());
-    let emodoc: EmocatDoc =
-        serde_json::from_str(analyses_str).expect("Could not open emocat document");
-    let state = State { emodoc: emodoc };
-    state
 }
 
 

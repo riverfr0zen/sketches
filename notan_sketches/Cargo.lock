@@ -1310,6 +1310,7 @@ dependencies = [
  "notan_macro",
  "notan_math",
  "notan_random",
+ "notan_text",
  "notan_utils",
 ]
 
