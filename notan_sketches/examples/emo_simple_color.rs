@@ -94,19 +94,24 @@ fn init(gfx: &mut Graphics) -> State {
 
 /// Scale the font according to the current work size. Quite simple right now,
 /// probably lots of room for improving this.
+///
+/// These return values were decided by comparing sizes on my own setup. Needs testing
+/// across devices.
+///
 /// @TODO: What about portrait dimensions?
 fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    if work_size.x >= ScreenDimensions::RES_1K.x && work_size.x < ScreenDimensions::RES_1K.x {
-        log::debug!("1k");
-        return default_size * 1.5;
+    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x {
+        log::debug!("1080p");
+        return default_size * 2.25;
     }
-    if work_size.x >= ScreenDimensions::RES_2K.x && work_size.x < ScreenDimensions::RES_4K.x {
-        log::debug!("2k");
-        return default_size * 2.0;
+    if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
+        log::debug!("1440p");
+        // Right now 2K is same as 1K because widths are the same
+        return default_size * 3.0;
     }
     if work_size.x >= ScreenDimensions::RES_4K.x {
         log::debug!("4k");
-        return default_size * 2.5;
+        return default_size * 4.5;
     }
     log::debug!("Default.");
     return default_size * 1.0;
@@ -162,8 +167,8 @@ fn draw(
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = get_common_win_config().high_dpi(true).size(
-        ScreenDimensions::RES_1K.x as i32,
-        ScreenDimensions::RES_1K.y as i32,
+        ScreenDimensions::RES_4K.x as i32,
+        ScreenDimensions::RES_4K.y as i32,
         // ScreenDimensions::DEFAULT.x as i32,
         // ScreenDimensions::DEFAULT.y as i32,
     );

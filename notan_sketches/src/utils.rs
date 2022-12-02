@@ -79,8 +79,8 @@ pub struct ScreenDimensions;
 
 impl ScreenDimensions {
     pub const DEFAULT: Vec2 = vec2(800.0, 600.0);
-    pub const RES_1K: Vec2 = vec2(1920.0, 1080.0);
-    pub const RES_2K: Vec2 = vec2(2048.0, 1080.0);
+    pub const RES_1080P: Vec2 = vec2(1920.0, 1080.0);
+    pub const RES_1440P: Vec2 = vec2(2560.0, 1440.0);
     pub const RES_4K: Vec2 = vec2(3840.0, 2160.0);
     pub const RES_4KISH: Vec2 = vec2(3500.0, 1800.0);
 }
