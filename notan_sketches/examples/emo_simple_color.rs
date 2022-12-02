@@ -167,14 +167,12 @@ fn draw(
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = get_common_win_config().high_dpi(true).size(
-        ScreenDimensions::RES_4K.x as i32,
-        ScreenDimensions::RES_4K.y as i32,
-        // ScreenDimensions::DEFAULT.x as i32,
-        // ScreenDimensions::DEFAULT.y as i32,
+        // ScreenDimensions::RES_1080P.x as i32,
+        // ScreenDimensions::RES_1080P.y as i32,
+        ScreenDimensions::DEFAULT.x as i32,
+        ScreenDimensions::DEFAULT.y as i32,
     );
 
-    // notan::init_with(State::default)
-    // notan::init()
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
