@@ -9,13 +9,38 @@ use serde_json::{Result as JsonResult, Value};
 use std::fs;
 
 
+// enum ScreenDimensions {
+//     // DEFAULT(Vec2),
+//     // RES_1K(Vec2),
+//     // RES_2K(Vec2),
+//     // RES_4K(Vec2),
+//     DEFAULT = vec2(1920.0, 1080.0),
+//     RES_1K(Vec2),
+//     RES_2K(Vec2),
+//     RES_4K(Vec2),
+
+// }
+
+
+#[non_exhaustive]
+struct ScreenDimensions;
+
+impl ScreenDimensions {
+    pub const DEFAULT: Vec2 = vec2(800.0, 600.0);
+    pub const RES_1K: Vec2 = vec2(1920.0, 1080.0);
+    pub const RES_2K: Vec2 = vec2(2048.0, 1080.0);
+    pub const RES_4K: Vec2 = vec2(3840.0, 2160.0);
+    pub const RES_4Kish: Vec2 = vec2(3600.0, 1800.0);
+}
+
+
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
         "assets/wilde01.json"
     };
 }
-const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
-// const EMOCAT_ANALYSIS: &str = "examples/assets/wilde01.json";
+const WORK_SIZE: Vec2 = ScreenDimensions::RES_4Kish;
+const CLEAR_COLOR: Color = Color::GRAY;
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -77,8 +102,8 @@ struct State {
 fn init(gfx: &mut Graphics) -> State {
     let font = gfx
         .create_font(include_bytes!(
-            // "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
-            "./assets/fonts/Ubuntu-B.ttf"
+            // "./assets/fonts/Ubuntu-B.ttf"
+            "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
         ))
         .unwrap();
 
@@ -98,28 +123,32 @@ fn draw(
     state: &mut State,
     // app: &mut App,
 ) {
-    let mut draw = get_draw_setup(gfx, WORK_SIZE, true, Color::GRAY);
-    // print!("{}", state.emodoc.title);
+    let mut draw = get_draw_setup(gfx, WORK_SIZE, true, CLEAR_COLOR);
 
-    let mut text = gfx.create_text();
-    text.add(&state.emodoc.title)
-        .font(&state.font)
-        .color(Color::PURPLE)
-        .size(60.0)
-        .max_width(WORK_SIZE.x * 0.5)
-        .position(WORK_SIZE.x * 0.25, 200.0)
-        .h_align_left()
-        .v_align_middle();
-
+    let mut textbox_width = WORK_SIZE.x * 0.75;
     draw.text(&state.font, &state.emodoc.title)
         .color(Color::PURPLE)
         .size(60.0)
-        .max_width(WORK_SIZE.x * 0.5)
-        .position(WORK_SIZE.x * 0.25, 400.0)
+        .max_width(textbox_width)
+        .position(WORK_SIZE.x * 0.5 - textbox_width * 0.5, WORK_SIZE.y * 0.4)
         .h_align_left()
         .v_align_middle();
 
-    print!("{:?}", draw.last_text_bounds());
+    let title_bounds = draw.last_text_bounds();
+
+    textbox_width = textbox_width * 0.9;
+    draw.text(&state.font, &format!("By {}", state.emodoc.author))
+        .color(Color::BLACK)
+        .size(40.0)
+        .max_width(textbox_width)
+        .position(
+            WORK_SIZE.x * 0.5 - textbox_width * 0.5,
+            title_bounds.y + title_bounds.height + 50.0,
+        )
+        // .position(WORK_SIZE.x * 0.25, title_bounds.y + title_bounds.height + 50.0)
+        .h_align_left()
+        .v_align_middle();
+
 
     // draw to screen
     gfx.render(&draw);
@@ -131,7 +160,9 @@ fn draw(
 
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = get_common_win_config();
+    let win_config = get_common_win_config()
+        .high_dpi(true)
+        .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
 
     // notan::init_with(State::default)
     // notan::init()
