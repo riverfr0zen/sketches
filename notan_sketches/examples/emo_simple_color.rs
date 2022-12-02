@@ -14,7 +14,9 @@ macro_rules! EMOCAT_OUTPUT_FILE {
         "assets/wilde01.json"
     };
 }
-const CLEAR_COLOR: Color = Color::GRAY;
+const CLEAR_COLOR: Color = Color::WHITE;
+const TITLE_COLOR: Color = Color::BLACK;
+const META_COLOR: Color = Color::GRAY;
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -106,7 +108,6 @@ fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
     }
     if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
         log::debug!("1440p");
-        // Right now 2K is same as 1K because widths are the same
         return default_size * 3.0;
     }
     if work_size.x >= ScreenDimensions::RES_4K.x {
@@ -134,7 +135,7 @@ fn draw(
     let mut textbox_width = work_size.x * 0.75;
     draw.text(&state.font, &state.emodoc.title)
         .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
-        .color(Color::PURPLE)
+        .color(TITLE_COLOR)
         .size(scale_font(60.0, work_size))
         .max_width(textbox_width)
         .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.4)
@@ -146,7 +147,7 @@ fn draw(
     textbox_width = textbox_width * 0.9;
     draw.text(&state.font, &format!("By {}", state.emodoc.author))
         .alpha_mode(BlendMode::OVER)
-        .color(Color::BLACK)
+        .color(META_COLOR)
         .size(scale_font(30.0, work_size))
         .max_width(textbox_width)
         .position(
