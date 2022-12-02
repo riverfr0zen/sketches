@@ -3,35 +3,10 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan::text::*;
-use notan_sketches::utils::{get_common_win_config, get_draw_setup};
+use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 use serde::{Deserialize, Serialize};
 use serde_json::{Result as JsonResult, Value};
 use std::fs;
-
-
-// enum ScreenDimensions {
-//     // DEFAULT(Vec2),
-//     // RES_1K(Vec2),
-//     // RES_2K(Vec2),
-//     // RES_4K(Vec2),
-//     DEFAULT = vec2(1920.0, 1080.0),
-//     RES_1K(Vec2),
-//     RES_2K(Vec2),
-//     RES_4K(Vec2),
-
-// }
-
-
-#[non_exhaustive]
-struct ScreenDimensions;
-
-impl ScreenDimensions {
-    pub const DEFAULT: Vec2 = vec2(800.0, 600.0);
-    pub const RES_1K: Vec2 = vec2(1920.0, 1080.0);
-    pub const RES_2K: Vec2 = vec2(2048.0, 1080.0);
-    pub const RES_4K: Vec2 = vec2(3840.0, 2160.0);
-    pub const RES_4Kish: Vec2 = vec2(3600.0, 1800.0);
-}
 
 
 macro_rules! EMOCAT_OUTPUT_FILE {
@@ -39,7 +14,8 @@ macro_rules! EMOCAT_OUTPUT_FILE {
         "assets/wilde01.json"
     };
 }
-const WORK_SIZE: Vec2 = ScreenDimensions::RES_4Kish;
+// const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
+const WORK_SIZE: Vec2 = ScreenDimensions::RES_4K;
 const CLEAR_COLOR: Color = Color::GRAY;
 
 
@@ -118,6 +94,20 @@ fn init(gfx: &mut Graphics) -> State {
 }
 
 
+fn scale_font(default_size: f32) -> f32 {
+    if WORK_SIZE.x == ScreenDimensions::RES_1K.x {
+        return default_size * 1.5;
+    }
+    if WORK_SIZE.x == ScreenDimensions::RES_2K.x {
+        return default_size * 2.0;
+    }
+    if WORK_SIZE.x == ScreenDimensions::RES_4K.x {
+        return default_size * 3.0;
+    }
+    return default_size * 1.0;
+}
+
+
 fn draw(
     gfx: &mut Graphics,
     state: &mut State,
@@ -127,8 +117,9 @@ fn draw(
 
     let mut textbox_width = WORK_SIZE.x * 0.75;
     draw.text(&state.font, &state.emodoc.title)
+        .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
         .color(Color::PURPLE)
-        .size(60.0)
+        .size(scale_font(60.0))
         .max_width(textbox_width)
         .position(WORK_SIZE.x * 0.5 - textbox_width * 0.5, WORK_SIZE.y * 0.4)
         .h_align_left()
@@ -138,21 +129,20 @@ fn draw(
 
     textbox_width = textbox_width * 0.9;
     draw.text(&state.font, &format!("By {}", state.emodoc.author))
+        .alpha_mode(BlendMode::OVER)
         .color(Color::BLACK)
-        .size(40.0)
+        .size(scale_font(30.0))
         .max_width(textbox_width)
         .position(
             WORK_SIZE.x * 0.5 - textbox_width * 0.5,
-            title_bounds.y + title_bounds.height + 50.0,
+            title_bounds.y + title_bounds.height + WORK_SIZE.y * 0.1,
         )
-        // .position(WORK_SIZE.x * 0.25, title_bounds.y + title_bounds.height + 50.0)
         .h_align_left()
         .v_align_middle();
 
 
     // draw to screen
     gfx.render(&draw);
-    // gfx.render(&text);
 
     // log::debug!("fps: {}", app.timer.fps().round());
 }
@@ -160,9 +150,12 @@ fn draw(
 
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = get_common_win_config()
-        .high_dpi(true)
-        .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
+    let win_config = get_common_win_config().high_dpi(true).size(
+        // ScreenDimensions::RES_2K.x as i32,
+        // ScreenDimensions::RES_2K.y as i32,
+        ScreenDimensions::DEFAULT.x as i32,
+        ScreenDimensions::DEFAULT.y as i32,
+    );
 
     // notan::init_with(State::default)
     // notan::init()

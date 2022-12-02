@@ -19,6 +19,9 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 cargo build --release --example sierpinski_gasket_bushy --target wasm32-unknown-unknown
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/sierpinski_gasket_bushy.wasm
 
+cargo build --release --example emo_simple_color --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/emo_simple_color.wasm
+
 
 ```
 
