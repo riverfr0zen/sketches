@@ -1,5 +1,5 @@
 {
-    "title": "Excerpt from \"Handwashing\"",
+    "title": "Handwashing",
     "author": "Irfan Baig",
     "analyses": [
         {
@@ -11,42 +11,132 @@
                 "file": "samples/the_stagger.txt"
             },
             "results": {
-                "nrclex": {
-                    "fear": 0.05263157894736842,
-                    "anger": 0.05263157894736842,
-                    "anticipation": 0.10526315789473684,
-                    "trust": 0.10526315789473684,
-                    "surprise": 0.05263157894736842,
-                    "positive": 0.2631578947368421,
-                    "negative": 0.10526315789473684,
-                    "sadness": 0.05263157894736842,
-                    "disgust": 0.05263157894736842,
-                    "joy": 0.15789473684210525
-                },
-                "t2e_repo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.38,
-                    "anger": 0.12,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.0,
-                    "sadness": 0.38,
-                    "disgust": 0.0,
-                    "joy": 0.12
-                },
-                "t2e_demo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.0,
-                    "anger": 0.25,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.0,
-                    "sadness": 0.5,
-                    "disgust": 0.0,
-                    "joy": 0.25
-                }
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.05263157894736842
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.05263157894736842
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.10526315789473684
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.10526315789473684
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.05263157894736842
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.2631578947368421
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.10526315789473684
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.05263157894736842
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.05263157894736842
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.15789473684210525
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.38
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.12
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.38
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.12
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.25
+                    }
+                ]
             }
         },
         {
@@ -58,42 +148,132 @@
                 "file": "samples/the_stagger.txt"
             },
             "results": {
-                "nrclex": {
-                    "fear": 0.11764705882352941,
-                    "anger": 0.11764705882352941,
-                    "anticipation": 0.058823529411764705,
-                    "trust": 0.11764705882352941,
-                    "surprise": 0.058823529411764705,
-                    "positive": 0.23529411764705882,
-                    "negative": 0.11764705882352941,
-                    "sadness": 0.11764705882352941,
-                    "disgust": 0.0,
-                    "joy": 0.058823529411764705
-                },
-                "t2e_repo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.0,
-                    "anger": 0.0,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.67,
-                    "sadness": 0.33,
-                    "disgust": 0.0,
-                    "joy": 0.0
-                },
-                "t2e_demo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.0,
-                    "anger": 0.0,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 1.0,
-                    "sadness": 0.0,
-                    "disgust": 0.0,
-                    "joy": 0.0
-                }
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.058823529411764705
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.058823529411764705
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.23529411764705882
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.058823529411764705
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.67
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
             }
         },
         {
@@ -105,42 +285,132 @@
                 "file": "samples/the_stagger.txt"
             },
             "results": {
-                "nrclex": {
-                    "fear": 0.09090909090909091,
-                    "anger": 0.0,
-                    "anticipation": 0.18181818181818182,
-                    "trust": 0.09090909090909091,
-                    "surprise": 0.0,
-                    "positive": 0.18181818181818182,
-                    "negative": 0.18181818181818182,
-                    "sadness": 0.09090909090909091,
-                    "disgust": 0.09090909090909091,
-                    "joy": 0.09090909090909091
-                },
-                "t2e_repo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.0,
-                    "anger": 0.0,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.0,
-                    "sadness": 1.0,
-                    "disgust": 0.0,
-                    "joy": 0.0
-                },
-                "t2e_demo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0,
-                    "anger": 0,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0,
-                    "sadness": 0,
-                    "disgust": 0.0,
-                    "joy": 0
-                }
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.18181818181818182
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.18181818181818182
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.18181818181818182
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.09090909090909091
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ]
             }
         },
         {
@@ -152,42 +422,132 @@
                 "file": "samples/the_stagger.txt"
             },
             "results": {
-                "nrclex": {
-                    "fear": 0.07142857142857142,
-                    "anger": 0.07142857142857142,
-                    "anticipation": 0.07142857142857142,
-                    "trust": 0.14285714285714285,
-                    "surprise": 0.0,
-                    "positive": 0.21428571428571427,
-                    "negative": 0.21428571428571427,
-                    "sadness": 0.14285714285714285,
-                    "disgust": 0.0,
-                    "joy": 0.07142857142857142
-                },
-                "t2e_repo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.43,
-                    "anger": 0.14,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.29,
-                    "sadness": 0.14,
-                    "disgust": 0.0,
-                    "joy": 0.0
-                },
-                "t2e_demo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.0,
-                    "anger": 0.25,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.5,
-                    "sadness": 0.25,
-                    "disgust": 0.0,
-                    "joy": 0.0
-                }
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.21428571428571427
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.21428571428571427
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.07142857142857142
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.43
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.14
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.29
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.14
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
             }
         },
         {
@@ -199,42 +559,132 @@
                 "file": "samples/the_stagger.txt"
             },
             "results": {
-                "nrclex": {
-                    "fear": 0.0,
-                    "anger": 0.0,
-                    "anticipation": 0.10526315789473684,
-                    "trust": 0.10526315789473684,
-                    "surprise": 0.10526315789473684,
-                    "positive": 0.2631578947368421,
-                    "negative": 0.15789473684210525,
-                    "sadness": 0.05263157894736842,
-                    "disgust": 0.05263157894736842,
-                    "joy": 0.15789473684210525
-                },
-                "t2e_repo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.25,
-                    "anger": 0.08,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.17,
-                    "sadness": 0.42,
-                    "disgust": 0.0,
-                    "joy": 0.08
-                },
-                "t2e_demo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.11,
-                    "anger": 0.11,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.22,
-                    "sadness": 0.33,
-                    "disgust": 0.0,
-                    "joy": 0.22
-                }
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.10526315789473684
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.10526315789473684
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.10526315789473684
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.2631578947368421
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.15789473684210525
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.05263157894736842
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.05263157894736842
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.15789473684210525
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.08
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.42
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.08
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.11
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.11
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.22
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.22
+                    }
+                ]
             }
         },
         {
@@ -246,42 +696,132 @@
                 "file": "samples/the_stagger.txt"
             },
             "results": {
-                "nrclex": {
-                    "fear": 0.17647058823529413,
-                    "anger": 0.17647058823529413,
-                    "anticipation": 0.11764705882352941,
-                    "trust": 0.11764705882352941,
-                    "surprise": 0.058823529411764705,
-                    "positive": 0.11764705882352941,
-                    "negative": 0.11764705882352941,
-                    "sadness": 0.058823529411764705,
-                    "disgust": 0.0,
-                    "joy": 0.058823529411764705
-                },
-                "t2e_repo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.12,
-                    "anger": 0.12,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.25,
-                    "sadness": 0.5,
-                    "disgust": 0.0,
-                    "joy": 0.0
-                },
-                "t2e_demo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.12,
-                    "anger": 0.12,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.25,
-                    "sadness": 0.5,
-                    "disgust": 0.0,
-                    "joy": 0.0
-                }
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.17647058823529413
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.17647058823529413
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.058823529411764705
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.058823529411764705
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.058823529411764705
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.12
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.12
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.12
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.12
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
             }
         },
         {
@@ -293,42 +833,132 @@
                 "file": "samples/the_stagger.txt"
             },
             "results": {
-                "nrclex": {
-                    "fear": 0.21428571428571427,
-                    "anger": 0.14285714285714285,
-                    "anticipation": 0.14285714285714285,
-                    "trust": 0.0,
-                    "surprise": 0.0,
-                    "positive": 0.07142857142857142,
-                    "negative": 0.21428571428571427,
-                    "sadness": 0.14285714285714285,
-                    "disgust": 0.07142857142857142,
-                    "joy": 0.0
-                },
-                "t2e_repo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.38,
-                    "anger": 0.0,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.12,
-                    "sadness": 0.38,
-                    "disgust": 0.0,
-                    "joy": 0.12
-                },
-                "t2e_demo": {
-                    "positive": 0.0,
-                    "negative": 0.0,
-                    "fear": 0.11,
-                    "anger": 0.22,
-                    "anticipation": 0.0,
-                    "trust": 0.0,
-                    "surprise": 0.11,
-                    "sadness": 0.33,
-                    "disgust": 0.0,
-                    "joy": 0.22
-                }
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.21428571428571427
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.21428571428571427
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.38
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.12
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.38
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.12
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.11
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.22
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.11
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.22
+                    }
+                ]
             }
         }
     ]

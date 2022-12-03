@@ -29,26 +29,33 @@ struct EmocatMeta {
 }
 
 
+// #[derive(Serialize, Deserialize, Debug)]
+// struct EmocatAnalyzerResult {
+//     fear: f32,
+//     anger: f32,
+//     anticipation: f32,
+//     trust: f32,
+//     surprise: f32,
+//     positive: f32,
+//     negative: f32,
+//     sadness: f32,
+//     disgust: f32,
+//     joy: f32,
+// }
+
+
 #[derive(Serialize, Deserialize, Debug)]
-struct EmocatAnalyzerResult {
-    fear: f32,
-    anger: f32,
-    anticipation: f32,
-    trust: f32,
-    surprise: f32,
-    positive: f32,
-    negative: f32,
-    sadness: f32,
-    disgust: f32,
-    joy: f32,
+struct EmocatAnalyzerScore {
+    marker: String,
+    score: f32,
 }
 
 
 #[derive(Serialize, Deserialize, Debug)]
 struct EmocatAnalyzerResults {
-    nrclex: EmocatAnalyzerResult,
-    t2e_repo: EmocatAnalyzerResult,
-    t2e_demo: EmocatAnalyzerResult,
+    nrclex: Vec<EmocatAnalyzerScore>,
+    t2e_repo: Vec<EmocatAnalyzerScore>,
+    t2e_demo: Vec<EmocatAnalyzerScore>,
 }
 
 
@@ -74,6 +81,7 @@ struct State {
     emodoc: EmocatOutputDoc,
     font: Font,
     analysis: usize,
+    simple_color: Color,
 }
 
 
@@ -92,6 +100,7 @@ fn init(gfx: &mut Graphics) -> State {
         emodoc: emodoc,
         font: font,
         analysis: 0,
+        simple_color: CLEAR_COLOR,
     };
     state
 }
@@ -133,6 +142,13 @@ fn get_work_size(gfx: &Graphics) -> Vec2 {
 }
 
 
+/// Simple Color Model. See README for description.
+// fn get_simple_color_for_emo(analysis: EmocatTextAnalysis) -> Color {
+//     let result = analysis.results.nrclex;
+//     // XXX TODO after gettting results in a better format!
+// }
+
+
 fn update(app: &mut App, state: &mut State) {
     // if app.keyboard.is_down(KeyCode::W) {
     //     state.y -= MOVE_SPEED * app.timer.delta_f32();
@@ -154,8 +170,7 @@ fn update(app: &mut App, state: &mut State) {
         state.analysis -= 1;
     }
 
-    if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() - 1
-    {
+    if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
         log::debug!("right");
         state.analysis += 1;
     }
@@ -176,7 +191,7 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
     let title_bounds = draw.last_text_bounds();
 
     textbox_width = textbox_width * 0.9;
-    draw.text(&state.font, &format!("By {}", state.emodoc.author))
+    draw.text(&state.font, &format!("by {}", state.emodoc.author))
         .alpha_mode(BlendMode::OVER)
         .color(META_COLOR)
         .size(scale_font(30.0, work_size))
@@ -191,8 +206,8 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
 
 
 fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
-    let mut textbox_width = work_size.x * 0.75;
-    draw.text(&state.font, &state.emodoc.analyses[state.analysis].text)
+    let textbox_width = work_size.x * 0.75;
+    draw.text(&state.font, &state.emodoc.analyses[state.analysis - 1].text)
         .alpha_mode(BlendMode::OVER)
         .color(TITLE_COLOR)
         .size(scale_font(24.0, work_size))
@@ -212,7 +227,7 @@ fn draw(
     // app: &mut App,
 ) {
     let work_size = get_work_size(gfx);
-    let mut draw = get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
+    let mut draw = get_draw_setup(gfx, work_size, true, state.simple_color);
 
     if state.analysis == 0 {
         draw_title(&mut draw, state, work_size);
