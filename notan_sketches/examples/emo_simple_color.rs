@@ -44,7 +44,7 @@ struct EmocatMeta {
 // }
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct EmocatAnalyzerScore {
     marker: String,
     score: f32,
@@ -115,18 +115,18 @@ fn init(gfx: &mut Graphics) -> State {
 /// @TODO: What about portrait dimensions?
 fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
     if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x {
-        log::debug!("1080p");
+        // log::debug!("1080p");
         return default_size * 2.25;
     }
     if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
-        log::debug!("1440p");
+        // log::debug!("1440p");
         return default_size * 3.0;
     }
     if work_size.x >= ScreenDimensions::RES_4K.x {
-        log::debug!("4k");
+        // log::debug!("4k");
         return default_size * 4.5;
     }
-    log::debug!("Default.");
+    // log::debug!("Default.");
     return default_size * 1.0;
 }
 
@@ -142,9 +142,46 @@ fn get_work_size(gfx: &Graphics) -> Vec2 {
 }
 
 
+// Come back to this after getting "top emotions"
+// struct EmotionColorPairing {
+//     emotion: String,
+//     color: Color,
+// }
+
+
+// fn get_plutchik_color_map() -> Vec<EmotionColorPairing> {
+//     vec![EmotionColorPairing {
+//         emotion: "fear".to_string(),
+//         color: Color::RED,
+//     }]
+// }
+
+
 /// Simple Color Model. See README for description.
 fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
-    let result = &analysis.results.nrclex;
+    let scores = &mut analysis.results.nrclex.clone();
+    // log::debug!("Scores before {:?}", scores);
+
+    let positive_pos = scores.iter().position(|s| s.marker == "positive").unwrap();
+    let positive_sentiment = scores.remove(positive_pos);
+    let negative_pos = scores.iter().position(|s| s.marker == "negative").unwrap();
+    let negative_sentiment = scores.remove(positive_pos);
+
+    scores.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
+    // log::debug!("Score after {:?}", scores);
+
+    let top_emo = &scores[0];
+    if top_emo.score > 0.0 {
+        log::debug!("Top emotion: {}", top_emo.marker);
+        let second_emo = &scores[1];
+        if second_emo.score > 0.0 {
+            log::debug!("Second emotion: {}", second_emo.marker);
+        }
+    } else {
+        log::debug!("No top emotion!");
+        // ?? no emotional values
+    }
+
     // XXX TODO after gettting results in a better format!
     CLEAR_COLOR
 }
