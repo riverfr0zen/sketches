@@ -143,10 +143,11 @@ fn get_work_size(gfx: &Graphics) -> Vec2 {
 
 
 /// Simple Color Model. See README for description.
-// fn get_simple_color_for_emo(analysis: EmocatTextAnalysis) -> Color {
-//     let result = analysis.results.nrclex;
-//     // XXX TODO after gettting results in a better format!
-// }
+fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
+    let result = &analysis.results.nrclex;
+    // XXX TODO after gettting results in a better format!
+    CLEAR_COLOR
+}
 
 
 fn update(app: &mut App, state: &mut State) {
@@ -157,22 +158,29 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
         state.analysis = 0;
+        state.simple_color = CLEAR_COLOR
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.analysis = state.emodoc.analyses.len() - 1;
+        state.simple_color = get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
     }
 
 
     if app.keyboard.was_pressed(KeyCode::Left) && state.analysis > 0 {
         log::debug!("left");
         state.analysis -= 1;
+        if state.analysis > 0 {
+            state.simple_color =
+                get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
+        }
     }
 
     if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
         log::debug!("right");
         state.analysis += 1;
+        state.simple_color = get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
     }
 }
 
