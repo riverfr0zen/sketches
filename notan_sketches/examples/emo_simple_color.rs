@@ -11,7 +11,8 @@ use std::fs;
 
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
-        "assets/wilde01.json"
+        // "assets/wilde01.json"
+        "assets/the_stagger.json"
     };
 }
 const CLEAR_COLOR: Color = Color::WHITE;
@@ -72,6 +73,7 @@ struct EmocatOutputDoc {
 struct State {
     emodoc: EmocatOutputDoc,
     font: Font,
+    analysis: usize,
 }
 
 
@@ -89,6 +91,7 @@ fn init(gfx: &mut Graphics) -> State {
     let state = State {
         emodoc: emodoc,
         font: font,
+        analysis: 0,
     };
     state
 }
@@ -119,19 +122,47 @@ fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
 }
 
 
+/// In this application, where font scaling is involved, a work size that matches
+/// the window size results in nicer looking fonts. This comes at the expense of
+/// not being able to use literal values for sizing shapes and such (not being able
+/// to work against a known scale). Instead, one can use fractions of the work size
+/// values.
 fn get_work_size(gfx: &Graphics) -> Vec2 {
-    return vec2(gfx.device.size().0 as f32, gfx.device.size().1 as f32);
+    vec2(gfx.device.size().0 as f32, gfx.device.size().1 as f32)
+    // ScreenDimensions::DEFAULT
 }
 
 
-fn draw(
-    gfx: &mut Graphics,
-    state: &mut State,
-    // app: &mut App,
-) {
-    let work_size = get_work_size(gfx);
-    let mut draw = get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
+fn update(app: &mut App, state: &mut State) {
+    // if app.keyboard.is_down(KeyCode::W) {
+    //     state.y -= MOVE_SPEED * app.timer.delta_f32();
+    // }
 
+    if app.keyboard.was_pressed(KeyCode::Home) {
+        log::debug!("home");
+        state.analysis = 0;
+    }
+
+    if app.keyboard.was_pressed(KeyCode::End) {
+        log::debug!("end");
+        state.analysis = state.emodoc.analyses.len() - 1;
+    }
+
+
+    if app.keyboard.was_pressed(KeyCode::Left) && state.analysis > 0 {
+        log::debug!("left");
+        state.analysis -= 1;
+    }
+
+    if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() - 1
+    {
+        log::debug!("right");
+        state.analysis += 1;
+    }
+}
+
+
+fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
     let mut textbox_width = work_size.x * 0.75;
     draw.text(&state.font, &state.emodoc.title)
         .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
@@ -156,7 +187,36 @@ fn draw(
         )
         .h_align_left()
         .v_align_middle();
+}
 
+
+fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
+    let mut textbox_width = work_size.x * 0.75;
+    draw.text(&state.font, &state.emodoc.analyses[state.analysis].text)
+        .alpha_mode(BlendMode::OVER)
+        .color(TITLE_COLOR)
+        .size(scale_font(24.0, work_size))
+        .max_width(textbox_width)
+        .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
+        .h_align_left()
+        .v_align_middle();
+
+    // let title_bounds = draw.last_text_bounds();
+}
+
+fn draw(
+    gfx: &mut Graphics,
+    state: &mut State,
+    // app: &mut App,
+) {
+    let work_size = get_work_size(gfx);
+    let mut draw = get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
+
+    if state.analysis == 0 {
+        draw_title(&mut draw, state, work_size);
+    } else {
+        draw_paragraph(&mut draw, state, work_size);
+    }
 
     // draw to screen
     gfx.render(&draw);
@@ -167,6 +227,7 @@ fn draw(
 
 #[notan_main]
 fn main() -> Result<(), String> {
+    #[cfg(not(target_arch = "wasm32"))]
     let win_config = get_common_win_config().high_dpi(true).size(
         // ScreenDimensions::RES_1080P.x as i32,
         // ScreenDimensions::RES_1080P.y as i32,
@@ -174,11 +235,15 @@ fn main() -> Result<(), String> {
         ScreenDimensions::DEFAULT.y as i32,
     );
 
+    #[cfg(target_arch = "wasm32")]
+    let win_config = get_common_win_config().high_dpi(true);
+
+
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .draw(draw)
-        // .update(update)
+        .update(update)
         .build()
 }
