@@ -11,8 +11,8 @@ use std::fs;
 
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
-        // "assets/wilde01.json"
-        "assets/the_stagger.json"
+        "assets/wilde01.json"
+        // "assets/the_stagger.json"
     };
 }
 const CLEAR_COLOR: Color = Color::WHITE;
@@ -198,8 +198,10 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
         .size(scale_font(24.0, work_size))
         .max_width(textbox_width)
         .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
-        .h_align_left()
-        .v_align_middle();
+        .v_align_middle()
+        // .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.3)
+        // .v_align_top()
+        .h_align_left();
 
     // let title_bounds = draw.last_text_bounds();
 }
