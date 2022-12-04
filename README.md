@@ -38,19 +38,23 @@ wasm-pack build --out-name eg_notan --out-dir www/wasms  --target web --release 
 
 ## Simple Color Model
 
-The color model will select the top two emotions in the paragraph. 
+The color model will select the emotion(s) with the highest score in the paragraph. 
 
-If only one emotion has a score, the color corresponding to the emotion in one of the mappings (see "Mappings" below) will be set as `hue`. 
+If only one emotion has the high score, the hue of the color corresponding to the emotion in one of the mappings (see "Mappings" below) will be set as `hue`. 
 
-If there are two emotions:
-* If the emotions are adjacent on the color wheel (in the same quadrant), then a *blend* of the two colors will be set as `hue`.
-* If the emotions are opposing or otherwise not in the same quadrant of the color wheel, then a *gradient* of the two colors will be set as `hue`.
+If more than one emotion has the high score:
+* Simple:
+    * The avg value of the hues of each emotion will be set as `hue`
+* Advanced:
+    * First, emotions that are adjacent on the color wheel (in the same quadrant) will be grouped, 
+    * For each group, the avg hue will be calculated.
+    * The `hue` will be set to a list of the averaged hues.
 
 The sentiment score (positive / negative) of the paragraph will affect the `value`. The value will initially be set in the middle of the range. The positive score will add to the value, whereas the negative score will subtract from the value. 
 
-The sentiment scores will also affect the `saturation`. However, only the dominant score will be used, and the `saturation` will be set to the value of that score.
+The sentiment scores will also affect the `saturation`. However, only the dominant score will be used, and the `saturation` will be set to the value of that score. Maybe the value of the `hue` can also factor in to `saturation`.
 
-The model should return the HSV values of the background.
+The model should return the HSV properties based on the calculations above. In cases where there are multiple hues returned (advanced case above, which maybe should be extracted to a new model), a list of corresponding HSVs should be returned.
 
 
 ### Mappings 

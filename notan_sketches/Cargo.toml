@@ -10,3 +10,4 @@ notan = { version = "0.8.0", features = ["extra", "text"] }
 rapier2d = "0.16.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
+palette = "0.6.1"

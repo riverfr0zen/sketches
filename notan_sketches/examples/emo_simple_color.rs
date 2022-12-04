@@ -4,6 +4,7 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan::text::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
+use palette::{FromColor, Hsv, Mix, RgbHue, Srgb};
 use serde::{Deserialize, Serialize};
 use serde_json::{Result as JsonResult, Value};
 use std::fs;
@@ -11,8 +12,8 @@ use std::fs;
 
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
-        "assets/wilde01.json"
-        // "assets/the_stagger.json"
+        // "assets/wilde01.json"
+        "assets/the_stagger.json"
     };
 }
 const CLEAR_COLOR: Color = Color::WHITE;
@@ -161,6 +162,24 @@ fn get_work_size(gfx: &Graphics) -> Vec2 {
 // }
 
 
+/// Returns hue value of colors mapped to the emotion provided
+///
+/// Based on Plutchik color wheel here:
+/// http://shelleycrick.com/how-color-affects-emotions/
+fn get_mapped_hue(emotion: &str) -> Hsv {
+    match emotion {
+        "fear" => Hsv::new(RgbHue::from_degrees(88.0), 1.0, 0.59),
+        "anger" => Hsv::new(RgbHue::from_degrees(350.0), 1.0, 0.72),
+        "anticipation" => Hsv::new(RgbHue::from_degrees(21.0), 1.0, 0.96),
+        "trust" => Hsv::new(RgbHue::from_degrees(69.0), 1.0, 0.72),
+        "surprise" => Hsv::new(RgbHue::from_degrees(136.0), 0.98, 0.50),
+        "sadness" => Hsv::new(RgbHue::from_degrees(206.0), 1.0, 0.85),
+        "disgust" => Hsv::new(RgbHue::from_degrees(300.0), 1.0, 0.24),
+        "joy" => Hsv::new(RgbHue::from_degrees(55.0), 1.0, 0.91),
+        _ => Hsv::new(RgbHue::from_degrees(0.0), 0.0, 0.0),
+    }
+}
+
 /// Simple Color Model. See README for description.
 fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
     let scores = &mut analysis.results.nrclex.clone();
@@ -183,14 +202,19 @@ fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
     }
     if top_emotions[0].score > 0.0 {
         log::debug!("Top emotions: {:?}:", top_emotions);
-        let second_emo = &scores[1];
-        if second_emo.score > 0.0 {
-            log::debug!(
-                "Second emotion: {}: {}",
-                second_emo.marker,
-                second_emo.score
-            );
+        let hues: Vec<Hsv> = top_emotions
+            .iter()
+            .map(|&s| get_mapped_hue(&s.marker))
+            .collect();
+        // log::debug!("{:?}", hues[0]);
+        let mut final_hue = hues[0].clone();
+        for hue in hues.iter().skip(1) {
+            log::debug!("{:?}", final_hue);
+            final_hue = final_hue.mix(hue, 0.5);
+            log::debug!("{:?}", final_hue);
         }
+        let color = Srgb::from_color(final_hue);
+        return Color::from_rgb(color.red, color.green, color.blue);
     } else {
         log::debug!("No top emotion!");
         // ?? no emotional values
