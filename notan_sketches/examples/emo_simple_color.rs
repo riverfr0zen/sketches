@@ -174,12 +174,22 @@ fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
     scores.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
     // log::debug!("Score after {:?}", scores);
 
-    let top_emo = &scores[0];
-    if top_emo.score > 0.0 {
-        log::debug!("Top emotion: {}", top_emo.marker);
+    let mut top_emotions: Vec<&EmocatAnalyzerScore> = Vec::new();
+    top_emotions.push(&scores[0]);
+    for score in scores.iter().skip(1) {
+        if score.score == top_emotions[0].score {
+            top_emotions.push(&score);
+        }
+    }
+    if top_emotions[0].score > 0.0 {
+        log::debug!("Top emotions: {:?}:", top_emotions);
         let second_emo = &scores[1];
         if second_emo.score > 0.0 {
-            log::debug!("Second emotion: {}", second_emo.marker);
+            log::debug!(
+                "Second emotion: {}: {}",
+                second_emo.marker,
+                second_emo.score
+            );
         }
     } else {
         log::debug!("No top emotion!");
