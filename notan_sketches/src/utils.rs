@@ -78,7 +78,7 @@ pub fn get_common_win_config() -> WindowConfig {
 pub struct ScreenDimensions;
 
 impl ScreenDimensions {
-    pub const MINIMUM: Vec2 = vec2(300.0, 300.0);
+    pub const MINIMUM: Vec2 = vec2(500.0, 500.0);
     pub const DEFAULT: Vec2 = vec2(800.0, 600.0);
     pub const RES_1080P: Vec2 = vec2(1920.0, 1080.0);
     pub const RES_1440P: Vec2 = vec2(2560.0, 1440.0);
