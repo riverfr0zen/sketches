@@ -277,6 +277,7 @@ fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) -> Emo
 
 
 /// Return black or white depending on the current background color
+///
 /// Based on this algorithm:
 /// https://stackoverflow.com/a/1855903/4655636
 fn get_text_color(state: &State) -> Color {

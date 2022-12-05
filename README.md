@@ -55,7 +55,7 @@ I want to experiment with two different mappings, based on different theories, s
 The first mapping is based on the theories of psychologist Dr. Robert Plutchik as described in [this article](http://shelleycrick.com/how-color-affects-emotions/). I'll call it the Plutchik mapping.
 
 
-The second mapping will come from the "art therapy" world, as described in [this article](http://www.arttherapyblog.com/online/color-meanings-symbolism/#.Y4t04NLMK0o):
+The second mapping will come from the "art therapy" world, as described in [this article](http://www.arttherapyblog.com/online/color-meanings-symbolism):
 
 
 ## Multi Hue Color Model
