@@ -2,18 +2,17 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan::text::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 use palette::{FromColor, Hsl, Hsv, Mix, RgbHue, Srgb};
 use serde::{Deserialize, Serialize};
-use serde_json::{Result as JsonResult, Value};
+// use serde_json::{Result as JsonResult, Value};
 use std::fs;
 
 
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
-        // "assets/wilde01.json"
-        "assets/the_stagger.json"
+        "assets/wilde01.json"
+        // "assets/the_stagger.json"
     };
 }
 const CLEAR_COLOR: Color = Color::WHITE;
@@ -277,22 +276,18 @@ fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) -> Emo
 }
 
 
+/// Return black or white depending on the current background color
+/// Based on this algorithm:
+/// https://stackoverflow.com/a/1855903/4655636
 fn get_text_color(state: &State) -> Color {
-    let bgcolor = Srgb::new(
-        state.simple_color.r,
-        state.simple_color.g,
-        state.simple_color.b,
-    );
-    let hsv = Hsv::from_color(bgcolor);
-    log::debug!("Brightness: {}", hsv.value);
-
-    let hsv = Hsl::from_color(bgcolor);
-    log::debug!("Lightness: {}", hsv.lightness);
-
-    if hsv.lightness < 0.45 {
+    let luminance = 0.299 * state.simple_color.r
+        + 0.587 * state.simple_color.g
+        + 0.114 * state.simple_color.b / 255.0;
+    log::debug!("Luminance {}", luminance);
+    if luminance < 0.5 {
         return Color::WHITE;
     }
-    return Color::BLACK;
+    Color::BLACK
 }
 
 
