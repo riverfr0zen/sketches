@@ -161,73 +161,110 @@ enum Sentiment {
 }
 
 
-// fn get_emotion_sentiment(emotion: &str) -> Sentiment {
-//     match emotion {
-//         "fear" => Sentiment::NEGATIVE,
-//         "anger" => Sentiment::NEGATIVE,
-//         "anticipation" => Sentiment::NEUTRAL,
-//         "trust" => Sentiment::POSITIVE,
-//         "surprise" => Sentiment::NEUTRAL,
-//         "sadness" => Sentiment::NEGATIVE,
-//         "disgust" => Sentiment::NEGATIVE,
-//         "joy" => Sentiment::POSITIVE,
-//         _ => Sentiment::NEUTRAL,
-//     }
-// }
+fn get_emotion_sentiment(emotion: &str) -> Sentiment {
+    match emotion {
+        "fear" => Sentiment::NEGATIVE,
+        "anger" => Sentiment::NEGATIVE,
+        "anticipation" => Sentiment::NEUTRAL,
+        "trust" => Sentiment::POSITIVE,
+        "surprise" => Sentiment::NEUTRAL,
+        "sadness" => Sentiment::NEGATIVE,
+        "disgust" => Sentiment::NEGATIVE,
+        "joy" => Sentiment::POSITIVE,
+        _ => Sentiment::NEUTRAL,
+    }
+}
+
+
+/// Returns color mapped to the emotion provided based on Plutchik color wheel here:
+/// http://shelleycrick.com/how-color-affects-emotions/
+fn get_mapped_color_plutchik(emotion: &str) -> Hsv {
+    match emotion {
+        "fear" => Hsv::new(RgbHue::from_degrees(88.0), 1.0, 0.59),
+        "anger" => Hsv::new(RgbHue::from_degrees(350.0), 1.0, 0.72),
+        "anticipation" => Hsv::new(RgbHue::from_degrees(21.0), 1.0, 0.96),
+        "trust" => Hsv::new(RgbHue::from_degrees(69.0), 1.0, 0.72),
+        "surprise" => Hsv::new(RgbHue::from_degrees(136.0), 0.98, 0.50),
+        "sadness" => Hsv::new(RgbHue::from_degrees(206.0), 1.0, 0.85),
+        "disgust" => Hsv::new(RgbHue::from_degrees(300.0), 1.0, 0.24),
+        "joy" => Hsv::new(RgbHue::from_degrees(55.0), 1.0, 0.91),
+        _ => Hsv::new(RgbHue::from_degrees(180.0), 0.0, 0.50),
+        // _ => Hsv::new(RgbHue::from_degrees(0.0), 0.0, 0.0),
+        // _ => Hsv::new(RgbHue::from_degrees(0.0), 0.0, 1.0),
+    }
+}
+
+
+/// Returns color mapped to the emotion provided based on the art therapy color
+/// associations here:
+/// http://www.arttherapyblog.com/online/color-meanings-symbolism
+fn get_mapped_color_therapy(emotion: &str) -> Hsv {
+    match emotion {
+        "fear" => Hsv::new(RgbHue::from_degrees(60.0), 0.8, 1.0),
+        "anger" => Hsv::new(RgbHue::from_degrees(5.0), 0.93, 1.0),
+        // Loosely interpreting anticipation to be green
+        "anticipation" => Hsv::new(RgbHue::from_degrees(95.0), 0.72, 0.69),
+        "trust" => Hsv::new(RgbHue::from_degrees(224.0), 0.99, 1.0),
+        // Loosely interpreting surprise as violet
+        "surprise" => Hsv::new(RgbHue::from_degrees(286.0), 0.99, 0.69),
+        "sadness" => Hsv::new(RgbHue::from_degrees(224.0), 0.99, 1.0),
+        // Cannot find an equivalent, so just going to return gray
+        "disgust" => Hsv::new(RgbHue::from_degrees(180.0), 0.0, 0.50),
+        "joy" => Hsv::new(RgbHue::from_degrees(36.0), 0.99, 0.98),
+        _ => Hsv::new(RgbHue::from_degrees(180.0), 0.0, 0.50),
+        // _ => Hsv::new(RgbHue::from_degrees(0.0), 0.0, 0.0),
+        // _ => Hsv::new(RgbHue::from_degrees(0.0), 0.0, 1.0),
+    }
+}
 
 
 /// Returns colors & sentiment mapped to the emotion provided
-///
-/// Based on Plutchik color wheel here:
-/// http://shelleycrick.com/how-color-affects-emotions/
-fn get_mapped_emocolor(emotion: &str) -> EmoColor {
+fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) -> EmoColor {
     match emotion {
         "fear" => EmoColor {
             emotion: emotion.to_string(),
             sentiment: Sentiment::NEGATIVE,
-            hsv: Hsv::new(RgbHue::from_degrees(88.0), 1.0, 0.59),
+            hsv: mapping_func(emotion),
         },
         "anger" => EmoColor {
             emotion: emotion.to_string(),
             sentiment: Sentiment::NEGATIVE,
-            hsv: Hsv::new(RgbHue::from_degrees(350.0), 1.0, 0.72),
+            hsv: mapping_func(emotion),
         },
         "anticipation" => EmoColor {
             emotion: emotion.to_string(),
             sentiment: Sentiment::NEUTRAL,
-            hsv: Hsv::new(RgbHue::from_degrees(21.0), 1.0, 0.96),
+            hsv: mapping_func(emotion),
         },
         "trust" => EmoColor {
             emotion: emotion.to_string(),
             sentiment: Sentiment::POSITIVE,
-            hsv: Hsv::new(RgbHue::from_degrees(69.0), 1.0, 0.72),
+            hsv: mapping_func(emotion),
         },
         "surprise" => EmoColor {
             emotion: emotion.to_string(),
             sentiment: Sentiment::NEUTRAL,
-            hsv: Hsv::new(RgbHue::from_degrees(136.0), 0.98, 0.50),
+            hsv: mapping_func(emotion),
         },
         "sadness" => EmoColor {
             emotion: emotion.to_string(),
             sentiment: Sentiment::NEGATIVE,
-            hsv: Hsv::new(RgbHue::from_degrees(206.0), 1.0, 0.85),
+            hsv: mapping_func(emotion),
         },
         "disgust" => EmoColor {
             emotion: emotion.to_string(),
             sentiment: Sentiment::NEGATIVE,
-            hsv: Hsv::new(RgbHue::from_degrees(300.0), 1.0, 0.24),
+            hsv: mapping_func(emotion),
         },
         "joy" => EmoColor {
             emotion: emotion.to_string(),
             sentiment: Sentiment::POSITIVE,
-            hsv: Hsv::new(RgbHue::from_degrees(55.0), 1.0, 0.91),
+            hsv: mapping_func(emotion),
         },
         _ => EmoColor {
             emotion: emotion.to_string(),
             sentiment: Sentiment::NEUTRAL,
-            hsv: Hsv::new(RgbHue::from_degrees(180.0), 0.0, 0.50),
-            // hsv: Hsv::new(RgbHue::from_degrees(0.0), 0.0, 0.0),
-            // hsv: Hsv::new(RgbHue::from_degrees(0.0), 0.0, 1.0),
+            hsv: mapping_func(emotion),
         },
     }
 }
@@ -260,13 +297,14 @@ fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
     }
     if top_emotions[0].score > 0.0 {
         log::debug!("Top emotions: {:?}:", top_emotions);
+        let mapping_func = get_mapped_color_plutchik;
         let emocolors: Vec<EmoColor> = top_emotions
             .iter()
-            .map(|&s| get_mapped_emocolor(&s.marker))
+            .map(|&s| get_mapped_emocolor(&s.marker, &mapping_func))
             .collect();
         // Start with a neutral gray
         if emocolors.len() > 1 {
-            let mut final_color = get_mapped_emocolor("").hsv;
+            let mut final_color = get_mapped_emocolor("", &mapping_func).hsv;
             for emocolor in emocolors.iter() {
                 log::debug!("Before mix: {:?}", final_color);
                 let sentiment_value: f32 = match &emocolor.sentiment {
@@ -331,6 +369,8 @@ fn update(app: &mut App, state: &mut State) {
 
 fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
     let mut textbox_width = work_size.x * 0.75;
+
+
     draw.text(&state.font, &state.emodoc.title)
         .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
         .color(TITLE_COLOR)
@@ -339,6 +379,19 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
         .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.4)
         .h_align_left()
         .v_align_middle();
+
+    // draw.text(&state.font, &state.emodoc.title)
+    //     .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
+    //     .color(Color::RED)
+    //     .size(scale_font(60.0, work_size))
+    //     .max_width(textbox_width)
+    //     .position(
+    //         work_size.x * 0.5 - textbox_width * 0.5 + 1.0,
+    //         work_size.y * 0.4 - 1.0,
+    //     )
+    //     .h_align_left()
+    //     .v_align_middle();
+
 
     let title_bounds = draw.last_text_bounds();
 
