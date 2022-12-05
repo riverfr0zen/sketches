@@ -4,7 +4,7 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan::text::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
-use palette::{FromColor, Hsv, Mix, RgbHue, Srgb};
+use palette::{FromColor, Hsl, Hsv, Mix, RgbHue, Srgb};
 use serde::{Deserialize, Serialize};
 use serde_json::{Result as JsonResult, Value};
 use std::fs;
@@ -83,6 +83,7 @@ struct State {
     font: Font,
     analysis: usize,
     simple_color: Color,
+    text_color: Color,
 }
 
 
@@ -102,6 +103,7 @@ fn init(gfx: &mut Graphics) -> State {
         font: font,
         analysis: 0,
         simple_color: CLEAR_COLOR,
+        text_color: TITLE_COLOR,
     };
     state
 }
@@ -197,6 +199,11 @@ fn get_mapped_color_plutchik(emotion: &str) -> Hsv {
 
 /// Returns color mapped to the emotion provided based on the art therapy color
 /// associations here:
+///
+/// Tbh this mapping is iffy because the source is very wide-ranging and it was not
+/// straightforward to map the particular emotions to the colors. Just implemented
+/// "for kicks" and to solidify the design of these mappings.
+///
 /// http://www.arttherapyblog.com/online/color-meanings-symbolism
 fn get_mapped_color_therapy(emotion: &str) -> Hsv {
     match emotion {
@@ -270,6 +277,25 @@ fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) -> Emo
 }
 
 
+fn get_text_color(state: &State) -> Color {
+    let bgcolor = Srgb::new(
+        state.simple_color.r,
+        state.simple_color.g,
+        state.simple_color.b,
+    );
+    let hsv = Hsv::from_color(bgcolor);
+    log::debug!("Brightness: {}", hsv.value);
+
+    let hsv = Hsl::from_color(bgcolor);
+    log::debug!("Lightness: {}", hsv.lightness);
+
+    if hsv.lightness < 0.45 {
+        return Color::WHITE;
+    }
+    return Color::BLACK;
+}
+
+
 /// Simple Color Model. See README for description.
 fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
     let scores = &mut analysis.results.nrclex.clone();
@@ -340,13 +366,15 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
         state.analysis = 0;
-        state.simple_color = CLEAR_COLOR
+        state.simple_color = CLEAR_COLOR;
+        state.text_color = get_text_color(&state);
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.analysis = state.emodoc.analyses.len() - 1;
         state.simple_color = get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
+        state.text_color = get_text_color(&state);
     }
 
 
@@ -356,13 +384,18 @@ fn update(app: &mut App, state: &mut State) {
         if state.analysis > 0 {
             state.simple_color =
                 get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
+            state.text_color = get_text_color(&state);
+        } else {
+            state.simple_color = CLEAR_COLOR;
         }
+        state.text_color = get_text_color(&state);
     }
 
     if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
         log::debug!("right");
         state.analysis += 1;
         state.simple_color = get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
+        state.text_color = get_text_color(&state);
     }
 }
 
@@ -414,7 +447,7 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
     let textbox_width = work_size.x * 0.75;
     draw.text(&state.font, &state.emodoc.analyses[state.analysis - 1].text)
         .alpha_mode(BlendMode::OVER)
-        .color(TITLE_COLOR)
+        .color(state.text_color)
         .size(scale_font(24.0, work_size))
         .max_width(textbox_width)
         .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
