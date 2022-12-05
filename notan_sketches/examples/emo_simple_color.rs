@@ -147,38 +147,91 @@ fn get_work_size(gfx: &Graphics) -> Vec2 {
 }
 
 
-// Come back to this after getting "top emotions"
-// struct EmotionColorPairing {
-//     emotion: String,
-//     color: Color,
+struct EmoColor {
+    emotion: String,
+    sentiment: Sentiment,
+    hsv: Hsv,
+}
+
+
+enum Sentiment {
+    POSITIVE,
+    NEGATIVE,
+    NEUTRAL,
+}
+
+
+// fn get_emotion_sentiment(emotion: &str) -> Sentiment {
+//     match emotion {
+//         "fear" => Sentiment::NEGATIVE,
+//         "anger" => Sentiment::NEGATIVE,
+//         "anticipation" => Sentiment::NEUTRAL,
+//         "trust" => Sentiment::POSITIVE,
+//         "surprise" => Sentiment::NEUTRAL,
+//         "sadness" => Sentiment::NEGATIVE,
+//         "disgust" => Sentiment::NEGATIVE,
+//         "joy" => Sentiment::POSITIVE,
+//         _ => Sentiment::NEUTRAL,
+//     }
 // }
 
 
-// fn get_plutchik_color_map() -> Vec<EmotionColorPairing> {
-//     vec![EmotionColorPairing {
-//         emotion: "fear".to_string(),
-//         color: Color::RED,
-//     }]
-// }
-
-
-/// Returns hue value of colors mapped to the emotion provided
+/// Returns colors & sentiment mapped to the emotion provided
 ///
 /// Based on Plutchik color wheel here:
 /// http://shelleycrick.com/how-color-affects-emotions/
-fn get_mapped_hue(emotion: &str) -> Hsv {
+fn get_mapped_emocolor(emotion: &str) -> EmoColor {
     match emotion {
-        "fear" => Hsv::new(RgbHue::from_degrees(88.0), 1.0, 0.59),
-        "anger" => Hsv::new(RgbHue::from_degrees(350.0), 1.0, 0.72),
-        "anticipation" => Hsv::new(RgbHue::from_degrees(21.0), 1.0, 0.96),
-        "trust" => Hsv::new(RgbHue::from_degrees(69.0), 1.0, 0.72),
-        "surprise" => Hsv::new(RgbHue::from_degrees(136.0), 0.98, 0.50),
-        "sadness" => Hsv::new(RgbHue::from_degrees(206.0), 1.0, 0.85),
-        "disgust" => Hsv::new(RgbHue::from_degrees(300.0), 1.0, 0.24),
-        "joy" => Hsv::new(RgbHue::from_degrees(55.0), 1.0, 0.91),
-        _ => Hsv::new(RgbHue::from_degrees(0.0), 0.0, 0.0),
+        "fear" => EmoColor {
+            emotion: emotion.to_string(),
+            sentiment: Sentiment::NEGATIVE,
+            hsv: Hsv::new(RgbHue::from_degrees(88.0), 1.0, 0.59),
+        },
+        "anger" => EmoColor {
+            emotion: emotion.to_string(),
+            sentiment: Sentiment::NEGATIVE,
+            hsv: Hsv::new(RgbHue::from_degrees(350.0), 1.0, 0.72),
+        },
+        "anticipation" => EmoColor {
+            emotion: emotion.to_string(),
+            sentiment: Sentiment::NEUTRAL,
+            hsv: Hsv::new(RgbHue::from_degrees(21.0), 1.0, 0.96),
+        },
+        "trust" => EmoColor {
+            emotion: emotion.to_string(),
+            sentiment: Sentiment::POSITIVE,
+            hsv: Hsv::new(RgbHue::from_degrees(69.0), 1.0, 0.72),
+        },
+        "surprise" => EmoColor {
+            emotion: emotion.to_string(),
+            sentiment: Sentiment::NEUTRAL,
+            hsv: Hsv::new(RgbHue::from_degrees(136.0), 0.98, 0.50),
+        },
+        "sadness" => EmoColor {
+            emotion: emotion.to_string(),
+            sentiment: Sentiment::NEGATIVE,
+            hsv: Hsv::new(RgbHue::from_degrees(206.0), 1.0, 0.85),
+        },
+        "disgust" => EmoColor {
+            emotion: emotion.to_string(),
+            sentiment: Sentiment::NEGATIVE,
+            hsv: Hsv::new(RgbHue::from_degrees(300.0), 1.0, 0.24),
+        },
+        "joy" => EmoColor {
+            emotion: emotion.to_string(),
+            sentiment: Sentiment::POSITIVE,
+            hsv: Hsv::new(RgbHue::from_degrees(55.0), 1.0, 0.91),
+        },
+        _ => EmoColor {
+            emotion: emotion.to_string(),
+            sentiment: Sentiment::NEUTRAL,
+            hsv: Hsv::new(RgbHue::from_degrees(180.0), 0.0, 0.50),
+            // hsv: Hsv::new(RgbHue::from_degrees(0.0), 0.0, 0.0),
+            // hsv: Hsv::new(RgbHue::from_degrees(0.0), 0.0, 1.0),
+        },
     }
 }
+
 
 /// Simple Color Model. See README for description.
 fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
@@ -188,7 +241,12 @@ fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
     let positive_pos = scores.iter().position(|s| s.marker == "positive").unwrap();
     let positive_sentiment = scores.remove(positive_pos);
     let negative_pos = scores.iter().position(|s| s.marker == "negative").unwrap();
-    let negative_sentiment = scores.remove(positive_pos);
+    let negative_sentiment = scores.remove(negative_pos);
+    log::debug!(
+        "positive: {}, negative: {}",
+        positive_sentiment.score,
+        negative_sentiment.score
+    );
 
     scores.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
     // log::debug!("Score after {:?}", scores);
@@ -202,34 +260,45 @@ fn get_simple_color_for_emo(analysis: &EmocatTextAnalysis) -> Color {
     }
     if top_emotions[0].score > 0.0 {
         log::debug!("Top emotions: {:?}:", top_emotions);
-        let hues: Vec<Hsv> = top_emotions
+        let emocolors: Vec<EmoColor> = top_emotions
             .iter()
-            .map(|&s| get_mapped_hue(&s.marker))
+            .map(|&s| get_mapped_emocolor(&s.marker))
             .collect();
-        // log::debug!("{:?}", hues[0]);
-        let mut final_hue = hues[0].clone();
-        for hue in hues.iter().skip(1) {
-            log::debug!("{:?}", final_hue);
-            final_hue = final_hue.mix(hue, 0.5);
-            log::debug!("{:?}", final_hue);
+        // Start with a neutral gray
+        if emocolors.len() > 1 {
+            let mut final_color = get_mapped_emocolor("").hsv;
+            for emocolor in emocolors.iter() {
+                log::debug!("Before mix: {:?}", final_color);
+                let sentiment_value: f32 = match &emocolor.sentiment {
+                    Sentiment::POSITIVE => positive_sentiment.score,
+                    Sentiment::NEGATIVE => negative_sentiment.score,
+                    Sentiment::NEUTRAL => positive_sentiment.score.max(negative_sentiment.score),
+                };
+                // The sentiment values don't often seem to go beyond 0.5, so I'm modifying the
+                // mix factor a little. Must test later with more examples of text.
+                let mix_factor = sentiment_value * 2.0;
+                log::debug!(
+                    "Emotion: {}, Sentiment value: {}, Mix_factor: {}",
+                    emocolor.emotion,
+                    sentiment_value,
+                    mix_factor
+                );
+                // final_color = final_color.mix(&emocolor.hsv, 0.5);
+                final_color = final_color.mix(&emocolor.hsv, mix_factor);
+                log::debug!("After mix: {:?}", final_color);
+            }
+            let color = Srgb::from_color(final_color);
+            return Color::from_rgb(color.red, color.green, color.blue);
+        } else {
+            let color = Srgb::from_color(emocolors[0].hsv);
+            return Color::from_rgb(color.red, color.green, color.blue);
         }
-        let color = Srgb::from_color(final_hue);
-        return Color::from_rgb(color.red, color.green, color.blue);
-    } else {
-        log::debug!("No top emotion!");
-        // ?? no emotional values
     }
-
-    // XXX TODO after gettting results in a better format!
-    CLEAR_COLOR
+    Color::GRAY
 }
 
 
 fn update(app: &mut App, state: &mut State) {
-    // if app.keyboard.is_down(KeyCode::W) {
-    //     state.y -= MOVE_SPEED * app.timer.delta_f32();
-    // }
-
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
         state.analysis = 0;

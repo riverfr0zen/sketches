@@ -38,49 +38,35 @@ wasm-pack build --out-name eg_notan --out-dir www/wasms  --target web --release 
 
 ## Simple Color Model
 
-The color model will select the emotion(s) with the highest score in the paragraph. 
+The model will return a color as HSV values. The color will be calculated as below:
 
-If only one emotion has the high score, the hue of the color corresponding to the emotion in one of the mappings (see "Mappings" below) will be set as `hue`. 
+The color model will select the emotion(s) with the highest score in the text analysis.
 
-If more than one emotion has the high score:
-* Simple:
-    * The avg value of the hues of each emotion will be set as `hue`
-* Advanced:
-    * First, emotions that are adjacent on the color wheel (in the same quadrant) will be grouped, 
-    * For each group, the avg hue will be calculated.
-    * The `hue` will be set to a list of the averaged hues.
+If no emotion has a score, a neutral gray color will be returned.
 
-The sentiment score (positive / negative) of the paragraph will affect the `value`. The value will initially be set in the middle of the range. The positive score will add to the value, whereas the negative score will subtract from the value. 
+If only one emotion has the high score, the color corresponding to the emotion in one of the mappings (see "Mappings" below) will be returned. 
 
-The sentiment scores will also affect the `saturation`. However, only the dominant score will be used, and the `saturation` will be set to the value of that score. Maybe the value of the `hue` can also factor in to `saturation`.
-
-The model should return the HSV properties based on the calculations above. In cases where there are multiple hues returned (advanced case above, which maybe should be extracted to a new model), a list of corresponding HSVs should be returned.
+If there are multiple emotions in the high score, the top emotions will be further grouped into "positive",  "negative", and "neutral" emotions. Following this, starting with a neutral gray HSV value, each emotion's color (based on the color mappings) will be "mixed" in. The factor by which one color mixes into the total will be based on the analysis value of the sentiment (positive/negative) that the color corresponds to. For example, if the emotion is "joy", which is a positive emotion, then the value of "positive" from the analysis will be the factor. If the color is neutral, the factor will be dominant sentiment value.
 
 
 ### Mappings 
 I want to experiment with two different mappings, based on different theories, so switching the used mapping is an important capability.
 
-The first mapping is based on the theories of psychologist Dr. Robert Plutchik as described in [this article](http://shelleycrick.com/how-color-affects-emotions/). I'll call it the Plutchik mapping:
+The first mapping is based on the theories of psychologist Dr. Robert Plutchik as described in [this article](http://shelleycrick.com/how-color-affects-emotions/). I'll call it the Plutchik mapping.
 
 
-```
-Fear: Yellow
-Anger: Red
-Anticipation: Orange
-Trust:
-Surprise:
-Sadness:
-Disgust:
-Joy:
+The second mapping will come from the "art therapy" world, as described in [this article](http://www.arttherapyblog.com/online/color-meanings-symbolism/#.Y4t04NLMK0o):
 
-```
 
-The second model will come from the "art therapy" world, as described in [this article](http://www.arttherapyblog.com/online/color-meanings-symbolism/#.Y4t04NLMK0o):
+## Multi Hue Color Model
 
-```
+Similar to Simple Color Model above, except that if more than one emotion has the high score:
 
-```
+* First, top emotions that are adjacent on the color wheel (in the same quadrant) will be grouped. 
+* For each group, the avg hue will be calculated.
+* The model will return a list of the averaged hues.
 
+This model may also do the same with a "second ranked color" if only one emotion is at the top.
 
 
 
