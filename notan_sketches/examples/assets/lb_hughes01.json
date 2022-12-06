@@ -1,0 +1,691 @@
+{
+    "title": "As I Grew Older",
+    "author": "Langston Hughes",
+    "analyses": [
+        {
+            "text": "It was a long time ago.\nI have almost forgotten my dream.\nBut it was there then,\nIn front of me,\nBright like a sun,\u2014\nMy dream.",
+            "meta": {
+                "paragraph": 1,
+                "from_line": 1,
+                "to_line": 6,
+                "file": "samples/lb_hughes01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.3
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.1
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.33
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ]
+            }
+        },
+        {
+            "text": "And then the wall rose,\nRose slowly,\nSlowly,\nBetween me and my dream.\nRose slowly, slowly,\nDimming,\nHiding,\nThe light of my dream.\nRose until it touched the sky,\u2014\nThe wall.",
+            "meta": {
+                "paragraph": 2,
+                "from_line": 8,
+                "to_line": 17,
+                "file": "samples/lb_hughes01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.75
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Shadow.\nI am black.",
+            "meta": {
+                "paragraph": 3,
+                "from_line": 19,
+                "to_line": 20,
+                "file": "samples/lb_hughes01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "I lie down in the shadow.\nNo longer the light of my dream before me,\nAbove me.\nOnly the thick wall.\nOnly the shadow.",
+            "meta": {
+                "paragraph": 4,
+                "from_line": 22,
+                "to_line": 26,
+                "file": "samples/lb_hughes01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.67
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "My hands!\nMy dark hands!\nBreak through the wall!\nFind my dream!\nHelp me to shatter this darkness,\nTo smash this night,\nTo break this shadow\nInto a thousand lights of sun,\nInto a thousand whirling dreams\nOf sun!",
+            "meta": {
+                "paragraph": 5,
+                "from_line": 28,
+                "to_line": 37,
+                "file": "samples/lb_hughes01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.08333333333333333
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.08333333333333333
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.08333333333333333
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.08333333333333333
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.12
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.12
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.14
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.71
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.14
+                    }
+                ]
+            }
+        }
+    ]
+}

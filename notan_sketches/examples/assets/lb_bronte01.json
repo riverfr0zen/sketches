@@ -1,0 +1,965 @@
+{
+    "title": "My Lady's Grave",
+    "author": "Emily Bronte",
+    "analyses": [
+        {
+            "text": "The linnet in the rocky dells,\nThe moor-lark in the air,\nThe bee among the heather bells\nThat hide my lady fair:",
+            "meta": {
+                "paragraph": 1,
+                "from_line": 1,
+                "to_line": 4,
+                "file": "samples/lb_bronte01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "The wild deer browse above her breast;\nThe wild birds raise their brood;\nAnd they, her smiles of love caress'd,\nHave left her solitude!",
+            "meta": {
+                "paragraph": 2,
+                "from_line": 6,
+                "to_line": 9,
+                "file": "samples/lb_bronte01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.2727272727272727
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.2727272727272727
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.18181818181818182
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.18181818181818182
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ]
+            }
+        },
+        {
+            "text": "I ween that when the grave's dark wall\nDid first her form retain,\nThey thought their hearts could ne'er recall\nThe light of joy again.",
+            "meta": {
+                "paragraph": 3,
+                "from_line": 11,
+                "to_line": 14,
+                "file": "samples/lb_bronte01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.125
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "They thought the tide of grief would flow\nUncheck'd through future years;\nBut where is all their anguish now,\nAnd where are all their tears?",
+            "meta": {
+                "paragraph": 4,
+                "from_line": 16,
+                "to_line": 19,
+                "file": "samples/lb_bronte01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.67
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Well, let them fight for honour's breath,\nOr pleasure's shade pursue,\nThe dweller in the land of death\nIs changed and careless too.",
+            "meta": {
+                "paragraph": 5,
+                "from_line": 21,
+                "to_line": 24,
+                "file": "samples/lb_bronte01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.18181818181818182
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.18181818181818182
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.18181818181818182
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.17
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.25
+                    }
+                ]
+            }
+        },
+        {
+            "text": "And if their eyes should watch and weep\nTill sorrow's source were dry,\nShe would not, in her tranquil sleep,\nReturn a single sigh!",
+            "meta": {
+                "paragraph": 6,
+                "from_line": 26,
+                "to_line": 29,
+                "file": "samples/lb_bronte01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.2222222222222222
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.1111111111111111
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.1111111111111111
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.2222222222222222
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.2222222222222222
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.1111111111111111
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.25
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.6
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.2
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Blow, west wind, by the lonely mound:\nAnd murmur, summer streams!\nThere is no need of other sound\nTo soothe my lady's dreams.",
+            "meta": {
+                "paragraph": 7,
+                "from_line": 31,
+                "to_line": 34,
+                "file": "samples/lb_bronte01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.33
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.33
+                    }
+                ]
+            }
+        }
+    ]
+}

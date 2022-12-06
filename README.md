@@ -38,7 +38,7 @@ wasm-pack build --out-name eg_notan --out-dir www/wasms  --target web --release 
 
 ## Simple Color Model
 
-The model will return a color as HSV values. The color will be calculated as below:
+The model will return a color calculated as below:
 
 The color model will select the emotion(s) with the highest score in the text analysis.
 

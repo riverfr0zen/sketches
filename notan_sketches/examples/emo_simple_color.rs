@@ -1,9 +1,10 @@
 use notan::draw::*;
+use notan::extra::FpsLimit;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
-use palette::{FromColor, Hsl, Hsv, Mix, RgbHue, Srgb};
+use palette::{FromColor, Hsl, Hsv, LinSrgb, Mix, RgbHue, Srgb};
 use serde::{Deserialize, Serialize};
 // use serde_json::{Result as JsonResult, Value};
 use std::fs;
@@ -11,13 +12,22 @@ use std::fs;
 
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
-        "assets/wilde01.json"
-        // "assets/the_stagger.json"
+        // "assets/lb_bronte01.json"
+        // "assets/lb_hughes01.json"
+        // "assets/wilde01.json"
+        "assets/the_stagger.json"
     };
 }
 const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
 const META_COLOR: Color = Color::GRAY;
+const STARTING_MIX_FACTOR: f32 = 0.0;
+// const MIX_RATE: f32 = 0.001;
+// const MIX_RATE: f32 = 0.0001;
+const MIX_RATE: f32 = 0.00001;
+// const MIX_RATE: f32 = 0.000001;
+const COLOR_COMPARISON_PRECISION: f32 = 3.0;
+const MAX_FPS: u8 = 240;
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -82,6 +92,8 @@ struct State {
     font: Font,
     analysis: usize,
     simple_color: Color,
+    bg_color: Color,
+    bg_color_mix_factor: f32,
     text_color: Color,
 }
 
@@ -102,6 +114,8 @@ fn init(gfx: &mut Graphics) -> State {
         font: font,
         analysis: 0,
         simple_color: CLEAR_COLOR,
+        bg_color: CLEAR_COLOR,
+        bg_color_mix_factor: STARTING_MIX_FACTOR,
         text_color: TITLE_COLOR,
     };
     state
@@ -280,15 +294,68 @@ fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) -> Emo
 ///
 /// Based on this algorithm:
 /// https://stackoverflow.com/a/1855903/4655636
+///
 fn get_text_color(state: &State) -> Color {
-    let luminance = 0.299 * state.simple_color.r
-        + 0.587 * state.simple_color.g
-        + 0.114 * state.simple_color.b / 255.0;
-    log::debug!("Luminance {}", luminance);
+    // let luminance = 0.299 * state.simple_color.r
+    //     + 0.587 * state.simple_color.g
+    //     + 0.114 * state.simple_color.b / 255.0;
+
+    // Basing luminance on the bg_color, since it may not have caught up
+    // with the simple_color value yet.
+    let luminance =
+        0.299 * state.bg_color.r + 0.587 * state.bg_color.g + 0.114 * state.bg_color.b / 255.0;
+    // log::debug!("Luminance {}", luminance);
     if luminance < 0.5 {
         return Color::WHITE;
     }
     Color::BLACK
+}
+
+fn round(val: f32, digits: f32) -> f32 {
+    // log::debug!("{}, {}", val, (val * 100.0).round() / 100.0);
+    // (val * 100.0).round() / 100.0
+
+    let mut multiplier: f32 = 10.0;
+    multiplier = multiplier.powf(digits);
+    // log::debug!("{}, {}", val, (val * multiplier).round() / multiplier);
+    (val * multiplier).round() / multiplier
+}
+
+
+fn update_bg_color_simple(state: &mut State) {
+    state.bg_color = state.simple_color.clone();
+}
+
+fn update_bg_color(app: &App, state: &mut State) {
+    // The mix function used to blend colors below doesn't always end up with the
+    // exact floating point numbers of the end color, so comparing with rounded
+    // color values instead of comparing the colors directly.
+    let precision = COLOR_COMPARISON_PRECISION;
+    if round(state.bg_color.r, precision) != round(state.simple_color.r, precision)
+        && round(state.bg_color.g, precision) != round(state.simple_color.g, precision)
+        && round(state.bg_color.b, precision) != round(state.simple_color.b, precision)
+    {
+        log::debug!("Mix factor: {}", state.bg_color_mix_factor);
+        // log::debug!(
+        //     "bgcolor: {}, simple_color {}",
+        //     state.bg_color,
+        //     state.simple_color
+        // );
+        let mut bg_color = Srgb::new(state.bg_color.r, state.bg_color.g, state.bg_color.b);
+        let simple_color = Srgb::new(
+            state.simple_color.r,
+            state.simple_color.g,
+            state.simple_color.b,
+        );
+        let mut bg_color = LinSrgb::from_color(bg_color);
+        let simple_color = LinSrgb::from_color(simple_color);
+        bg_color = bg_color.mix(&simple_color, state.bg_color_mix_factor);
+        let bg_color = Srgb::from_color(bg_color);
+        state.bg_color = Color::from_rgb(bg_color.red, bg_color.green, bg_color.blue);
+        state.bg_color_mix_factor += MIX_RATE;
+    } else {
+        state.bg_color_mix_factor = STARTING_MIX_FACTOR;
+    }
 }
 
 
@@ -363,14 +430,14 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("home");
         state.analysis = 0;
         state.simple_color = CLEAR_COLOR;
-        state.text_color = get_text_color(&state);
+        // state.text_color = get_text_color(&state);
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.analysis = state.emodoc.analyses.len() - 1;
         state.simple_color = get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
-        state.text_color = get_text_color(&state);
+        // state.text_color = get_text_color(&state);
     }
 
 
@@ -384,15 +451,18 @@ fn update(app: &mut App, state: &mut State) {
         } else {
             state.simple_color = CLEAR_COLOR;
         }
-        state.text_color = get_text_color(&state);
+        // state.text_color = get_text_color(&state);
     }
 
     if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
         log::debug!("right");
         state.analysis += 1;
         state.simple_color = get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
-        state.text_color = get_text_color(&state);
+        // state.text_color = get_text_color(&state);
     }
+    // update_bg_color_simple(state);
+    update_bg_color(app, state);
+    state.text_color = get_text_color(&state);
 }
 
 
@@ -461,7 +531,7 @@ fn draw(
     // app: &mut App,
 ) {
     let work_size = get_work_size(gfx);
-    let mut draw = get_draw_setup(gfx, work_size, true, state.simple_color);
+    let mut draw = get_draw_setup(gfx, work_size, true, state.bg_color);
 
     if state.analysis == 0 {
         draw_title(&mut draw, state, work_size);
@@ -479,6 +549,7 @@ fn draw(
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
+    // let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
     let win_config = get_common_win_config().high_dpi(true).size(
         // ScreenDimensions::RES_1080P.x as i32,
         // ScreenDimensions::RES_1080P.y as i32,
@@ -494,6 +565,7 @@ fn main() -> Result<(), String> {
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
+        .add_plugin(FpsLimit::new(MAX_FPS))
         .draw(draw)
         .update(update)
         .build()
