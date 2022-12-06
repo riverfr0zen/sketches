@@ -18,9 +18,12 @@ macro_rules! EMOCAT_OUTPUT_FILE {
         "assets/the_stagger.json"
     };
 }
+
+
 const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
 const META_COLOR: Color = Color::GRAY;
+const DYNAMIC_TEXT_COLOR: bool = false;
 const STARTING_MIX_FACTOR: f32 = 0.0;
 // const MIX_RATE: f32 = 0.001;
 // const MIX_RATE: f32 = 0.0001;
@@ -95,6 +98,7 @@ struct State {
     bg_color: Color,
     bg_color_mix_factor: f32,
     text_color: Color,
+    dynamic_text_color: bool,
 }
 
 
@@ -117,6 +121,7 @@ fn init(gfx: &mut Graphics) -> State {
         bg_color: CLEAR_COLOR,
         bg_color_mix_factor: STARTING_MIX_FACTOR,
         text_color: TITLE_COLOR,
+        dynamic_text_color: DYNAMIC_TEXT_COLOR,
     };
     state
 }
@@ -296,14 +301,16 @@ fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) -> Emo
 /// https://stackoverflow.com/a/1855903/4655636
 ///
 fn get_text_color(state: &State) -> Color {
-    // let luminance = 0.299 * state.simple_color.r
-    //     + 0.587 * state.simple_color.g
-    //     + 0.114 * state.simple_color.b / 255.0;
+    let mut luminance: f32;
+    if state.dynamic_text_color {
+        luminance =
+            0.299 * state.bg_color.r + 0.587 * state.bg_color.g + 0.114 * state.bg_color.b / 255.0;
+    } else {
+        luminance = 0.299 * state.simple_color.r
+            + 0.587 * state.simple_color.g
+            + 0.114 * state.simple_color.b / 255.0;
+    }
 
-    // Basing luminance on the bg_color, since it may not have caught up
-    // with the simple_color value yet.
-    let luminance =
-        0.299 * state.bg_color.r + 0.587 * state.bg_color.g + 0.114 * state.bg_color.b / 255.0;
     // log::debug!("Luminance {}", luminance);
     if luminance < 0.5 {
         return Color::WHITE;
