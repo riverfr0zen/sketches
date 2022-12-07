@@ -1,0 +1,554 @@
+{
+    "title": "I like to see it lap the Miles",
+    "author": "Emily Dickinson",
+    "analyses": [
+        {
+            "text": "I like to see it lap the Miles,  \nAnd lick the valleys up,  \nAnd stop to feed itself at tanks;  \nAnd then, prodigious, step",
+            "meta": {
+                "paragraph": 1,
+                "from_line": 1,
+                "to_line": 4,
+                "file": "samples/lb_dickinson01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Around a pile of mountains, \nAnd, supercilious, peer  \nIn shanties by the sides of roads;  \nAnd then a quarry pare",
+            "meta": {
+                "paragraph": 2,
+                "from_line": 6,
+                "to_line": 9,
+                "file": "samples/lb_dickinson01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "To fit its sides, and crawl between,  \nComplaining all the while\nIn horrid, hooting stanza;  \nThen chase itself down hill",
+            "meta": {
+                "paragraph": 3,
+                "from_line": 11,
+                "to_line": 14,
+                "file": "samples/lb_dickinson01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.375
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.25
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.25
+                    }
+                ]
+            }
+        },
+        {
+            "text": "And neigh like Boanerges;  \nThen, punctual as a star,  \nStop\u2014docile and omnipotent\u2014\nAt its own stable door.",
+            "meta": {
+                "paragraph": 4,
+                "from_line": 16,
+                "to_line": 19,
+                "file": "samples/lb_dickinson01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.2222222222222222
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.1111111111111111
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        }
+    ]
+}

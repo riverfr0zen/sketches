@@ -1,0 +1,3157 @@
+{
+    "title": "Song of Myself (Parts 1-3)",
+    "author": "Walt Whitman",
+    "analyses": [
+        {
+            "text": "1.",
+            "meta": {
+                "paragraph": 1,
+                "from_line": 1,
+                "to_line": 1,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "I celebrate myself, and sing myself,\nAnd what I assume you shall assume,\nFor every atom belonging to me as good belongs to you.",
+            "meta": {
+                "paragraph": 2,
+                "from_line": 3,
+                "to_line": 5,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.18181818181818182
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.18181818181818182
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.2727272727272727
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.18181818181818182
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 1.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 1.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "I loafe and invite my soul,\nI lean and loafe at my ease observing a spear of summer grass.",
+            "meta": {
+                "paragraph": 3,
+                "from_line": 7,
+                "to_line": 8,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.1
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.25
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ]
+            }
+        },
+        {
+            "text": "My tongue, every atom of my blood, form\u2019d from this soil, this air,\nBorn here of parents born here from parents the same, and their parents the same,\nI, now thirty-seven years old in perfect health begin,\nHoping to cease not till death.",
+            "meta": {
+                "paragraph": 4,
+                "from_line": 10,
+                "to_line": 13,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.07142857142857142
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.07142857142857142
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.44
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.11
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.11
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Creeds and schools in abeyance,\nRetiring back a while sufficed at what they are, but never forgotten,\nI harbor for good or bad, I permit to speak at every hazard,\nNature without check with original energy.",
+            "meta": {
+                "paragraph": 5,
+                "from_line": 15,
+                "to_line": 18,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.17647058823529413
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.058823529411764705
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.058823529411764705
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.17647058823529413
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.058823529411764705
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.058823529411764705
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.17647058823529413
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.058823529411764705
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.058823529411764705
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.75
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "2.",
+            "meta": {
+                "paragraph": 6,
+                "from_line": 20,
+                "to_line": 20,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Houses and rooms are full of perfumes, the shelves are crowded with perfumes,\nI breathe the fragrance myself and know it and like it,\nThe distillation would intoxicate me also, but I shall not let it.",
+            "meta": {
+                "paragraph": 7,
+                "from_line": 22,
+                "to_line": 24,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.67
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.33
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ]
+            }
+        },
+        {
+            "text": "The atmosphere is not a perfume, it has no taste of the distillation, it is odorless,\nIt is for my mouth forever, I am in love with it,\nI will go to the bank by the wood and become undisguised and naked,\nI am mad for it to be in contact with me.",
+            "meta": {
+                "paragraph": 8,
+                "from_line": 26,
+                "to_line": 29,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.2727272727272727
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.09090909090909091
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.33
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.4
+                    }
+                ]
+            }
+        },
+        {
+            "text": "The smoke of my own breath,\nEchoes, ripples, buzz\u2019d whispers, love-root, silk-thread, crotch and vine,\nMy respiration and inspiration, the beating of my heart, the passing of blood and air through my lungs,\nThe sniff of green leaves and dry leaves, and of the shore and dark-color\u2019d sea-rocks, and of hay in the barn,\nThe sound of the belch\u2019d words of my voice loos\u2019d to the eddies of the wind,\nA few light kisses, a few embraces, a reaching around of arms,\nThe play of shine and shade on the trees as the supple boughs wag,\nThe delight alone or in the rush of the streets, or along the fields and hill-sides,\nThe feeling of health, the full-noon trill, the song of me rising from bed and meeting the sun.",
+            "meta": {
+                "paragraph": 9,
+                "from_line": 31,
+                "to_line": 39,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.05454545454545454
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.05454545454545454
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.16363636363636364
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.10909090909090909
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.09090909090909091
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.21818181818181817
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.05454545454545454
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.03636363636363636
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.05454545454545454
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.16363636363636364
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.31
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.12
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.19
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.12
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.3
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.2
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Have you reckon\u2019d a thousand acres much? have you reckon\u2019d the earth much?\nHave you practis\u2019d so long to learn to read?\nHave you felt so proud to get at the meaning of poems?",
+            "meta": {
+                "paragraph": 10,
+                "from_line": 41,
+                "to_line": 43,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.16666666666666666
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.25
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Stop this day and night with me and you shall possess the origin of all poems,\nYou shall possess the good of the earth and sun, (there are millions of suns left,)\nYou shall no longer take things at second or third hand, nor look through the eyes of the dead, nor feed on the spectres in books,\nYou shall not look through my eyes either, nor take things from me,\nYou shall listen to all sides and filter them from your self.",
+            "meta": {
+                "paragraph": 11,
+                "from_line": 45,
+                "to_line": 49,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.11764705882352941
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.17647058823529413
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.17647058823529413
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.17647058823529413
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.17647058823529413
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.17647058823529413
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.6
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.4
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.6
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.4
+                    }
+                ]
+            }
+        },
+        {
+            "text": "3.",
+            "meta": {
+                "paragraph": 12,
+                "from_line": 51,
+                "to_line": 51,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "I have heard what the talkers were talking, the talk of the beginning and the end,\nBut I do not talk of the beginning or the end.",
+            "meta": {
+                "paragraph": 13,
+                "from_line": 53,
+                "to_line": 54,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "There was never any more inception than there is now,\nNor any more youth or age than there is now,\nAnd will never be any more perfection than there is now,\nNor any more heaven or hell than there is now.",
+            "meta": {
+                "paragraph": 14,
+                "from_line": 56,
+                "to_line": 59,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0625
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0625
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0625
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0625
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.125
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Urge and urge and urge,\nAlways the procreant urge of the world.",
+            "meta": {
+                "paragraph": 15,
+                "from_line": 61,
+                "to_line": 62,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 1.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 1.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Out of the dimness opposite equals advance, always substance and increase, always sex,\nAlways a knit of identity, always distinction, always a breed of life.",
+            "meta": {
+                "paragraph": 16,
+                "from_line": 64,
+                "to_line": 65,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.08333333333333333
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.08333333333333333
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.08333333333333333
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.4166666666666667
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.16666666666666666
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "To elaborate is no avail, learn\u2019d and unlearn\u2019d feel that it is so.",
+            "meta": {
+                "paragraph": 17,
+                "from_line": 67,
+                "to_line": 67,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Sure as the most certain sure, plumb in the uprights, well entretied, braced in the beams,\nStout as a horse, affectionate, haughty, electrical,\nI and this mystery here we stand.",
+            "meta": {
+                "paragraph": 18,
+                "from_line": 69,
+                "to_line": 71,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.3
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.1
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Clear and sweet is my soul, and clear and sweet is all that is not my soul.",
+            "meta": {
+                "paragraph": 19,
+                "from_line": 73,
+                "to_line": 73,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.2
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Lack one lacks both, and the unseen is proved by the seen,\nTill that becomes unseen and receives proof in its turn.",
+            "meta": {
+                "paragraph": 20,
+                "from_line": 75,
+                "to_line": 76,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Showing the best and dividing it from the worst age vexes age,\nKnowing the perfect fitness and equanimity of things, while they discuss I am silent, and go bathe and admire myself.",
+            "meta": {
+                "paragraph": 21,
+                "from_line": 78,
+                "to_line": 79,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.3333333333333333
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.16666666666666666
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.4
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.4
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.4
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.4
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Welcome is every organ and attribute of me, and of any man hearty and clean,\nNot an inch nor a particle of an inch is vile, and none shall be less familiar than the rest.",
+            "meta": {
+                "paragraph": 22,
+                "from_line": 81,
+                "to_line": 82,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.125
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.375
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.25
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.67
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.33
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 1.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "I am satisfied\u2014I see, dance, laugh, sing;\nAs the hugging and loving bed-fellow sleeps at my side through the night, and withdraws at the peep of the day with stealthy tread,\nLeaving me baskets cover\u2019d with white towels swelling the house with their plenty,\nShall I postpone my acceptation and realization and scream at my eyes,\nThat they turn from gazing after and down the road,\nAnd forthwith cipher and show me to a cent,\nExactly the value of one and exactly the value of two, and which is ahead?",
+            "meta": {
+                "paragraph": 23,
+                "from_line": 84,
+                "to_line": 90,
+                "file": "samples/lb_whitman01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.09375
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.03125
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.09375
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.1875
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.09375
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.1875
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.09375
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.03125
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.03125
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.15625
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.38
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.38
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ]
+            }
+        }
+    ]
+}

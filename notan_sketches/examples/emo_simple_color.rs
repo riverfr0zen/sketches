@@ -13,9 +13,14 @@ use std::fs;
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
         // "assets/lb_bronte01.json"
+        // "assets/lb_dickinson01.json"
+        "assets/lb_dickinson02.json"
+        // "assets/lb_howe01.json"
         // "assets/lb_hughes01.json"
+        // "assets/lb_teasdale01.json"
         // "assets/wilde01.json"
-        "assets/the_stagger.json"
+        // "assets/lb_whitman01.json"
+        // "assets/the_stagger.json"
     };
 }
 
@@ -338,17 +343,21 @@ fn update_bg_color(app: &App, state: &mut State) {
     // exact floating point numbers of the end color, so comparing with rounded
     // color values instead of comparing the colors directly.
     let precision = COLOR_COMPARISON_PRECISION;
+    // log::debug!(
+    //     "{}::{}, {}::{}, {}::{}",
+    //     round(state.bg_color.r, precision),
+    //     round(state.simple_color.r, precision),
+    //     round(state.bg_color.g, precision),
+    //     round(state.simple_color.g, precision),
+    //     round(state.bg_color.b, precision),
+    //     round(state.simple_color.b, precision),
+    // );
     if round(state.bg_color.r, precision) != round(state.simple_color.r, precision)
-        && round(state.bg_color.g, precision) != round(state.simple_color.g, precision)
-        && round(state.bg_color.b, precision) != round(state.simple_color.b, precision)
+        || round(state.bg_color.g, precision) != round(state.simple_color.g, precision)
+        || round(state.bg_color.b, precision) != round(state.simple_color.b, precision)
     {
         log::debug!("Mix factor: {}", state.bg_color_mix_factor);
-        // log::debug!(
-        //     "bgcolor: {}, simple_color {}",
-        //     state.bg_color,
-        //     state.simple_color
-        // );
-        let mut bg_color = Srgb::new(state.bg_color.r, state.bg_color.g, state.bg_color.b);
+        let bg_color = Srgb::new(state.bg_color.r, state.bg_color.g, state.bg_color.b);
         let simple_color = Srgb::new(
             state.simple_color.r,
             state.simple_color.g,
@@ -437,14 +446,12 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("home");
         state.analysis = 0;
         state.simple_color = CLEAR_COLOR;
-        // state.text_color = get_text_color(&state);
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.analysis = state.emodoc.analyses.len() - 1;
         state.simple_color = get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
-        // state.text_color = get_text_color(&state);
     }
 
 
@@ -454,18 +461,15 @@ fn update(app: &mut App, state: &mut State) {
         if state.analysis > 0 {
             state.simple_color =
                 get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
-            state.text_color = get_text_color(&state);
         } else {
             state.simple_color = CLEAR_COLOR;
         }
-        // state.text_color = get_text_color(&state);
     }
 
     if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
         log::debug!("right");
         state.analysis += 1;
         state.simple_color = get_simple_color_for_emo(&state.emodoc.analyses[state.analysis - 1]);
-        // state.text_color = get_text_color(&state);
     }
     // update_bg_color_simple(state);
     update_bg_color(app, state);

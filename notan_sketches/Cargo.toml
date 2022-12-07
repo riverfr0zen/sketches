@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 notan = { version = "0.8.0", features = ["extra", "text"] }
-# notan = { git = "https://github.com/Nazariglez/notan.git", branch = "c/pma-text", features = ["extra", "text"] }
+# notan = { git = "https://github.com/Nazariglez/notan.git", branch = "c/glutin", features = ["extra", "text"] }
 
 rapier2d = "0.16.0"
 serde_json = "1.0"

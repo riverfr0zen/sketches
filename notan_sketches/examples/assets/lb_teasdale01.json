@@ -1,0 +1,554 @@
+{
+    "title": "The Answer",
+    "author": "Sarah Teasdale",
+    "analyses": [
+        {
+            "text": "When I go back to earth\nAnd all my joyous body\nPuts off the red and white\nThat once had been so proud,",
+            "meta": {
+                "paragraph": 1,
+                "from_line": 1,
+                "to_line": 4,
+                "file": "samples/lb_teasdale01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.3
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.3
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.33
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.5
+                    }
+                ]
+            }
+        },
+        {
+            "text": "If men should pass above\nWith false and feeble pity,\nMy dust will find a voice\nTo answer them aloud:\n\u201cBe still, I am content,",
+            "meta": {
+                "paragraph": 2,
+                "from_line": 6,
+                "to_line": 10,
+                "file": "samples/lb_teasdale01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.14285714285714285
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.2857142857142857
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.2857142857142857
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.14285714285714285
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.6
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.5
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.25
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        },
+        {
+            "text": "Take back your poor compassion,\nJoy was a flame in me\nToo steady to destroy;\nLithe as a bending reed\nLoving the storm that sways her\u2014",
+            "meta": {
+                "paragraph": 3,
+                "from_line": 12,
+                "to_line": 16,
+                "file": "samples/lb_teasdale01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.16666666666666666
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.4
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.2
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.2
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.17
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.33
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.17
+                    }
+                ]
+            }
+        },
+        {
+            "text": "I found more joy in sorrow\nThan you could find in joy.\u201d",
+            "meta": {
+                "paragraph": 4,
+                "from_line": 18,
+                "to_line": 19,
+                "file": "samples/lb_teasdale01.txt"
+            },
+            "results": {
+                "nrclex": [
+                    {
+                        "marker": "fear",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "positive",
+                        "score": 0.3
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 0.1
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.3
+                    }
+                ],
+                "t2e_repo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ],
+                "t2e_demo": [
+                    {
+                        "marker": "positive",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "negative",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "fear",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anger",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "anticipation",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "trust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "surprise",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "sadness",
+                        "score": 1.0
+                    },
+                    {
+                        "marker": "disgust",
+                        "score": 0.0
+                    },
+                    {
+                        "marker": "joy",
+                        "score": 0.0
+                    }
+                ]
+            }
+        }
+    ]
+}
