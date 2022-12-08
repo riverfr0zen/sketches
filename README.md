@@ -69,4 +69,8 @@ Similar to Simple Color Model above, except that if more than one emotion has th
 This model may also do the same with a "second ranked color" if only one emotion is at the top.
 
 
+## FontForge
 
+Since notan's text support doesn't support line-spacing yet, I found an alternative in changing the spacing within the font file itself using the excellent [FontForge](https://fontforge.org/en-US/) software. 
+
+[This doc was helpful for line-spacing](http://designwithfontforge.com/en-US/Line_Spacing.html).

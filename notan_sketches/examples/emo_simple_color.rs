@@ -14,13 +14,13 @@ macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
         // "assets/lb_bronte01.json"
         // "assets/lb_dickinson01.json"
-        "assets/lb_dickinson02.json"
+        // "assets/lb_dickinson02.json"
         // "assets/lb_howe01.json"
         // "assets/lb_hughes01.json"
         // "assets/lb_teasdale01.json"
         // "assets/wilde01.json"
         // "assets/lb_whitman01.json"
-        // "assets/the_stagger.json"
+        "assets/the_stagger.json"
     };
 }
 
@@ -98,6 +98,7 @@ struct EmocatOutputDoc {
 struct State {
     emodoc: EmocatOutputDoc,
     font: Font,
+    title_font: Font,
     analysis: usize,
     simple_color: Color,
     bg_color: Color,
@@ -111,6 +112,13 @@ fn init(gfx: &mut Graphics) -> State {
     let font = gfx
         .create_font(include_bytes!(
             // "./assets/fonts/Ubuntu-B.ttf"
+            // "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
+            "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.spaced.ttf"
+        ))
+        .unwrap();
+
+    let title_font = gfx
+        .create_font(include_bytes!(
             "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
         ))
         .unwrap();
@@ -121,6 +129,7 @@ fn init(gfx: &mut Graphics) -> State {
     let state = State {
         emodoc: emodoc,
         font: font,
+        title_font: title_font,
         analysis: 0,
         simple_color: CLEAR_COLOR,
         bg_color: CLEAR_COLOR,
@@ -356,7 +365,7 @@ fn update_bg_color(app: &App, state: &mut State) {
         || round(state.bg_color.g, precision) != round(state.simple_color.g, precision)
         || round(state.bg_color.b, precision) != round(state.simple_color.b, precision)
     {
-        log::debug!("Mix factor: {}", state.bg_color_mix_factor);
+        // log::debug!("Mix factor: {}", state.bg_color_mix_factor);
         let bg_color = Srgb::new(state.bg_color.r, state.bg_color.g, state.bg_color.b);
         let simple_color = Srgb::new(
             state.simple_color.r,
@@ -481,7 +490,7 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
     let mut textbox_width = work_size.x * 0.75;
 
 
-    draw.text(&state.font, &state.emodoc.title)
+    draw.text(&state.title_font, &state.emodoc.title)
         .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
         .color(TITLE_COLOR)
         .size(scale_font(60.0, work_size))
@@ -506,7 +515,7 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
     let title_bounds = draw.last_text_bounds();
 
     textbox_width = textbox_width * 0.9;
-    draw.text(&state.font, &format!("by {}", state.emodoc.author))
+    draw.text(&state.title_font, &format!("by {}", state.emodoc.author))
         .alpha_mode(BlendMode::OVER)
         .color(META_COLOR)
         .size(scale_font(30.0, work_size))
@@ -525,7 +534,7 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
     draw.text(&state.font, &state.emodoc.analyses[state.analysis - 1].text)
         .alpha_mode(BlendMode::OVER)
         .color(state.text_color)
-        .size(scale_font(24.0, work_size))
+        .size(scale_font(32.0, work_size))
         .max_width(textbox_width)
         .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
         .v_align_middle()
