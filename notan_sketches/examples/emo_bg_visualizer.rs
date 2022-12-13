@@ -11,19 +11,18 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 
 
-macro_rules! EMOCAT_OUTPUT_FILE {
-    () => {
-        // "assets/lb_bronte01.json"
-        // "assets/lb_dickinson01.json"
-        // "assets/lb_dickinson02.json"
-        // "assets/lb_howe01.json"
-        // "assets/lb_hughes01.json"
-        // "assets/lb_teasdale01.json"
-        // "assets/wilde01.json"
-        // "assets/lb_whitman01.json"
-        "assets/the_stagger.json"
-    };
-}
+// See details at https://stackoverflow.com/a/42764117
+const EMOCAT_DOCS: [&'static str; 9] = [
+    include_str!("assets/lb_bronte01.json"),
+    include_str!("assets/lb_dickinson01.json"),
+    include_str!("assets/lb_dickinson02.json"),
+    include_str!("assets/lb_howe01.json"),
+    include_str!("assets/lb_hughes01.json"),
+    include_str!("assets/lb_teasdale01.json"),
+    include_str!("assets/wilde01.json"),
+    include_str!("assets/lb_whitman01.json"),
+    include_str!("assets/the_stagger.json"),
+];
 
 
 const CLEAR_COLOR: Color = Color::WHITE;
@@ -39,12 +38,26 @@ const COLOR_COMPARISON_PRECISION: f32 = 3.0;
 const MAX_FPS: u8 = 240;
 
 
+// #[derive(PartialEq)]
+enum View {
+    HOME,
+    READ,
+}
+
+
+struct ReadingViewState {
+    doc_index: usize,
+    analysis: usize,
+}
+
+
 #[derive(AppState)]
 struct State {
-    emodoc: EmocatOutputDoc,
+    view: View,
+    emodocs: Vec<EmocatOutputDoc>,
+    reading: ReadingViewState,
     font: Font,
     title_font: Font,
-    analysis: usize,
     simple_color: Color,
     bg_color: Color,
     bg_color_mix_factor: f32,
@@ -68,14 +81,20 @@ fn init(gfx: &mut Graphics) -> State {
         ))
         .unwrap();
 
-    let analyses_str = include_str!(EMOCAT_OUTPUT_FILE!());
-    let emodoc: EmocatOutputDoc =
-        serde_json::from_str(analyses_str).expect("Could not open emocat document");
+    let emodocs: Vec<EmocatOutputDoc> = EMOCAT_DOCS
+        .iter()
+        .map(|&doc| serde_json::from_str(doc).expect("Could not open emocat document"))
+        .collect();
+
     let state = State {
-        emodoc: emodoc,
+        view: View::READ,
+        emodocs: emodocs,
+        reading: ReadingViewState {
+            doc_index: 0,
+            analysis: 0,
+        },
         font: font,
         title_font: title_font,
-        analysis: 0,
         simple_color: CLEAR_COLOR,
         bg_color: CLEAR_COLOR,
         bg_color_mix_factor: STARTING_MIX_FACTOR,
@@ -160,10 +179,6 @@ fn round(val: f32, digits: f32) -> f32 {
 }
 
 
-fn update_bg_color_simple(state: &mut State) {
-    state.bg_color = state.simple_color.clone();
-}
-
 fn update_bg_color(app: &App, state: &mut State) {
     // The mix function used to blend colors below doesn't always end up with the
     // exact floating point numbers of the end color, so comparing with rounded
@@ -201,34 +216,41 @@ fn update_bg_color(app: &App, state: &mut State) {
 }
 
 
-fn update(app: &mut App, state: &mut State) {
+fn update_bg_color_simple(state: &mut State) {
+    state.bg_color = state.simple_color.clone();
+}
+
+
+fn update_read_view(app: &mut App, state: &mut State) {
+    let emodoc = &state.emodocs[state.reading.doc_index];
+
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
-        state.analysis = 0;
+        state.reading.analysis = 0;
         state.simple_color = CLEAR_COLOR;
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
-        state.analysis = state.emodoc.analyses.len() - 1;
-        state.simple_color = get_simple_color(&state.emodoc.analyses[state.analysis - 1]);
+        state.reading.analysis = emodoc.analyses.len() - 1;
+        state.simple_color = get_simple_color(&emodoc.analyses[state.reading.analysis - 1]);
     }
 
 
-    if app.keyboard.was_pressed(KeyCode::Left) && state.analysis > 0 {
+    if app.keyboard.was_pressed(KeyCode::Left) && state.reading.analysis > 0 {
         log::debug!("left");
-        state.analysis -= 1;
-        if state.analysis > 0 {
-            state.simple_color = get_simple_color(&state.emodoc.analyses[state.analysis - 1]);
+        state.reading.analysis -= 1;
+        if state.reading.analysis > 0 {
+            state.simple_color = get_simple_color(&emodoc.analyses[state.reading.analysis - 1]);
         } else {
             state.simple_color = CLEAR_COLOR;
         }
     }
 
-    if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
+    if app.keyboard.was_pressed(KeyCode::Right) && state.reading.analysis < emodoc.analyses.len() {
         log::debug!("right");
-        state.analysis += 1;
-        state.simple_color = get_simple_color(&state.emodoc.analyses[state.analysis - 1]);
+        state.reading.analysis += 1;
+        state.simple_color = get_simple_color(&emodoc.analyses[state.reading.analysis - 1]);
     }
     // update_bg_color_simple(state);
     update_bg_color(app, state);
@@ -236,11 +258,19 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 
+fn update(app: &mut App, state: &mut State) {
+    match state.view {
+        View::READ => update_read_view(app, state),
+        _ => (),
+    }
+}
+
+
 fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
+    let emodoc = &state.emodocs[state.reading.doc_index];
     let mut textbox_width = work_size.x * 0.75;
 
-
-    draw.text(&state.title_font, &state.emodoc.title)
+    draw.text(&state.title_font, &emodoc.title)
         .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
         .color(TITLE_COLOR)
         .size(scale_font(60.0, work_size))
@@ -265,7 +295,7 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
     let title_bounds = draw.last_text_bounds();
 
     textbox_width = textbox_width * 0.9;
-    draw.text(&state.title_font, &format!("by {}", state.emodoc.author))
+    draw.text(&state.title_font, &format!("by {}", emodoc.author))
         .alpha_mode(BlendMode::OVER)
         .color(META_COLOR)
         .size(scale_font(30.0, work_size))
@@ -280,20 +310,40 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
 
 
 fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
+    let emodoc = &state.emodocs[state.reading.doc_index];
     let textbox_width = work_size.x * 0.75;
-    draw.text(&state.font, &state.emodoc.analyses[state.analysis - 1].text)
-        .alpha_mode(BlendMode::OVER)
-        .color(state.text_color)
-        .size(scale_font(32.0, work_size))
-        .max_width(textbox_width)
-        .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
-        .v_align_middle()
-        // .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.3)
-        // .v_align_top()
-        .h_align_left();
+
+    draw.text(
+        &state.font,
+        &emodoc.analyses[state.reading.analysis - 1].text,
+    )
+    .alpha_mode(BlendMode::OVER)
+    .color(state.text_color)
+    .size(scale_font(32.0, work_size))
+    .max_width(textbox_width)
+    .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
+    .v_align_middle()
+    // .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.3)
+    // .v_align_top()
+    .h_align_left();
 
     // let title_bounds = draw.last_text_bounds();
 }
+
+
+fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
+    if state.reading.analysis == 0 {
+        draw_title(draw, state, work_size);
+    } else {
+        draw_paragraph(draw, state, work_size);
+    }
+}
+
+
+fn draw_home_view(draw: &mut Draw, state: &State, work_size: Vec2) {
+    log::debug!("@TODO draw_home_view");
+}
+
 
 fn draw(
     gfx: &mut Graphics,
@@ -303,10 +353,9 @@ fn draw(
     let work_size = get_work_size(gfx);
     let mut draw = get_draw_setup(gfx, work_size, true, state.bg_color);
 
-    if state.analysis == 0 {
-        draw_title(&mut draw, state, work_size);
-    } else {
-        draw_paragraph(&mut draw, state, work_size);
+    match state.view {
+        View::READ => draw_read_view(&mut draw, state, work_size),
+        _ => draw_home_view(&mut draw, state, work_size),
     }
 
     // draw to screen
@@ -321,10 +370,10 @@ fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     // let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
     let win_config = get_common_win_config().high_dpi(true).size(
-        // ScreenDimensions::RES_1080P.x as i32,
-        // ScreenDimensions::RES_1080P.y as i32,
-        ScreenDimensions::DEFAULT.x as i32,
-        ScreenDimensions::DEFAULT.y as i32,
+        ScreenDimensions::RES_1080P.x as i32,
+        ScreenDimensions::RES_1080P.y as i32,
+        // ScreenDimensions::DEFAULT.x as i32,
+        // ScreenDimensions::DEFAULT.y as i32,
     );
 
     #[cfg(target_arch = "wasm32")]
