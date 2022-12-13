@@ -1,3 +1,4 @@
+pub mod emotion;
 pub mod fractals;
 pub mod mathutils;
 pub mod utils;
