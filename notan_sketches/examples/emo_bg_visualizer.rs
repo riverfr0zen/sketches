@@ -341,36 +341,48 @@ fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
 
 
 fn draw_home_view(draw: &mut Draw, state: &State, work_size: Vec2) {
-    let mut textbox_width = work_size.x * 0.75;
+    let mut menu_width = work_size.x * 0.75;
 
     let mut menu_item_ypos = work_size.y * 0.1;
     let menu_item_spacing = work_size.y * 0.05;
     for emodoc in state.emodocs.iter() {
-        let doc_title = format!("{} ", &emodoc.title);
-        draw.text(&state.title_font, &doc_title)
+        draw.text(&state.title_font, &emodoc.title)
             .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
             .color(TITLE_COLOR)
-            .size(scale_font(24.0, work_size))
-            .max_width(textbox_width)
-            .position(work_size.x * 0.5 - textbox_width * 0.5, menu_item_ypos)
+            .size(scale_font(16.0, work_size))
+            .max_width(menu_width)
+            .position(work_size.x * 0.5 - menu_width * 0.5, menu_item_ypos)
             .h_align_left()
             .v_align_middle();
         let title_bounds = draw.last_text_bounds();
 
         // let byline = format!("by {}", emodoc.author);
-        let byline = format!(" ({})", emodoc.author);
-        let byline_xpos = title_bounds.max_x();
+        let byline = format!("    {}", emodoc.author);
+        // let byline_xpos = title_bounds.max_x();
+        let byline_xpos = title_bounds.min_x();
+        let byline_ypos = title_bounds.max_y() + work_size.y * 0.015;
         draw.text(&state.title_font, &byline)
             .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
             .color(META_COLOR)
-            .size(scale_font(20.0, work_size))
-            .max_width(textbox_width)
-            .position(byline_xpos, menu_item_ypos)
+            .size(scale_font(12.0, work_size))
+            .max_width(menu_width)
+            .position(byline_xpos, byline_ypos)
             .h_align_left()
             .v_align_middle();
+        let byline_bounds = draw.last_text_bounds();
 
+        draw.rect(
+            (title_bounds.min_x(), title_bounds.min_y()),
+            (
+                title_bounds.max_x().max(byline_bounds.max_x()) - title_bounds.min_x(),
+                // title_bounds.height + byline_bounds.height,
+                byline_bounds.max_y() - title_bounds.min_y(),
+            ),
+        )
+        .stroke(1.0)
+        .color(Color::RED);
 
-        menu_item_ypos = title_bounds.max_y() + menu_item_spacing;
+        menu_item_ypos = byline_bounds.max_y() + menu_item_spacing;
         // log::debug!("{}", emodoc.title);
     }
 }
