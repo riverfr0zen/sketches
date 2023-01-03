@@ -5,7 +5,7 @@
 ///
 use notan::draw::*;
 use notan::log;
-use notan::math::{vec2, Rect, Vec2};
+use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup};
 
@@ -13,6 +13,8 @@ const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
 const COLS: u8 = 12;
 const ROWS: u8 = 22;
+// const COLS: u8 = 22;
+// const ROWS: u8 = 12;
 // Minimum padding
 const PADDING: f32 = 10.0;
 
@@ -21,6 +23,8 @@ const PADDING: f32 = 10.0;
 pub struct State {
     pub display_height: f32,
     pub display_width: f32,
+    pub hpadding: f32,
+    pub vpadding: f32,
     pub tile_size: f32,
     pub box_texture: Texture,
 }
@@ -28,14 +32,32 @@ pub struct State {
 
 impl State {
     fn new(gfx: &mut Graphics) -> Self {
-        let display_height = WORK_SIZE.y - PADDING * 2.0;
-        let tile_size = display_height / ROWS as f32;
-        let display_width = tile_size * COLS as f32;
+        let display_height: f32;
+        let tile_size: f32;
+        let display_width: f32;
+        let hpadding: f32;
+        let vpadding: f32;
+
+        if ROWS > COLS {
+            display_height = WORK_SIZE.y - PADDING * 2.0;
+            tile_size = display_height / ROWS as f32;
+            display_width = tile_size * COLS as f32;
+            hpadding = (WORK_SIZE.x - display_width) * 0.5;
+            vpadding = PADDING;
+        } else {
+            display_width = WORK_SIZE.x - PADDING * 2.0;
+            tile_size = display_width / COLS as f32;
+            display_height = tile_size * ROWS as f32;
+            vpadding = (WORK_SIZE.y - display_height) * 0.5;
+            hpadding = PADDING;
+        }
 
         let box_texture = create_texture(gfx, tile_size);
         Self {
             display_height: display_height,
             display_width: display_width,
+            hpadding: hpadding,
+            vpadding: vpadding,
             tile_size: tile_size,
             box_texture: box_texture,
         }
@@ -69,15 +91,14 @@ fn draw(
     state: &mut State,
     // app: &mut App,
 ) {
-    let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
+    let mut draw = get_draw_setup(gfx, WORK_SIZE, true, Color::WHITE);
 
-    let hpadding = (WORK_SIZE.x - state.display_width) * 0.5;
     for col in 0..COLS {
         for row in 0..ROWS {
             draw.image(&state.box_texture)
                 .position(
-                    col as f32 * state.tile_size + hpadding,
-                    row as f32 * state.tile_size + PADDING,
+                    col as f32 * state.tile_size + state.hpadding,
+                    row as f32 * state.tile_size + state.vpadding,
                 )
                 .size(state.tile_size, state.tile_size);
         }
