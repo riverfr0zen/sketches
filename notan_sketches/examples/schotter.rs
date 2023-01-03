@@ -13,34 +13,38 @@ const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
 const COLS: u8 = 12;
 const ROWS: u8 = 22;
-const PADDING: f32 = 50.0;
+// Minimum padding
+const PADDING: f32 = 10.0;
 
 
 #[derive(AppState)]
 pub struct State {
+    pub display_height: f32,
+    pub display_width: f32,
+    pub tile_size: f32,
     pub box_texture: Texture,
 }
 
 
 impl State {
     fn new(gfx: &mut Graphics) -> Self {
-        // let display_bounds = Rect {
-        //     x: PADDING,
-        //     y: PADDING,
-        //     width: WORK_SIZE.x - .0,
-        //     height: 10.0,
-        // };
-        let box_texture = create_texture(gfx);
+        let display_height = WORK_SIZE.y - PADDING * 2.0;
+        let tile_size = display_height / ROWS as f32;
+        let display_width = tile_size * COLS as f32;
+
+        let box_texture = create_texture(gfx, tile_size);
         Self {
+            display_height: display_height,
+            display_width: display_width,
+            tile_size: tile_size,
             box_texture: box_texture,
         }
     }
 }
 
-fn create_texture(gfx: &mut Graphics) -> Texture {
-    let tile_size = 50;
+fn create_texture(gfx: &mut Graphics, tile_size: f32) -> Texture {
     let rt = gfx
-        .create_render_texture(tile_size, tile_size)
+        .create_render_texture(tile_size as i32, tile_size as i32)
         .build()
         .unwrap();
 
@@ -67,9 +71,17 @@ fn draw(
 ) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
 
-    draw.image(&state.box_texture)
-        .position(100.0, 100.0)
-        .size(50.0, 50.0);
+    let hpadding = (WORK_SIZE.x - state.display_width) * 0.5;
+    for col in 0..COLS {
+        for row in 0..ROWS {
+            draw.image(&state.box_texture)
+                .position(
+                    col as f32 * state.tile_size + hpadding,
+                    row as f32 * state.tile_size + PADDING,
+                )
+                .size(state.tile_size, state.tile_size);
+        }
+    }
 
 
     // draw to screen
