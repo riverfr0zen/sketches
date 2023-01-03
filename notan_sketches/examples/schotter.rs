@@ -94,6 +94,7 @@ impl State {
 
 
 fn draw(
+    app: &mut App,
     gfx: &mut Graphics,
     state: &mut State,
     // app: &mut App,
@@ -106,9 +107,9 @@ fn draw(
         let rand_step: f32 = 0.022;
         // let rand_step: f32 = 0.0022;
         // Soften random effect for translation
-        let dampen: f32 = 0.45;
+        // let dampen: f32 = 0.45;
         // let dampen: f32 = 0.045;
-        // let dampen: f32 = 1.5;
+        let dampen: f32 = 4.5;
         // Cumulative rotation value
         let mut rand_sum = 0.0;
 
@@ -118,6 +119,8 @@ fn draw(
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
                 let xpos = col as f32 * state.tile_size + state.hpadding + (rand_val * dampen);
                 let ypos = row as f32 * state.tile_size + state.vpadding + (rand_val * dampen);
+                // let xpos = col as f32 * state.tile_size + state.hpadding;
+                // let ypos = row as f32 * state.tile_size + state.vpadding;
                 draw.image(&state.box_texture)
                     .position(xpos, ypos)
                     // Need to rotate from the center of the image, which doesn't seem to be the
@@ -162,8 +165,6 @@ fn main() -> Result<(), String> {
         .high_dpi(true)
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
 
-    // notan::init()
-    // notan::init_with(init)
     notan::init_with(State::new)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
