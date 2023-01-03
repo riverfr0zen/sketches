@@ -23,6 +23,10 @@ cargo build --release --example emo_simple_color --target wasm32-unknown-unknown
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/emo_simple_color.wasm
 
 
+cargo build --release --example schotter --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/schotter.wasm
+
+
 ```
 
 # wasm-pack command that doesn't work
