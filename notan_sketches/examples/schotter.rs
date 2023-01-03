@@ -27,6 +27,7 @@ pub struct State {
     pub vpadding: f32,
     pub tile_size: f32,
     pub box_texture: Texture,
+    pub rng: Random,
 }
 
 
@@ -64,6 +65,7 @@ impl State {
     }
 }
 
+
 fn create_texture(gfx: &mut Graphics, tile_size: f32) -> Texture {
     let rt = gfx
         .create_render_texture(tile_size as i32, tile_size as i32)
@@ -78,9 +80,7 @@ fn create_texture(gfx: &mut Graphics, tile_size: f32) -> Texture {
     draw.rect((0.0, 0.0), (tile_size, tile_size))
         .color(Color::BLACK)
         .stroke(4.0);
-    // draw.rect((2.0, 2.0), (tile_size - 4.0, tile_size - 4.0))
-    //     .color(Color::BLACK)
-    //     .stroke(4.0);
+
     gfx.render_to(&rt, &draw);
     rt.take_inner()
 }
@@ -104,8 +104,6 @@ fn draw(
         }
     }
 
-
-    // draw to screen
     gfx.render(&draw);
     // log::debug!("fps: {}", app.timer.fps().round());
 }

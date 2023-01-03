@@ -2,7 +2,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan_sketches::utils::{get_common_win_config, get_draw_setup};
+use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng};
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const CP_BODY_W: f32 = WORK_SIZE.x / 10.0;
@@ -69,10 +69,8 @@ impl State {
             .build()
             .unwrap();
 
-        let mut rng = Random::default();
-        let seed: u64 = rng.gen();
+        let (rng, seed) = get_rng(None);
         log::debug!("seed: {}", seed);
-        rng.reseed(seed);
         Self {
             // cp_head_pos: vec2(CP_BODY_W, CP_BODY_H),
             // cp_head_pos: vec2(0.0, 0.0),

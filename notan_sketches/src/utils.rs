@@ -1,4 +1,5 @@
 use notan::draw::*;
+use notan::log;
 use notan::math::{vec2, vec3, Mat4, Vec2};
 use notan::prelude::*;
 
@@ -84,4 +85,18 @@ impl ScreenDimensions {
     pub const RES_1440P: Vec2 = vec2(2560.0, 1440.0);
     pub const RES_4K: Vec2 = vec2(3840.0, 2160.0);
     pub const RES_4KISH: Vec2 = vec2(3500.0, 1800.0);
+}
+
+
+pub fn get_rng(seed: Option<u64>) -> (Random, u64) {
+    let mut rng = Random::default();
+    let _seed: u64;
+    if let Some(seed) = seed {
+        _seed = seed;
+    } else {
+        _seed = rng.gen();
+    }
+    // log::debug!("seed: {}", _seed);
+    rng.reseed(_seed);
+    (rng, _seed)
 }
