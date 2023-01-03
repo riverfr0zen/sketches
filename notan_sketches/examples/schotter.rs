@@ -5,11 +5,10 @@
 ///
 use notan::draw::*;
 use notan::log;
-use notan::math::{vec2, Vec2};
+use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
 
-// const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 // const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 const COLS: u8 = 12;
@@ -94,7 +93,6 @@ impl State {
 
 
 fn draw(
-    app: &mut App,
     gfx: &mut Graphics,
     state: &mut State,
     // app: &mut App,
