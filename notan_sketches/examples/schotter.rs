@@ -421,15 +421,33 @@ fn main() -> Result<(), String> {
         .high_dpi(true)
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
 
+    // // Basic reproduction
     // notan::init_with(State::new_basic)
+    //     .add_config(log::LogConfig::debug())
+    //     .add_config(win_config)
+    //     .add_config(DrawConfig) // Simple way to add the draw extension
+    //     .event(event)
+    //     .update(update)
+    //     .draw(draw_basic)
+    //     .build()
+
+    // // Solid variant 1
+    // notan::init_with(State::new_solid)
+    //     .add_config(log::LogConfig::debug())
+    //     .add_config(win_config)
+    //     .add_config(DrawConfig) // Simple way to add the draw extension
+    //     .event(event)
+    //     .update(update)
+    //     .draw(draw_solid)
+    //     .build()
+
+    // Solid variant 2
     notan::init_with(State::new_solid)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .event(event)
         .update(update)
-        // .draw(draw_basic)
-        .draw(draw_solid)
         .draw(draw_solid2)
         .build()
 }
