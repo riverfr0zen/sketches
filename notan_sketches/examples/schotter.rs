@@ -18,6 +18,14 @@ const ROWS: u8 = 22;
 // Minimum padding
 const PADDING: f32 = 50.0;
 const STROKE_WIDTH: f32 = 4.0;
+// Rotation increment in degrees
+// const RAND_STEP: f32 = 0.22;
+const RAND_STEP: f32 = 0.022;
+// const RAND_STEP: f32 = 0.0022;
+// Soften random effect for translation
+// const DAMPEN: f32 = 0.45;
+// const DAMPEN: f32 = 0.045;
+const DAMPEN: f32 = 4.5;
 
 
 fn create_box_texture(gfx: &mut Graphics, tile_size: f32) -> Texture {
@@ -92,7 +100,7 @@ impl State {
 }
 
 
-fn draw(
+fn draw_basic(
     gfx: &mut Graphics,
     state: &mut State,
     // app: &mut App,
@@ -100,23 +108,15 @@ fn draw(
     if !state.freeze {
         let mut draw = get_draw_setup(gfx, WORK_SIZE, true, Color::WHITE);
 
-        // Rotation increment in degrees
-        // let rand_step: f32 = 0.22;
-        let rand_step: f32 = 0.022;
-        // let rand_step: f32 = 0.0022;
-        // Soften random effect for translation
-        // let dampen: f32 = 0.45;
-        // let dampen: f32 = 0.045;
-        let dampen: f32 = 4.5;
         // Cumulative rotation value
         let mut rand_sum = 0.0;
 
         for row in 0..ROWS {
-            rand_sum += (row + 1) as f32 * rand_step;
+            rand_sum += (row + 1) as f32 * RAND_STEP;
             for col in 0..COLS {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
-                let xpos = col as f32 * state.tile_size + state.hpadding + (rand_val * dampen);
-                let ypos = row as f32 * state.tile_size + state.vpadding + (rand_val * dampen);
+                let xpos = col as f32 * state.tile_size + state.hpadding + (rand_val * DAMPEN);
+                let ypos = row as f32 * state.tile_size + state.vpadding + (rand_val * DAMPEN);
                 // let xpos = col as f32 * state.tile_size + state.hpadding;
                 // let ypos = row as f32 * state.tile_size + state.vpadding;
                 draw.image(&state.box_texture)
@@ -169,6 +169,6 @@ fn main() -> Result<(), String> {
         .add_config(DrawConfig) // Simple way to add the draw extension
         .event(event)
         .update(update)
-        .draw(draw)
+        .draw(draw_basic)
         .build()
 }
