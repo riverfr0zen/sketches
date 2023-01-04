@@ -28,23 +28,54 @@ const RAND_STEP: f32 = 0.022;
 const DAMPEN: f32 = 4.5;
 
 
-fn create_box_texture(gfx: &mut Graphics, tile_size: f32) -> Texture {
+// Visualization modifier
+enum VizMod {
+    BASIC,
+    SOLID,
+}
+
+
+fn _create_box_texture(gfx: &mut Graphics, tile_size: f32, vizmod: VizMod) -> Texture {
     let rt = gfx
         .create_render_texture(tile_size as i32, tile_size as i32)
         .build()
         .unwrap();
 
     let tile_size = tile_size as f32;
-
     let mut draw = gfx.create_draw();
     draw.set_size(tile_size, tile_size);
-    draw.clear(Color::TRANSPARENT);
-    draw.rect((0.0, 0.0), (tile_size, tile_size))
-        .color(Color::BLACK)
-        .stroke(STROKE_WIDTH);
+    match vizmod {
+        VizMod::SOLID => {
+            // draw.clear(Color::TRANSPARENT);
+            draw.rect((0.0, 0.0), (tile_size, tile_size))
+                .fill_color(Color::WHITE)
+                .fill()
+                .stroke_color(Color::BLACK)
+                .stroke(STROKE_WIDTH);
 
-    gfx.render_to(&rt, &draw);
-    rt.take_inner()
+            gfx.render_to(&rt, &draw);
+            rt.take_inner()
+        }
+        _ => {
+            draw.clear(Color::TRANSPARENT);
+            draw.rect((0.0, 0.0), (tile_size, tile_size))
+                .color(Color::BLACK)
+                .stroke(STROKE_WIDTH);
+
+            gfx.render_to(&rt, &draw);
+            rt.take_inner()
+        }
+    }
+}
+
+
+fn create_basic_box_texture(gfx: &mut Graphics, tile_size: f32) -> Texture {
+    _create_box_texture(gfx, tile_size, VizMod::BASIC)
+}
+
+
+fn create_solid_box_texture(gfx: &mut Graphics, tile_size: f32) -> Texture {
+    _create_box_texture(gfx, tile_size, VizMod::SOLID)
 }
 
 
@@ -62,7 +93,7 @@ pub struct State {
 
 
 impl State {
-    fn new(gfx: &mut Graphics) -> Self {
+    fn _new(gfx: &mut Graphics, box_texture_fn: &dyn Fn(&mut Graphics, f32) -> Texture) -> Self {
         let display_height: f32;
         let tile_size: f32;
         let display_width: f32;
@@ -83,7 +114,7 @@ impl State {
             hpadding = PADDING;
         }
 
-        let box_texture = create_box_texture(gfx, tile_size);
+        let box_texture = box_texture_fn(gfx, tile_size);
         let (rng, seed) = get_rng(None);
         log::debug!("seed: {}", seed);
         Self {
@@ -96,6 +127,15 @@ impl State {
             rng: rng,
             freeze: false,
         }
+    }
+
+    fn new_basic(gfx: &mut Graphics) -> Self {
+        Self::_new(gfx, &create_basic_box_texture)
+    }
+
+
+    fn new_solid(gfx: &mut Graphics) -> Self {
+        Self::_new(gfx, &create_solid_box_texture)
     }
 }
 
@@ -119,6 +159,52 @@ fn draw_basic(
                 let ypos = row as f32 * state.tile_size + state.vpadding + (rand_val * DAMPEN);
                 // let xpos = col as f32 * state.tile_size + state.hpadding;
                 // let ypos = row as f32 * state.tile_size + state.vpadding;
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
+                    .size(state.tile_size, state.tile_size);
+            }
+        }
+
+        gfx.render(&draw);
+        state.freeze = true;
+        // log::debug!("fps: {}", app.timer.fps().round());
+    }
+}
+
+
+fn draw_solid(
+    gfx: &mut Graphics,
+    state: &mut State,
+    // app: &mut App,
+) {
+    if !state.freeze {
+        let mut draw = get_draw_setup(gfx, WORK_SIZE, true, Color::WHITE);
+
+        // Cumulative rotation value
+        let mut rand_sum = 0.0;
+
+        for row in 0..ROWS {
+            rand_sum += (row + 1) as f32 * RAND_STEP;
+            for col in 0..COLS {
+                let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+
+                let mut xpos = col as f32 * state.tile_size + state.hpadding;
+                let mut ypos = row as f32 * state.tile_size + state.vpadding;
+
+                draw.rect((xpos, ypos), (state.tile_size, state.tile_size))
+                    .fill_color(Color::NAVY)
+                    .fill()
+                    .stroke_color(Color::WHITE)
+                    .stroke(STROKE_WIDTH);
+
+                xpos += rand_val * DAMPEN;
+                ypos += rand_val * DAMPEN;
                 draw.image(&state.box_texture)
                     .position(xpos, ypos)
                     // Need to rotate from the center of the image, which doesn't seem to be the
@@ -163,12 +249,13 @@ fn main() -> Result<(), String> {
         .high_dpi(true)
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
 
-    notan::init_with(State::new)
+    // notan::init_with(State::new_basic)
+    notan::init_with(State::new_solid)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .event(event)
         .update(update)
-        .draw(draw_basic)
+        .draw(draw_solid)
         .build()
 }
