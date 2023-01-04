@@ -1,5 +1,5 @@
 ///
-/// Recreation of "Schotter" (c.1965) by George Nees.
+/// Recreation of (and variations on) "Schotter" (c.1965) by George Nees.
 ///
 /// Based on http://www.artsnova.com/Nees_Schotter_Tutorial.html
 ///
@@ -13,6 +13,8 @@ use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, Scre
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 const COLS: u8 = 12;
 const ROWS: u8 = 22;
+// const COLS: u8 = 48;
+// const ROWS: u8 = 88;
 // const COLS: u8 = 22;
 // const ROWS: u8 = 12;
 // Minimum padding
@@ -26,6 +28,16 @@ const RAND_STEP: f32 = 0.022;
 // const DAMPEN: f32 = 0.45;
 // const DAMPEN: f32 = 0.045;
 const DAMPEN: f32 = 4.5;
+// Reds Dark-Light
+const GRAYPURP: Color = Color::new(0.29, 0.26, 0.36, 1.0);
+const MAHOGANY: Color = Color::new(0.26, 0.05, 0.04, 1.0);
+const CARMINE: Color = Color::new(0.59, 0.0, 0.09, 1.0);
+const SCARLET: Color = Color::new(1.0, 0.14, 0.0, 1.0);
+const SALMON: Color = Color::new(0.98, 0.5, 0.45, 1.0);
+// Yellows
+const OLIVE: Color = Color::new(0.5, 0.5, 0.0, 1.0);
+const SAFFRON: Color = Color::new(0.98, 0.54, 0.09, 1.0);
+const BANANA: Color = Color::new(1.0, 0.88, 0.21, 1.0);
 
 
 // Visualization modifier
@@ -46,11 +58,12 @@ fn _create_box_texture(gfx: &mut Graphics, tile_size: f32, vizmod: VizMod) -> Te
     draw.set_size(tile_size, tile_size);
     match vizmod {
         VizMod::SOLID => {
-            // draw.clear(Color::TRANSPARENT);
             draw.rect((0.0, 0.0), (tile_size, tile_size))
                 .fill_color(Color::WHITE)
                 .fill()
-                .stroke_color(Color::BLACK)
+                // .stroke_color(Color::BLACK)
+                // .stroke_color(Color::new(0.5, 0.5, 0.5, 1.0))
+                .stroke_color(Color::new(0.8, 0.8, 0.8, 1.0))
                 .stroke(STROKE_WIDTH);
 
             gfx.render_to(&rt, &draw);
@@ -184,13 +197,48 @@ fn draw_solid(
     // app: &mut App,
 ) {
     if !state.freeze {
-        let mut draw = get_draw_setup(gfx, WORK_SIZE, true, Color::WHITE);
+        // let mut draw = get_draw_setup(gfx, WORK_SIZE, true, MAHOGANY);
+        let mut draw = get_draw_setup(gfx, WORK_SIZE, true, Color::GRAY);
 
         // Cumulative rotation value
         let mut rand_sum = 0.0;
 
+        // for row in 0..ROWS {
+        //     rand_sum += (row + 1) as f32 * RAND_STEP;
+        //     for col in 0..COLS {
+        //         let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+
+        //         let mut xpos = col as f32 * state.tile_size + state.hpadding;
+        //         let mut ypos = row as f32 * state.tile_size + state.vpadding;
+
+        //         draw.image(&state.box_texture)
+        //             .position(xpos, ypos)
+        //             // Need to rotate from the center of the image, which doesn't seem to be the
+        //             // default.
+        //             // .rotate_from(
+        //             //     (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+        //             //     rand_val,
+        //             // )
+        //             // .color(Color::RED);
+        //             .color(Color::new(0.5, 0.0, 0.01, 1.0))
+        //             .size(state.tile_size, state.tile_size);
+
+        //         xpos += rand_val * DAMPEN;
+        //         ypos += rand_val * DAMPEN;
+        //         draw.image(&state.box_texture)
+        //             .position(xpos, ypos)
+        //             // Need to rotate from the center of the image, which doesn't seem to be the
+        //             // default.
+        //             .rotate_from(
+        //                 (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+        //                 rand_val,
+        //             )
+        //             .size(state.tile_size, state.tile_size);
+        //     }
+        // }
+
         for row in 0..ROWS {
-            rand_sum += (row + 1) as f32 * RAND_STEP;
+            rand_sum += (row + 1) as f32 * (RAND_STEP * 0.05);
             for col in 0..COLS {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
@@ -201,13 +249,26 @@ fn draw_solid(
                     .position(xpos, ypos)
                     // Need to rotate from the center of the image, which doesn't seem to be the
                     // default.
-                    // .rotate_from(
-                    //     (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
-                    //     rand_val,
-                    // )
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
                     // .color(Color::RED);
-                    .color(Color::new(0.5, 0.0, 0.01, 1.0))
+                    .color(CARMINE)
                     .size(state.tile_size, state.tile_size);
+            }
+        }
+
+        // Reset rotation value
+        rand_sum = 0.0;
+
+        for row in 0..ROWS {
+            rand_sum += (row + 1) as f32 * RAND_STEP;
+            for col in 0..COLS {
+                let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+
+                let mut xpos = col as f32 * state.tile_size + state.hpadding;
+                let mut ypos = row as f32 * state.tile_size + state.vpadding;
 
                 xpos += rand_val * DAMPEN;
                 ypos += rand_val * DAMPEN;
@@ -219,6 +280,110 @@ fn draw_solid(
                         (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
                         rand_val,
                     )
+                    .size(state.tile_size, state.tile_size);
+            }
+        }
+
+
+        gfx.render(&draw);
+        state.freeze = true;
+        // log::debug!("fps: {}", app.timer.fps().round());
+    }
+}
+
+
+fn draw_solid2(
+    gfx: &mut Graphics,
+    state: &mut State,
+    // app: &mut App,
+) {
+    if !state.freeze {
+        // let mut draw = get_draw_setup(gfx, WORK_SIZE, true, MAHOGANY);
+        let mut draw = get_draw_setup(gfx, WORK_SIZE, true, GRAYPURP);
+
+        // Cumulative rotation value
+        let mut rand_sum = 0.0;
+
+        for row in 0..ROWS {
+            rand_sum += (row + 1) as f32 * (RAND_STEP * 0.05);
+            for col in 0..COLS {
+                let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+
+                let mut xpos = col as f32 * state.tile_size + state.hpadding;
+                let mut ypos = row as f32 * state.tile_size + state.vpadding;
+
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
+                    // .color(Color::RED);
+                    .color(CARMINE)
+                    .size(state.tile_size, state.tile_size);
+            }
+        }
+
+        // Reset rotation value
+        rand_sum = 0.0;
+
+        for row in 0..ROWS {
+            rand_sum += (row + 1) as f32 * RAND_STEP;
+            for col in 0..COLS {
+                let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+
+                let mut xpos = col as f32 * state.tile_size + state.hpadding;
+                let mut ypos = row as f32 * state.tile_size + state.vpadding;
+
+                xpos += rand_val * (DAMPEN * 0.1);
+                ypos += rand_val * (DAMPEN * 0.1);
+
+
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
+                    // .color(Color::BLUE)
+                    .color(SCARLET)
+                    .size(state.tile_size, state.tile_size);
+
+
+                xpos += rand_val * (DAMPEN * 0.3);
+                ypos += rand_val * (DAMPEN * 0.3);
+
+
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
+                    // .color(Color::GREEN)
+                    .color(SAFFRON)
+                    .size(state.tile_size, state.tile_size);
+
+
+                xpos += rand_val * DAMPEN;
+                ypos += rand_val * DAMPEN;
+
+
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
+                    .color(BANANA)
                     .size(state.tile_size, state.tile_size);
             }
         }
@@ -265,5 +430,6 @@ fn main() -> Result<(), String> {
         .update(update)
         // .draw(draw_basic)
         .draw(draw_solid)
+        .draw(draw_solid2)
         .build()
 }
