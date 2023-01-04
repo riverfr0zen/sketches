@@ -9,8 +9,8 @@ use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
 
-const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
-// const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+// const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
+const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 const COLS: u8 = 12;
 const ROWS: u8 = 22;
 // const COLS: u8 = 22;
@@ -197,11 +197,17 @@ fn draw_solid(
                 let mut xpos = col as f32 * state.tile_size + state.hpadding;
                 let mut ypos = row as f32 * state.tile_size + state.vpadding;
 
-                draw.rect((xpos, ypos), (state.tile_size, state.tile_size))
-                    .fill_color(Color::NAVY)
-                    .fill()
-                    .stroke_color(Color::WHITE)
-                    .stroke(STROKE_WIDTH);
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    // .rotate_from(
+                    //     (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                    //     rand_val,
+                    // )
+                    // .color(Color::RED);
+                    .color(Color::new(0.5, 0.0, 0.01, 1.0))
+                    .size(state.tile_size, state.tile_size);
 
                 xpos += rand_val * DAMPEN;
                 ypos += rand_val * DAMPEN;
@@ -216,6 +222,7 @@ fn draw_solid(
                     .size(state.tile_size, state.tile_size);
             }
         }
+
 
         gfx.render(&draw);
         state.freeze = true;
@@ -256,6 +263,7 @@ fn main() -> Result<(), String> {
         .add_config(DrawConfig) // Simple way to add the draw extension
         .event(event)
         .update(update)
+        // .draw(draw_basic)
         .draw(draw_solid)
         .build()
 }
