@@ -419,13 +419,12 @@ fn update_anim(app: &mut App, state: &mut State) {
     }
 
     let time_since_init = app.timer.time_since_init();
-    let expansion_mod = (time_since_init.sin().abs() * 10.0) as u8;
+    let step_mod = (time_since_init.sin().abs() * 10.0) as u8;
+    state.rand_step = (step_mod + 1) as f32 * RAND_STEP / 10.0;
+    let expansion_freq = 0.05;
+    let expansion_mod = ((time_since_init * expansion_freq).sin().abs() * 10.0) as u8;
     state.rows = ROWS + expansion_mod * 8;
     state.cols = COLS + expansion_mod * 4;
-    // state.rand_step = (expansion_mod + 1) as f32 * RAND_STEP / 10.0;
-    let step_freq = 0.05;
-    let step_mod = ((time_since_init * step_freq).sin().abs() * 10.0) as u8;
-    state.rand_step = (step_mod + 1) as f32 * RAND_STEP / 10.0;
 
     log::debug!(
         "expansion modifier {}, rows: {}, cols: {}, rand_step: {}",
