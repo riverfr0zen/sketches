@@ -286,10 +286,13 @@ fn _draw_solid2(
         for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * (state.rand_step * 0.05);
             for col in 0..state.cols {
-                let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                let mut rand_val = 0.0;
+                if rand_sum > 0.0 {
+                    rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                }
 
-                let mut xpos = col as f32 * state.tile_size + state.hpadding;
-                let mut ypos = row as f32 * state.tile_size + state.vpadding;
+                let xpos = col as f32 * state.tile_size + state.hpadding;
+                let ypos = row as f32 * state.tile_size + state.vpadding;
 
                 draw.image(&state.box_texture)
                     .position(xpos, ypos)
@@ -311,7 +314,10 @@ fn _draw_solid2(
         for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * state.rand_step;
             for col in 0..state.cols {
-                let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                let mut rand_val = 0.0;
+                if rand_sum > 0.0 {
+                    rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                }
 
                 let mut xpos = col as f32 * state.tile_size + state.hpadding;
                 let mut ypos = row as f32 * state.tile_size + state.vpadding;
@@ -420,7 +426,8 @@ fn update_anim(app: &mut App, state: &mut State) {
 
     let time_since_init = app.timer.time_since_init();
     let step_mod = (time_since_init.sin().abs() * 10.0) as u8;
-    state.rand_step = (step_mod + 1) as f32 * RAND_STEP / 10.0;
+    // state.rand_step = (step_mod + 1) as f32 * RAND_STEP / 10.0;
+    state.rand_step = step_mod as f32 * RAND_STEP / 10.0;
     let expansion_freq = 0.05;
     let expansion_mod = ((time_since_init * expansion_freq).sin().abs() * 10.0) as u8;
     state.rows = ROWS + expansion_mod * 8;
