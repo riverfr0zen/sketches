@@ -133,27 +133,8 @@ impl State {
     }
 
     fn _new(gfx: &mut Graphics, box_texture_fn: &dyn Fn(&mut Graphics, f32) -> Texture) -> Self {
-        // let display_height: f32;
-        // let tile_size: f32;
-        // let display_width: f32;
-        // let hpadding: f32;
-        // let vpadding: f32;
-
         let (display_width, tile_size, display_height, vpadding, hpadding) =
             Self::reframe(ROWS, COLS);
-        // if ROWS > COLS {
-        //     display_height = WORK_SIZE.y - PADDING * 2.0;
-        //     tile_size = display_height / ROWS as f32;
-        //     display_width = tile_size * COLS as f32;
-        //     hpadding = (WORK_SIZE.x - display_width) * 0.5;
-        //     vpadding = PADDING;
-        // } else {
-        //     display_width = WORK_SIZE.x - PADDING * 2.0;
-        //     tile_size = display_width / COLS as f32;
-        //     display_height = tile_size * ROWS as f32;
-        //     vpadding = (WORK_SIZE.y - display_height) * 0.5;
-        //     hpadding = PADDING;
-        // }
 
         let box_texture = box_texture_fn(gfx, tile_size);
         let (rng, seed) = get_rng(None);
@@ -233,40 +214,6 @@ fn draw_solid(
 
         // Cumulative rotation value
         let mut rand_sum = 0.0;
-
-        // for row in 0..state.rows {
-        //     rand_sum += (row + 1) as f32 * state.rand_step;
-        //     for col in 0..state.cols {
-        //         let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
-
-        //         let mut xpos = col as f32 * state.tile_size + state.hpadding;
-        //         let mut ypos = row as f32 * state.tile_size + state.vpadding;
-
-        //         draw.image(&state.box_texture)
-        //             .position(xpos, ypos)
-        //             // Need to rotate from the center of the image, which doesn't seem to be the
-        //             // default.
-        //             // .rotate_from(
-        //             //     (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
-        //             //     rand_val,
-        //             // )
-        //             // .color(Color::RED);
-        //             .color(Color::new(0.5, 0.0, 0.01, 1.0))
-        //             .size(state.tile_size, state.tile_size);
-
-        //         xpos += rand_val * DAMPEN;
-        //         ypos += rand_val * DAMPEN;
-        //         draw.image(&state.box_texture)
-        //             .position(xpos, ypos)
-        //             // Need to rotate from the center of the image, which doesn't seem to be the
-        //             // default.
-        //             .rotate_from(
-        //                 (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
-        //                 rand_val,
-        //             )
-        //             .size(state.tile_size, state.tile_size);
-        //     }
-        // }
 
         for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * (state.rand_step * 0.05);
