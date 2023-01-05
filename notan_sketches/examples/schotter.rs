@@ -27,10 +27,12 @@ const STROKE_WIDTH: f32 = 4.0;
 // const RAND_STEP: f32 = 0.22;
 const RAND_STEP: f32 = 0.022;
 // const RAND_STEP: f32 = 0.0022;
+// const RAND_STEP: f32 = 0.00022;
 // Soften random effect for translation
 // const DAMPEN: f32 = 0.45;
 // const DAMPEN: f32 = 0.045;
 const DAMPEN: f32 = 4.5;
+// const DAMPEN: f32 = 450.0;
 // Frequency of change in rand_step
 const STEP_FREQ: f32 = 0.07;
 // Frequency of change cols+rows
