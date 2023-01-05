@@ -418,9 +418,23 @@ fn update_anim(app: &mut App, state: &mut State) {
         log::debug!("Freeze released");
     }
 
-    let incr = (app.timer.time_since_init().sin().abs() * 10.0) as u8;
-    state.rows = ROWS + incr * 8;
-    state.cols = COLS + incr * 4;
+    let time_since_init = app.timer.time_since_init();
+    let expansion_mod = (time_since_init.sin().abs() * 10.0) as u8;
+    state.rows = ROWS + expansion_mod * 8;
+    state.cols = COLS + expansion_mod * 4;
+    // state.rand_step = (expansion_mod + 1) as f32 * RAND_STEP / 10.0;
+    let step_freq = 0.05;
+    let step_mod = ((time_since_init * step_freq).sin().abs() * 10.0) as u8;
+    state.rand_step = (step_mod + 1) as f32 * RAND_STEP / 10.0;
+
+    log::debug!(
+        "expansion modifier {}, rows: {}, cols: {}, rand_step: {}",
+        expansion_mod,
+        state.rows,
+        state.cols,
+        state.rand_step,
+    );
+
     (
         state.display_width,
         state.tile_size,
@@ -428,18 +442,6 @@ fn update_anim(app: &mut App, state: &mut State) {
         state.vpadding,
         state.hpadding,
     ) = State::reframe(state.rows, state.cols);
-
-    // log::debug!("{:?}", app.timer.time_since_init() % 4.00);
-    // let loop_length: i32 = 4;
-    // let time_in_loop = app.timer.time_since_init() as i32 % loop_length;
-    // if time_in_loop < loop_length / 2 {
-    //     log::debug!("time_in_loop: FWD {} / {}", time_in_loop, time_in_loop);
-    //     // state.cols += time_in_loop as u8;
-    // } else if time_in_loop > loop_length / 2 {
-    //     let rev_time = loop_length - time_in_loop;
-    //     log::debug!("time_in_loop: REV {} / {}", rev_time, time_in_loop);
-    //     // state.cols -= rev_time as u8;
-    // }
 }
 
 
@@ -447,6 +449,7 @@ fn update_anim(app: &mut App, state: &mut State) {
 fn main() -> Result<(), String> {
     let win_config = get_common_win_config()
         .high_dpi(true)
+        .vsync(true)
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
 
     // // Basic reproduction
