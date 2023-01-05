@@ -109,26 +109,51 @@ pub struct State {
 
 
 impl State {
-    fn _new(gfx: &mut Graphics, box_texture_fn: &dyn Fn(&mut Graphics, f32) -> Texture) -> Self {
+    fn reframe(num_rows: u8, num_cols: u8) -> (f32, f32, f32, f32, f32) {
         let display_height: f32;
         let tile_size: f32;
         let display_width: f32;
         let hpadding: f32;
         let vpadding: f32;
 
-        if ROWS > COLS {
+        if num_rows > num_cols {
             display_height = WORK_SIZE.y - PADDING * 2.0;
-            tile_size = display_height / ROWS as f32;
-            display_width = tile_size * COLS as f32;
+            tile_size = display_height / num_rows as f32;
+            display_width = tile_size * num_cols as f32;
             hpadding = (WORK_SIZE.x - display_width) * 0.5;
             vpadding = PADDING;
         } else {
             display_width = WORK_SIZE.x - PADDING * 2.0;
-            tile_size = display_width / COLS as f32;
-            display_height = tile_size * ROWS as f32;
+            tile_size = display_width / num_cols as f32;
+            display_height = tile_size * num_rows as f32;
             vpadding = (WORK_SIZE.y - display_height) * 0.5;
             hpadding = PADDING;
         }
+        (display_width, tile_size, display_height, vpadding, hpadding)
+    }
+
+    fn _new(gfx: &mut Graphics, box_texture_fn: &dyn Fn(&mut Graphics, f32) -> Texture) -> Self {
+        // let display_height: f32;
+        // let tile_size: f32;
+        // let display_width: f32;
+        // let hpadding: f32;
+        // let vpadding: f32;
+
+        let (display_width, tile_size, display_height, vpadding, hpadding) =
+            Self::reframe(ROWS, COLS);
+        // if ROWS > COLS {
+        //     display_height = WORK_SIZE.y - PADDING * 2.0;
+        //     tile_size = display_height / ROWS as f32;
+        //     display_width = tile_size * COLS as f32;
+        //     hpadding = (WORK_SIZE.x - display_width) * 0.5;
+        //     vpadding = PADDING;
+        // } else {
+        //     display_width = WORK_SIZE.x - PADDING * 2.0;
+        //     tile_size = display_width / COLS as f32;
+        //     display_height = tile_size * ROWS as f32;
+        //     vpadding = (WORK_SIZE.y - display_height) * 0.5;
+        //     hpadding = PADDING;
+        // }
 
         let box_texture = box_texture_fn(gfx, tile_size);
         let (rng, seed) = get_rng(None);
@@ -170,9 +195,9 @@ fn draw_basic(
         // Cumulative rotation value
         let mut rand_sum = 0.0;
 
-        for row in 0..ROWS {
+        for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * state.rand_step;
-            for col in 0..COLS {
+            for col in 0..state.cols {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
                 let xpos = col as f32 * state.tile_size + state.hpadding + (rand_val * DAMPEN);
                 let ypos = row as f32 * state.tile_size + state.vpadding + (rand_val * DAMPEN);
@@ -209,9 +234,9 @@ fn draw_solid(
         // Cumulative rotation value
         let mut rand_sum = 0.0;
 
-        // for row in 0..ROWS {
+        // for row in 0..state.rows {
         //     rand_sum += (row + 1) as f32 * state.rand_step;
-        //     for col in 0..COLS {
+        //     for col in 0..state.cols {
         //         let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
         //         let mut xpos = col as f32 * state.tile_size + state.hpadding;
@@ -243,9 +268,9 @@ fn draw_solid(
         //     }
         // }
 
-        for row in 0..ROWS {
+        for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * (state.rand_step * 0.05);
-            for col in 0..COLS {
+            for col in 0..state.cols {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
                 let mut xpos = col as f32 * state.tile_size + state.hpadding;
@@ -268,9 +293,9 @@ fn draw_solid(
         // Reset rotation value
         rand_sum = 0.0;
 
-        for row in 0..ROWS {
+        for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * state.rand_step;
-            for col in 0..COLS {
+            for col in 0..state.cols {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
                 let mut xpos = col as f32 * state.tile_size + state.hpadding;
@@ -298,10 +323,11 @@ fn draw_solid(
 }
 
 
-fn draw_solid2(
+fn _draw_solid2(
     gfx: &mut Graphics,
     state: &mut State,
     // app: &mut App,
+    freeze_on_render: bool,
 ) {
     if !state.freeze {
         // let mut draw = get_draw_setup(gfx, WORK_SIZE, true, MAHOGANY);
@@ -310,9 +336,9 @@ fn draw_solid2(
         // Cumulative rotation value
         let mut rand_sum = 0.0;
 
-        for row in 0..ROWS {
+        for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * (state.rand_step * 0.05);
-            for col in 0..COLS {
+            for col in 0..state.cols {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
                 let mut xpos = col as f32 * state.tile_size + state.hpadding;
@@ -335,9 +361,9 @@ fn draw_solid2(
         // Reset rotation value
         rand_sum = 0.0;
 
-        for row in 0..ROWS {
+        for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * state.rand_step;
-            for col in 0..COLS {
+            for col in 0..state.cols {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
                 let mut xpos = col as f32 * state.tile_size + state.hpadding;
@@ -396,9 +422,27 @@ fn draw_solid2(
 
 
         gfx.render(&draw);
-        state.freeze = true;
+        state.freeze = freeze_on_render;
         // log::debug!("fps: {}", app.timer.fps().round());
     }
+}
+
+
+fn draw_solid2(
+    gfx: &mut Graphics,
+    state: &mut State,
+    // app: &mut App,
+) {
+    _draw_solid2(gfx, state, true);
+}
+
+
+fn draw_solid2_anim(
+    gfx: &mut Graphics,
+    state: &mut State,
+    // app: &mut App,
+) {
+    _draw_solid2(gfx, state, false);
 }
 
 
@@ -418,6 +462,37 @@ fn update(app: &mut App, state: &mut State) {
         state.freeze = false;
         log::debug!("Freeze released");
     }
+}
+
+
+fn update_anim(app: &mut App, state: &mut State) {
+    if app.keyboard.was_pressed(KeyCode::R) {
+        state.freeze = false;
+        log::debug!("Freeze released");
+    }
+
+    let incr = (app.timer.time_since_init().sin().abs() * 10.0) as u8;
+    state.rows = ROWS + incr * 8;
+    state.cols = COLS + incr * 4;
+    (
+        state.display_width,
+        state.tile_size,
+        state.display_height,
+        state.vpadding,
+        state.hpadding,
+    ) = State::reframe(state.rows, state.cols);
+
+    // log::debug!("{:?}", app.timer.time_since_init() % 4.00);
+    // let loop_length: i32 = 4;
+    // let time_in_loop = app.timer.time_since_init() as i32 % loop_length;
+    // if time_in_loop < loop_length / 2 {
+    //     log::debug!("time_in_loop: FWD {} / {}", time_in_loop, time_in_loop);
+    //     // state.cols += time_in_loop as u8;
+    // } else if time_in_loop > loop_length / 2 {
+    //     let rev_time = loop_length - time_in_loop;
+    //     log::debug!("time_in_loop: REV {} / {}", rev_time, time_in_loop);
+    //     // state.cols -= rev_time as u8;
+    // }
 }
 
 
@@ -447,13 +522,23 @@ fn main() -> Result<(), String> {
     //     .draw(draw_solid)
     //     .build()
 
-    // Solid variant 2
+    // // Solid variant 2
+    // notan::init_with(State::new_solid)
+    //     .add_config(log::LogConfig::debug())
+    //     .add_config(win_config)
+    //     .add_config(DrawConfig) // Simple way to add the draw extension
+    //     .event(event)
+    //     .update(update)
+    //     .draw(draw_solid2)
+    //     .build()
+
+    // Solid variant 2 animated
     notan::init_with(State::new_solid)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .event(event)
-        .update(update)
-        .draw(draw_solid2)
+        .update(update_anim)
+        .draw(draw_solid2_anim)
         .build()
 }
