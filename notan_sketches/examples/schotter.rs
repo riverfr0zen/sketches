@@ -7,6 +7,9 @@ use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
+use notan_sketches::colors::{
+    BANANA, CARMINE, GRAYPURP, MAHOGANY, OLIVE, SAFFRON, SALMON, SCARLET,
+};
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
@@ -29,19 +32,9 @@ const RAND_STEP: f32 = 0.022;
 // const DAMPEN: f32 = 0.045;
 const DAMPEN: f32 = 4.5;
 // Frequency of change in rand_step
-const STEP_FREQ: f32 = 0.1;
+const STEP_FREQ: f32 = 0.07;
 // Frequency of change cols+rows
 const EXPANSION_FREQ: f32 = 0.05;
-// Reds Dark-Light
-const GRAYPURP: Color = Color::new(0.29, 0.26, 0.36, 1.0);
-const MAHOGANY: Color = Color::new(0.26, 0.05, 0.04, 1.0);
-const CARMINE: Color = Color::new(0.59, 0.0, 0.09, 1.0);
-const SCARLET: Color = Color::new(1.0, 0.14, 0.0, 1.0);
-const SALMON: Color = Color::new(0.98, 0.5, 0.45, 1.0);
-// Yellows
-const OLIVE: Color = Color::new(0.5, 0.5, 0.0, 1.0);
-const SAFFRON: Color = Color::new(0.98, 0.54, 0.09, 1.0);
-const BANANA: Color = Color::new(1.0, 0.88, 0.21, 1.0);
 
 
 // Visualization modifier
