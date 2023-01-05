@@ -28,6 +28,10 @@ const RAND_STEP: f32 = 0.022;
 // const DAMPEN: f32 = 0.45;
 // const DAMPEN: f32 = 0.045;
 const DAMPEN: f32 = 4.5;
+// Frequency of change in rand_step
+const STEP_FREQ: f32 = 0.1;
+// Frequency of change cols+rows
+const EXPANSION_FREQ: f32 = 0.05;
 // Reds Dark-Light
 const GRAYPURP: Color = Color::new(0.29, 0.26, 0.36, 1.0);
 const MAHOGANY: Color = Color::new(0.26, 0.05, 0.04, 1.0);
@@ -425,19 +429,20 @@ fn update_anim(app: &mut App, state: &mut State) {
     }
 
     let time_since_init = app.timer.time_since_init();
-    let step_mod = (time_since_init.sin().abs() * 10.0) as u8;
+    let step_mod = ((time_since_init * STEP_FREQ).sin().abs() * 10.0) as u8;
+    // Previously _draw_solid2() would crash if state.rand_step was 0.
     // state.rand_step = (step_mod + 1) as f32 * RAND_STEP / 10.0;
     state.rand_step = step_mod as f32 * RAND_STEP / 10.0;
-    let expansion_freq = 0.05;
-    let expansion_mod = ((time_since_init * expansion_freq).sin().abs() * 10.0) as u8;
+    let expansion_mod = ((time_since_init * EXPANSION_FREQ).sin().abs() * 10.0) as u8;
     state.rows = ROWS + expansion_mod * 8;
     state.cols = COLS + expansion_mod * 4;
 
     log::debug!(
-        "expansion modifier {}, rows: {}, cols: {}, rand_step: {}",
+        "expansion modifier {}, rows: {}, cols: {}, step modifier {}, rand_step: {}",
         expansion_mod,
         state.rows,
         state.cols,
+        step_mod,
         state.rand_step,
     );
 
