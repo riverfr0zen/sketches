@@ -102,6 +102,9 @@ pub struct State {
     pub box_texture: Texture,
     pub rng: Random,
     pub freeze: bool,
+    pub rand_step: f32,
+    pub cols: u8,
+    pub rows: u8,
 }
 
 
@@ -139,6 +142,9 @@ impl State {
             box_texture: box_texture,
             rng: rng,
             freeze: false,
+            rand_step: RAND_STEP,
+            cols: COLS,
+            rows: ROWS,
         }
     }
 
@@ -165,7 +171,7 @@ fn draw_basic(
         let mut rand_sum = 0.0;
 
         for row in 0..ROWS {
-            rand_sum += (row + 1) as f32 * RAND_STEP;
+            rand_sum += (row + 1) as f32 * state.rand_step;
             for col in 0..COLS {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
                 let xpos = col as f32 * state.tile_size + state.hpadding + (rand_val * DAMPEN);
@@ -204,7 +210,7 @@ fn draw_solid(
         let mut rand_sum = 0.0;
 
         // for row in 0..ROWS {
-        //     rand_sum += (row + 1) as f32 * RAND_STEP;
+        //     rand_sum += (row + 1) as f32 * state.rand_step;
         //     for col in 0..COLS {
         //         let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
@@ -238,7 +244,7 @@ fn draw_solid(
         // }
 
         for row in 0..ROWS {
-            rand_sum += (row + 1) as f32 * (RAND_STEP * 0.05);
+            rand_sum += (row + 1) as f32 * (state.rand_step * 0.05);
             for col in 0..COLS {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
@@ -263,7 +269,7 @@ fn draw_solid(
         rand_sum = 0.0;
 
         for row in 0..ROWS {
-            rand_sum += (row + 1) as f32 * RAND_STEP;
+            rand_sum += (row + 1) as f32 * state.rand_step;
             for col in 0..COLS {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
@@ -305,7 +311,7 @@ fn draw_solid2(
         let mut rand_sum = 0.0;
 
         for row in 0..ROWS {
-            rand_sum += (row + 1) as f32 * (RAND_STEP * 0.05);
+            rand_sum += (row + 1) as f32 * (state.rand_step * 0.05);
             for col in 0..COLS {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
@@ -330,7 +336,7 @@ fn draw_solid2(
         rand_sum = 0.0;
 
         for row in 0..ROWS {
-            rand_sum += (row + 1) as f32 * RAND_STEP;
+            rand_sum += (row + 1) as f32 * state.rand_step;
             for col in 0..COLS {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
