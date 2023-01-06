@@ -1,5 +1,7 @@
 use notan::app::Color;
 
+// Blues
+pub const PEACOCK: Color = Color::new(0.01, 0.18, 0.21, 1.0);
 // Reds Dark-Light
 pub const GRAYPURP: Color = Color::new(0.29, 0.26, 0.36, 1.0);
 pub const MAHOGANY: Color = Color::new(0.26, 0.05, 0.04, 1.0);

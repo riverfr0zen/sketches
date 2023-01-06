@@ -7,7 +7,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
-use notan_sketches::colors::{BANANA, CARMINE, GRAYPURP, SAFFRON, SCARLET};
+use notan_sketches::colors::{BANANA, CARMINE, GRAYPURP, PEACOCK, SAFFRON, SCARLET};
 use notan_sketches::schotter::*;
 use notan_sketches::utils::{get_common_win_config, ScreenDimensions};
 
@@ -48,7 +48,10 @@ fn draw(
     // app: &mut App,
 ) {
     draw_solid2_anim(
-        gfx, state, WORK_SIZE, DAMPEN, GRAYPURP, CARMINE, SCARLET, SAFFRON, BANANA,
+        // xxx
+        // gfx, state, WORK_SIZE, DAMPEN, GRAYPURP, CARMINE, SCARLET, SAFFRON, BANANA,
+        gfx, state, WORK_SIZE, DAMPEN, // Color::BLACK,
+        PEACOCK, BANANA, SAFFRON, SCARLET, CARMINE,
     )
 }
 
