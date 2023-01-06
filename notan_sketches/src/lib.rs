@@ -2,6 +2,7 @@ pub mod colors;
 pub mod emotion;
 pub mod fractals;
 pub mod mathutils;
+pub mod schotter;
 pub mod utils;
 
 // pub fn add(left: usize, right: usize) -> usize {

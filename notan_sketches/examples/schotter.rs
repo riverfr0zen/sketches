@@ -10,6 +10,7 @@ use notan::prelude::*;
 use notan_sketches::colors::{
     BANANA, CARMINE, GRAYPURP, MAHOGANY, OLIVE, SAFFRON, SALMON, SCARLET,
 };
+use notan_sketches::schotter::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
@@ -37,58 +38,6 @@ const DAMPEN: f32 = 4.5;
 const STEP_FREQ: f32 = 0.07;
 // Frequency of change cols+rows
 const EXPANSION_FREQ: f32 = 0.05;
-
-
-// Visualization modifier
-enum VizMod {
-    BASIC,
-    SOLID,
-}
-
-
-fn _create_box_texture(gfx: &mut Graphics, tile_size: f32, vizmod: VizMod) -> Texture {
-    let rt = gfx
-        .create_render_texture(tile_size as i32, tile_size as i32)
-        .build()
-        .unwrap();
-
-    let tile_size = tile_size as f32;
-    let mut draw = gfx.create_draw();
-    draw.set_size(tile_size, tile_size);
-    match vizmod {
-        VizMod::SOLID => {
-            draw.rect((0.0, 0.0), (tile_size, tile_size))
-                .fill_color(Color::WHITE)
-                .fill()
-                // .stroke_color(Color::BLACK)
-                // .stroke_color(Color::new(0.5, 0.5, 0.5, 1.0))
-                .stroke_color(Color::new(0.8, 0.8, 0.8, 1.0))
-                .stroke(STROKE_WIDTH);
-
-            gfx.render_to(&rt, &draw);
-            rt.take_inner()
-        }
-        _ => {
-            draw.clear(Color::TRANSPARENT);
-            draw.rect((0.0, 0.0), (tile_size, tile_size))
-                .color(Color::BLACK)
-                .stroke(STROKE_WIDTH);
-
-            gfx.render_to(&rt, &draw);
-            rt.take_inner()
-        }
-    }
-}
-
-
-fn create_basic_box_texture(gfx: &mut Graphics, tile_size: f32) -> Texture {
-    _create_box_texture(gfx, tile_size, VizMod::BASIC)
-}
-
-
-fn create_solid_box_texture(gfx: &mut Graphics, tile_size: f32) -> Texture {
-    _create_box_texture(gfx, tile_size, VizMod::SOLID)
-}
 
 
 #[derive(AppState)]
@@ -131,11 +80,14 @@ impl State {
         (display_width, tile_size, display_height, vpadding, hpadding)
     }
 
-    fn _new(gfx: &mut Graphics, box_texture_fn: &dyn Fn(&mut Graphics, f32) -> Texture) -> Self {
+    fn new(
+        gfx: &mut Graphics,
+        box_texture_fn: &dyn Fn(&mut Graphics, f32, f32) -> Texture,
+    ) -> Self {
         let (display_width, tile_size, display_height, vpadding, hpadding) =
             Self::reframe(ROWS, COLS);
 
-        let box_texture = box_texture_fn(gfx, tile_size);
+        let box_texture = box_texture_fn(gfx, tile_size, STROKE_WIDTH);
         let (rng, seed) = get_rng(None);
         log::debug!("seed: {}", seed);
         Self {
@@ -151,15 +103,6 @@ impl State {
             cols: COLS,
             rows: ROWS,
         }
-    }
-
-    fn new_basic(gfx: &mut Graphics) -> Self {
-        Self::_new(gfx, &create_basic_box_texture)
-    }
-
-
-    fn new_solid(gfx: &mut Graphics) -> Self {
-        Self::_new(gfx, &create_solid_box_texture)
     }
 }
 
@@ -451,6 +394,16 @@ fn update_anim(app: &mut App, state: &mut State) {
 }
 
 
+fn init_basic(gfx: &mut Graphics) -> State {
+    State::new(gfx, &create_basic_box_texture)
+}
+
+
+fn init_solid(gfx: &mut Graphics) -> State {
+    State::new(gfx, &create_solid_box_texture)
+}
+
+
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = get_common_win_config()
@@ -459,7 +412,7 @@ fn main() -> Result<(), String> {
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
 
     // // Basic reproduction
-    // notan::init_with(State::new_basic)
+    // notan::init_with(init_basic)
     //     .add_config(log::LogConfig::debug())
     //     .add_config(win_config)
     //     .add_config(DrawConfig) // Simple way to add the draw extension
@@ -469,7 +422,7 @@ fn main() -> Result<(), String> {
     //     .build()
 
     // // Solid variant 1
-    // notan::init_with(State::new_solid)
+    // notan::init_with(init_solid)
     //     .add_config(log::LogConfig::debug())
     //     .add_config(win_config)
     //     .add_config(DrawConfig) // Simple way to add the draw extension
@@ -479,7 +432,7 @@ fn main() -> Result<(), String> {
     //     .build()
 
     // // Solid variant 2
-    // notan::init_with(State::new_solid)
+    // notan::init_with(init_solid)
     //     .add_config(log::LogConfig::debug())
     //     .add_config(win_config)
     //     .add_config(DrawConfig) // Simple way to add the draw extension
@@ -489,7 +442,7 @@ fn main() -> Result<(), String> {
     //     .build()
 
     // Solid variant 2 animated
-    notan::init_with(State::new_solid)
+    notan::init_with(init_solid)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
