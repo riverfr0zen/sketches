@@ -1,4 +1,4 @@
-use super::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
+use super::utils::{get_draw_setup, get_rng};
 use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
@@ -200,6 +200,50 @@ pub fn update_common(app: &mut App, state: &mut State) {
 }
 
 
+pub fn update_anim(
+    app: &mut App,
+    state: &mut State,
+    work_size: Vec2,
+    padding: f32,
+    rows: u8,
+    cols: u8,
+    rand_step: f32,
+    step_freq: f32,
+    expansion_freq: f32,
+) {
+    if app.keyboard.was_pressed(KeyCode::R) {
+        state.freeze = false;
+        log::debug!("Freeze released");
+    }
+
+    let time_since_init = app.timer.time_since_init();
+    let step_mod = ((time_since_init * step_freq).sin().abs() * 10.0) as u8;
+    // Previously _draw_solid2() would crash if state.rand_step was 0.
+    // state.rand_step = (step_mod + 1) as f32 * RAND_STEP / 10.0;
+    state.rand_step = step_mod as f32 * rand_step / 10.0;
+    let expansion_mod = ((time_since_init * expansion_freq).sin().abs() * 10.0) as u8;
+    state.rows = rows + expansion_mod * 8;
+    state.cols = cols + expansion_mod * 4;
+
+    log::debug!(
+        "expansion modifier {}, rows: {}, cols: {}, step modifier {}, rand_step: {}",
+        expansion_mod,
+        state.rows,
+        state.cols,
+        step_mod,
+        state.rand_step,
+    );
+
+    (
+        state.display_width,
+        state.tile_size,
+        state.display_height,
+        state.vpadding,
+        state.hpadding,
+    ) = State::reframe(work_size, padding, state.rows, state.cols);
+}
+
+
 pub fn draw_basic(
     gfx: &mut Graphics,
     state: &mut State,
@@ -243,10 +287,10 @@ pub fn draw_basic(
 pub fn draw_solid(
     gfx: &mut Graphics,
     state: &mut State,
+    // app: &mut App,
     work_size: Vec2,
     dampen: f32,
     box1_color: Color,
-    // app: &mut App,
 ) {
     if !state.freeze {
         // let mut draw = get_draw_setup(gfx, WORK_SIZE, true, MAHOGANY);
@@ -307,4 +351,175 @@ pub fn draw_solid(
         state.freeze = true;
         // log::debug!("fps: {}", app.timer.fps().round());
     }
+}
+
+
+pub fn _draw_solid2(
+    gfx: &mut Graphics,
+    state: &mut State,
+    // app: &mut App,
+    work_size: Vec2,
+    dampen: f32,
+    clear_color: Color,
+    box1_color: Color,
+    box2_color: Color,
+    box3_color: Color,
+    box4_color: Color,
+    freeze_on_render: bool,
+) {
+    if !state.freeze {
+        let mut draw = get_draw_setup(gfx, work_size, true, clear_color);
+
+        // Cumulative rotation value
+        let mut rand_sum = 0.0;
+
+        for row in 0..state.rows {
+            rand_sum += (row + 1) as f32 * (state.rand_step * 0.05);
+            for col in 0..state.cols {
+                let mut rand_val = 0.0;
+                if rand_sum > 0.0 {
+                    rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                }
+
+                let xpos = col as f32 * state.tile_size + state.hpadding;
+                let ypos = row as f32 * state.tile_size + state.vpadding;
+
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
+                    // .color(Color::RED);
+                    .color(box1_color)
+                    .size(state.tile_size, state.tile_size);
+            }
+        }
+
+        // Reset rotation value
+        rand_sum = 0.0;
+
+        for row in 0..state.rows {
+            rand_sum += (row + 1) as f32 * state.rand_step;
+            for col in 0..state.cols {
+                let mut rand_val = 0.0;
+                if rand_sum > 0.0 {
+                    rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                }
+
+                let mut xpos = col as f32 * state.tile_size + state.hpadding;
+                let mut ypos = row as f32 * state.tile_size + state.vpadding;
+
+                xpos += rand_val * (dampen * 0.1);
+                ypos += rand_val * (dampen * 0.1);
+
+
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
+                    // .color(Color::BLUE)
+                    .color(box2_color)
+                    .size(state.tile_size, state.tile_size);
+
+
+                xpos += rand_val * (dampen * 0.3);
+                ypos += rand_val * (dampen * 0.3);
+
+
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
+                    // .color(Color::GREEN)
+                    .color(box3_color)
+                    .size(state.tile_size, state.tile_size);
+
+
+                xpos += rand_val * dampen;
+                ypos += rand_val * dampen;
+
+
+                draw.image(&state.box_texture)
+                    .position(xpos, ypos)
+                    // Need to rotate from the center of the image, which doesn't seem to be the
+                    // default.
+                    .rotate_from(
+                        (xpos + state.tile_size * 0.5, ypos + state.tile_size * 0.5),
+                        rand_val,
+                    )
+                    .color(box4_color)
+                    .size(state.tile_size, state.tile_size);
+            }
+        }
+
+
+        gfx.render(&draw);
+        state.freeze = freeze_on_render;
+        // log::debug!("fps: {}", app.timer.fps().round());
+    }
+}
+
+
+pub fn draw_solid2(
+    gfx: &mut Graphics,
+    state: &mut State,
+    // app: &mut App,
+    work_size: Vec2,
+    dampen: f32,
+    clear_color: Color,
+    box1_color: Color,
+    box2_color: Color,
+    box3_color: Color,
+    box4_color: Color,
+) {
+    _draw_solid2(
+        gfx,
+        state,
+        work_size,
+        dampen,
+        clear_color,
+        box1_color,
+        box2_color,
+        box3_color,
+        box4_color,
+        true,
+    );
+}
+
+
+pub fn draw_solid2_anim(
+    gfx: &mut Graphics,
+    state: &mut State,
+    // app: &mut App,
+    work_size: Vec2,
+    dampen: f32,
+    clear_color: Color,
+    box1_color: Color,
+    box2_color: Color,
+    box3_color: Color,
+    box4_color: Color,
+) {
+    _draw_solid2(
+        gfx,
+        state,
+        work_size,
+        dampen,
+        clear_color,
+        box1_color,
+        box2_color,
+        box3_color,
+        box4_color,
+        false,
+    );
 }

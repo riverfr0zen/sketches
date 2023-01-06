@@ -31,6 +31,10 @@ const RAND_STEP: f32 = 0.022;
 // const DAMPEN: f32 = 0.045;
 const DAMPEN: f32 = 4.5;
 // const DAMPEN: f32 = 450.0;
+// Frequency of change in rand_step
+const STEP_FREQ: f32 = 0.07;
+// Frequency of change cols+rows
+const EXPANSION_FREQ: f32 = 0.05;
 
 
 fn init(gfx: &mut Graphics) -> State {
@@ -43,8 +47,22 @@ fn draw(
     state: &mut State,
     // app: &mut App,
 ) {
-    draw_solid2(
+    draw_solid2_anim(
         gfx, state, WORK_SIZE, DAMPEN, GRAYPURP, CARMINE, SCARLET, SAFFRON, BANANA,
+    )
+}
+
+fn update(app: &mut App, state: &mut State) {
+    update_anim(
+        app,
+        state,
+        WORK_SIZE,
+        PADDING,
+        ROWS,
+        COLS,
+        RAND_STEP,
+        STEP_FREQ,
+        EXPANSION_FREQ,
     )
 }
 
@@ -56,13 +74,13 @@ fn main() -> Result<(), String> {
         .vsync(true)
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
 
-    // Solid variant 2
+    // Solid variant 2 animated
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .event(event)
-        .update(update_common)
+        .update(update)
         .draw(draw)
         .build()
 }
