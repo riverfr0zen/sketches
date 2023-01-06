@@ -134,8 +134,8 @@ impl State {
             rng: rng,
             freeze: false,
             rand_step: rand_step,
-            cols: cols,
             rows: rows,
+            cols: cols,
         }
     }
 }
@@ -222,8 +222,14 @@ pub fn update_anim(
     // state.rand_step = (step_mod + 1) as f32 * RAND_STEP / 10.0;
     state.rand_step = step_mod as f32 * rand_step / 10.0;
     let expansion_mod = ((time_since_init * expansion_freq).sin().abs() * 10.0) as u8;
-    state.rows = rows + expansion_mod * 8;
-    state.cols = cols + expansion_mod * 4;
+
+    if rows > cols {
+        state.rows = rows + expansion_mod * 8;
+        state.cols = cols + expansion_mod * 4;
+    } else {
+        state.rows = rows + expansion_mod * 4;
+        state.cols = cols + expansion_mod * 8;
+    }
 
     log::debug!(
         "expansion modifier {}, rows: {}, cols: {}, step modifier {}, rand_step: {}",

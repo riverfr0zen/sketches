@@ -23,18 +23,20 @@ const ROWS: u8 = 22;
 const PADDING: f32 = 50.0;
 // Rotation increment in degrees
 // const RAND_STEP: f32 = 0.22;
-const RAND_STEP: f32 = 0.022;
+// const RAND_STEP: f32 = 0.022;
 // const RAND_STEP: f32 = 0.0022;
-// const RAND_STEP: f32 = 0.00022;
+const RAND_STEP: f32 = 0.000022;
 // Soften random effect for translation
 // const DAMPEN: f32 = 0.45;
 // const DAMPEN: f32 = 0.045;
-const DAMPEN: f32 = 4.5;
-// const DAMPEN: f32 = 450.0;
+// const DAMPEN: f32 = 4.5;
+const DAMPEN: f32 = 4500.0;
 // Frequency of change in rand_step
 const STEP_FREQ: f32 = 0.07;
+// const STEP_FREQ: f32 = 2.0;
 // Frequency of change cols+rows
 const EXPANSION_FREQ: f32 = 0.05;
+// const EXPANSION_FREQ: f32 = 0.5;
 
 
 fn init(gfx: &mut Graphics) -> State {
@@ -48,10 +50,9 @@ fn draw(
     // app: &mut App,
 ) {
     draw_solid2_anim(
-        // xxx
-        // gfx, state, WORK_SIZE, DAMPEN, GRAYPURP, CARMINE, SCARLET, SAFFRON, BANANA,
-        gfx, state, WORK_SIZE, DAMPEN, // Color::BLACK,
-        PEACOCK, BANANA, SAFFRON, SCARLET, CARMINE,
+        // gfx, state, WORK_SIZE, DAMPEN, GRAYPURP, CARMINE, SCARLET, SAFFRON,
+        // BANANA,
+        gfx, state, WORK_SIZE, DAMPEN, PEACOCK, BANANA, SAFFRON, SCARLET, CARMINE,
     )
 }
 
@@ -75,7 +76,8 @@ fn main() -> Result<(), String> {
     let win_config = get_common_win_config()
         .high_dpi(true)
         .vsync(true)
-        .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
+        .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32)
+        .title("Schotter (animated)");
 
     // Solid variant 2 animated
     notan::init_with(init)
