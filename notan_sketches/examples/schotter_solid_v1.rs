@@ -7,6 +7,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
+use notan_sketches::colors::CARMINE;
 use notan_sketches::schotter::*;
 use notan_sketches::utils::{get_common_win_config, ScreenDimensions};
 
@@ -32,17 +33,17 @@ const DAMPEN: f32 = 4.5;
 // const DAMPEN: f32 = 450.0;
 
 
+fn init(gfx: &mut Graphics) -> State {
+    init_solid(gfx, WORK_SIZE, PADDING, ROWS, COLS, RAND_STEP)
+}
+
+
 fn draw(
     gfx: &mut Graphics,
     state: &mut State,
     // app: &mut App,
 ) {
-    draw_basic(gfx, state, WORK_SIZE, DAMPEN)
-}
-
-
-fn init(gfx: &mut Graphics) -> State {
-    init_basic(gfx, WORK_SIZE, PADDING, ROWS, COLS, RAND_STEP)
+    draw_solid(gfx, state, WORK_SIZE, DAMPEN, CARMINE)
 }
 
 
@@ -53,7 +54,7 @@ fn main() -> Result<(), String> {
         .vsync(true)
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
 
-    // Basic reproduction
+    // Solid variant 1
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
