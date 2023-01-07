@@ -33,13 +33,14 @@ const DAMPEN: f32 = 0.45;
 // const DAMPEN: f32 = 4500.0;
 // Frequency of change in rand_step
 // const STEP_FREQ: f32 = 0.07;
-const STEP_FREQ: f32 = 1.8;
+const STEP_FREQ: f32 = 1.2;
 // const STEP_FREQ: f32 = 2.0;
 // Frequency of change cols+rows
 // const EXPANSION_FREQ: f32 = 0.05;
 // const EXPANSION_FREQ: f32 = 0.5;
-const EXPANSION_FREQ: f32 = 0.75;
-
+const EXPANSION_FREQ: f32 = 0.25;
+// The smaller this value, the less displacement occurs during "stable" period
+const STABLE_TIME_MOD: f32 = 0.05;
 
 fn init(gfx: &mut Graphics) -> State {
     init_solid(gfx, WORK_SIZE, PADDING, ROWS, COLS, RAND_STEP)
@@ -69,6 +70,7 @@ fn update(app: &mut App, state: &mut State) {
         RAND_STEP,
         STEP_FREQ,
         EXPANSION_FREQ,
+        STABLE_TIME_MOD,
     )
 }
 

@@ -210,6 +210,7 @@ pub fn update_anim(
     rand_step: f32,
     step_freq: f32,
     expansion_freq: f32,
+    stable_time_mod: f32,
 ) {
     if app.keyboard.was_pressed(KeyCode::R) {
         state.freeze = false;
@@ -232,7 +233,7 @@ pub fn update_anim(
     // This way you also get some time with less displacment in the animation loop
     let mut step_mod = (time_since_init * step_freq).sin();
     if step_mod < 0.0 {
-        step_mod = (step_mod * 0.01).abs();
+        step_mod = (step_mod * stable_time_mod).abs();
     }
     state.rand_step = step_mod * rand_step;
 
