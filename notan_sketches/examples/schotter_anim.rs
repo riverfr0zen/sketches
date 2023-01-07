@@ -32,11 +32,13 @@ const RAND_STEP: f32 = 0.022;
 const DAMPEN: f32 = 4.5;
 // const DAMPEN: f32 = 4500.0;
 // Frequency of change in rand_step
-const STEP_FREQ: f32 = 0.07;
+// const STEP_FREQ: f32 = 0.07;
+const STEP_FREQ: f32 = 1.8;
 // const STEP_FREQ: f32 = 2.0;
 // Frequency of change cols+rows
-const EXPANSION_FREQ: f32 = 0.05;
+// const EXPANSION_FREQ: f32 = 0.05;
 // const EXPANSION_FREQ: f32 = 0.5;
+const EXPANSION_FREQ: f32 = 0.75;
 
 
 fn init(gfx: &mut Graphics) -> State {
