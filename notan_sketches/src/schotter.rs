@@ -217,12 +217,26 @@ pub fn update_anim(
     }
 
     let time_since_init = app.timer.time_since_init();
-    let step_mod = ((time_since_init * step_freq).sin().abs() * 10.0) as u8;
-    // Previously _draw_solid2() would crash if state.rand_step was 0.
-    // state.rand_step = (step_mod + 1) as f32 * RAND_STEP / 10.0;
-    state.rand_step = step_mod as f32 * rand_step / 10.0;
-    let expansion_mod = ((time_since_init * expansion_freq).sin().abs() * 10.0) as u8;
 
+    // Original approach to modifying the rand_step value. Resulted in jerky displacement
+    // animation.
+    // let step_mod = ((time_since_init * step_freq).sin().abs() * 10.0) as u8;
+    // state.rand_step = step_mod as f32 * rand_step / 10.0;
+
+    // Simplified and made the displacement animation smooth. But very little time
+    // spent at rand_step == 0.0, so it is always "somewhat displaced".
+    // let step_mod = (time_since_init * step_freq).sin().abs();
+    // state.rand_step = step_mod * rand_step;
+
+    // This approach uses the negative sin period to keep values close to 0.0.
+    // This way you also get some time with less displacment in the animation loop
+    let mut step_mod = (time_since_init * step_freq).sin();
+    if step_mod < 0.0 {
+        step_mod = (step_mod * 0.01).abs();
+    }
+    state.rand_step = step_mod * rand_step;
+
+    let expansion_mod = ((time_since_init * expansion_freq).sin().abs() * 10.0) as u8;
     if rows > cols {
         state.rows = rows + expansion_mod * 8;
         state.cols = cols + expansion_mod * 4;
@@ -230,7 +244,6 @@ pub fn update_anim(
         state.rows = rows + expansion_mod * 4;
         state.cols = cols + expansion_mod * 8;
     }
-
     log::debug!(
         "expansion modifier {}, rows: {}, cols: {}, step modifier {}, rand_step: {}",
         expansion_mod,
