@@ -22,14 +22,14 @@ const ROWS: u8 = 22;
 // Minimum padding
 const PADDING: f32 = 50.0;
 // Rotation increment in degrees
-// const RAND_STEP: f32 = 0.22;
-const RAND_STEP: f32 = 0.022;
+const RAND_STEP: f32 = 0.22;
+// const RAND_STEP: f32 = 0.022;
 // const RAND_STEP: f32 = 0.0022;
 // const RAND_STEP: f32 = 0.000022;
 // Soften random effect for translation
-// const DAMPEN: f32 = 0.45;
+const DAMPEN: f32 = 0.45;
 // const DAMPEN: f32 = 0.045;
-const DAMPEN: f32 = 4.5;
+// const DAMPEN: f32 = 4.5;
 // const DAMPEN: f32 = 4500.0;
 // Frequency of change in rand_step
 // const STEP_FREQ: f32 = 0.07;
