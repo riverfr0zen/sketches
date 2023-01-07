@@ -245,14 +245,14 @@ pub fn update_anim(
         state.rows = rows + expansion_mod * 4;
         state.cols = cols + expansion_mod * 8;
     }
-    log::debug!(
-        "expansion modifier {}, rows: {}, cols: {}, step modifier {}, rand_step: {}",
-        expansion_mod,
-        state.rows,
-        state.cols,
-        step_mod,
-        state.rand_step,
-    );
+    // log::debug!(
+    //     "expansion modifier {}, rows: {}, cols: {}, step modifier {}, rand_step: {}",
+    //     expansion_mod,
+    //     state.rows,
+    //     state.cols,
+    //     step_mod,
+    //     state.rand_step,
+    // );
 
     (
         state.display_width,

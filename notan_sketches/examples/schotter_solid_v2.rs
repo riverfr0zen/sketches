@@ -54,7 +54,9 @@ fn main() -> Result<(), String> {
     let win_config = get_common_win_config()
         .high_dpi(true)
         .vsync(true)
-        .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
+        .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32)
+        .title("Schotter (solid variant 2)");
+
 
     // Solid variant 2
     notan::init_with(init)
