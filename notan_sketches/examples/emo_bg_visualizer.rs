@@ -10,6 +10,7 @@ use palette::{FromColor, Hsl, Hsv, LinSrgb, Mix, RgbHue, Srgb};
 use serde::{Deserialize, Serialize};
 // use serde_json::{Result as JsonResult, Value};
 use std::fs;
+use FontFamily::{Monospace, Proportional};
 
 
 // See details at https://stackoverflow.com/a/42764117
@@ -68,6 +69,7 @@ struct State {
     reading: ReadingViewState,
     font: Font,
     title_font: Font,
+    title_font_egui: FontData,
     simple_color: Color,
     bg_color: Color,
     bg_color_mix_factor: f32,
@@ -86,7 +88,7 @@ impl State {
 }
 
 
-fn init(gfx: &mut Graphics) -> State {
+fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
     let font = gfx
         .create_font(include_bytes!(
             // "./assets/fonts/Ubuntu-B.ttf"
@@ -101,6 +103,11 @@ fn init(gfx: &mut Graphics) -> State {
         ))
         .unwrap();
 
+    let title_font_egui = egui::FontData::from_static(include_bytes!(
+        "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.spaced.ttf"
+    ));
+
+
     let emodocs: Vec<EmocatOutputDoc> = EMOCAT_DOCS
         .iter()
         .map(|&doc| serde_json::from_str(doc).expect("Could not open emocat document"))
@@ -113,6 +120,7 @@ fn init(gfx: &mut Graphics) -> State {
         reading: ReadingViewState::default(),
         font: font,
         title_font: title_font,
+        title_font_egui: title_font_egui,
         simple_color: CLEAR_COLOR,
         bg_color: CLEAR_COLOR,
         bg_color_mix_factor: STARTING_MIX_FACTOR,
@@ -420,12 +428,105 @@ fn draw_home_view_old(draw: &mut Draw, state: &State, work_size: Vec2) {
 }
 
 
+#[inline]
+fn heading2() -> TextStyle {
+    TextStyle::Name("Heading2".into())
+}
+
+#[inline]
+fn heading3() -> TextStyle {
+    TextStyle::Name("ContextHeading".into())
+}
+
+
+#[inline]
+fn title_button() -> TextStyle {
+    TextStyle::Name("TitleButton".into())
+}
+
+fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
+    let mut style = (*ctx.style()).clone();
+    style.text_styles = [
+        (
+            TextStyle::Heading,
+            FontId::new(scale_font(25.0, work_size), Proportional),
+        ),
+        (
+            heading2(),
+            FontId::new(scale_font(22.0, work_size), Proportional),
+        ),
+        (
+            heading3(),
+            FontId::new(scale_font(19.0, work_size), Proportional),
+        ),
+        (
+            TextStyle::Body,
+            FontId::new(scale_font(16.0, work_size), Proportional),
+        ),
+        // (
+        //     TextStyle::Button,
+        //     FontId::new(scale_font(12.0, work_size), Proportional),
+        // ),
+        (
+            TextStyle::Button,
+            FontId::new(scale_font(22.0, work_size), Proportional),
+        ),
+        (
+            title_button(),
+            FontId::new(scale_font(16.0, work_size), Proportional),
+        ),
+        (
+            TextStyle::Small,
+            FontId::new(scale_font(8.0, work_size), Proportional),
+        ),
+    ]
+    .into();
+    ctx.set_style(style);
+}
+
+
+fn setup_custom_fonts(ctx: &egui::Context, state: &State) {
+    // Start with the default fonts (we will be adding to them rather than replacing them).
+    let mut fonts = egui::FontDefinitions::default();
+
+    // Install my own font (maybe supporting non-latin characters).
+    // .ttf and .otf files supported.
+    fonts.font_data.insert(
+        "my_font".to_owned(),
+        // state.title_font_egui.clone(),
+        egui::FontData::from_static(include_bytes!(
+            "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.spaced.ttf"
+        )),
+    );
+
+    // Put my font first (highest priority) for proportional text:
+    fonts
+        .families
+        .entry(egui::FontFamily::Proportional)
+        .or_default()
+        .insert(0, "my_font".to_owned());
+
+    // Put my font as last fallback for monospace:
+    fonts
+        .families
+        .entry(egui::FontFamily::Monospace)
+        .or_default()
+        .push("my_font".to_owned());
+
+    // Tell egui to use these fonts:
+    ctx.set_fonts(fonts);
+}
+
+
 fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
-    let mut menu_width = work_size.x * 0.75;
+    let menu_width = work_size.x * 0.75;
 
     let mut output = plugins.egui(|ctx| {
         // Switch to light mode
         ctx.set_visuals(egui::Visuals::light());
+        configure_text_styles(ctx, work_size);
+        setup_custom_fonts(ctx, state);
+
 
         let clear_color_u8 = CLEAR_COLOR.rgba_u8();
         let fill_color =
@@ -449,13 +550,6 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
             .frame(menu_frame)
             .show(&ctx, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    // Add a lot of widgets here.
-                    // ui.heading("Egui Plugin Example");
-                    // ui.separator();
-                    // ui.label("Welcome to a basic example of how to use Egui with notan.");
-                    // ui.separator();
-                    // ui.label("Check the source code to learn more about how it works");
-
                     for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
                         // ui.heading(&emodoc.title);
                         if ui.add(egui::Button::new(&emodoc.title)).clicked() {
@@ -464,16 +558,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                             log::debug!("{}", &emodoc.title);
                         }
                         ui.label(&emodoc.author);
-                        ui.separator();
-
-                        // draw.text(&state.title_font, &emodoc.title)
-                        //     .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
-                        //     .color(TITLE_COLOR)
-                        //     .size(scale_font(16.0, work_size))
-                        //     .max_width(menu_width)
-                        //     .position(work_size.x * 0.5 - menu_width * 0.5, menu_item_ypos)
-                        //     .h_align_left()
-                        //     .v_align_middle();
+                        // ui.separator();
                     }
                 });
             });
