@@ -88,6 +88,7 @@ fn init(gfx: &mut Graphics) -> State {
 
     let state = State {
         view: View::HOME,
+        // view: View::READ,
         emodocs: emodocs,
         reading: ReadingViewState {
             doc_index: 0,
