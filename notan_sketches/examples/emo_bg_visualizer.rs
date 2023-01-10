@@ -1,4 +1,5 @@
 use notan::draw::*;
+use notan::egui::{self, *};
 use notan::extra::FpsLimit;
 use notan::log;
 use notan::math::{vec2, Vec2};
@@ -332,16 +333,22 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
 }
 
 
-fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
+// fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
+fn draw_read_view(gfx: &mut Graphics, state: &State, work_size: Vec2) {
+    let mut draw = get_draw_setup(gfx, work_size, true, state.bg_color);
+
     if state.reading.analysis == 0 {
-        draw_title(draw, state, work_size);
+        draw_title(&mut draw, state, work_size);
     } else {
-        draw_paragraph(draw, state, work_size);
+        draw_paragraph(&mut draw, state, work_size);
     }
+
+    // draw to screen
+    gfx.render(&draw);
 }
 
 
-fn draw_home_view(draw: &mut Draw, state: &State, work_size: Vec2) {
+fn draw_home_view_old(draw: &mut Draw, state: &State, work_size: Vec2) {
     let mut menu_width = work_size.x * 0.75;
 
     let mut menu_item_ypos = work_size.y * 0.1;
@@ -389,21 +396,46 @@ fn draw_home_view(draw: &mut Draw, state: &State, work_size: Vec2) {
 }
 
 
+fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &State, work_size: Vec2) {
+    let mut menu_width = work_size.x * 0.75;
+
+    let mut output = plugins.egui(|ctx| {
+        // Switch to light mode
+        ctx.set_visuals(egui::Visuals::light());
+
+        egui::SidePanel::right("Menu")
+            .resizable(false)
+            .default_width(menu_width)
+            .show(&ctx, |ui| {
+                ui.heading("Egui Plugin Example");
+
+                ui.separator();
+                ui.label("Welcome to a basic example of how to use Egui with notan.");
+
+                ui.separator();
+                ui.label("Check the source code to learn more about how it works");
+            });
+    });
+
+    output.clear_color(CLEAR_COLOR);
+    if output.needs_repaint() {
+        gfx.render(&output);
+    }
+}
+
+
 fn draw(
-    gfx: &mut Graphics,
-    state: &mut State,
     // app: &mut App,
+    gfx: &mut Graphics,
+    plugins: &mut Plugins,
+    state: &mut State,
 ) {
     let work_size = get_work_size(gfx);
-    let mut draw = get_draw_setup(gfx, work_size, true, state.bg_color);
 
     match state.view {
-        View::READ => draw_read_view(&mut draw, state, work_size),
-        _ => draw_home_view(&mut draw, state, work_size),
+        View::READ => draw_read_view(gfx, state, work_size),
+        _ => draw_home_view(gfx, plugins, state, work_size),
     }
-
-    // draw to screen
-    gfx.render(&draw);
 
     // log::debug!("fps: {}", app.timer.fps().round());
 }
@@ -420,6 +452,7 @@ fn main() -> Result<(), String> {
         // ScreenDimensions::DEFAULT.y as i32,
     );
 
+
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
 
@@ -427,6 +460,7 @@ fn main() -> Result<(), String> {
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
+        .add_config(EguiConfig)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .add_plugin(FpsLimit::new(MAX_FPS))
         .draw(draw)
