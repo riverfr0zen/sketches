@@ -51,6 +51,15 @@ struct ReadingViewState {
     analysis: usize,
 }
 
+impl Default for ReadingViewState {
+    fn default() -> Self {
+        Self {
+            doc_index: 0,
+            analysis: 0,
+        }
+    }
+}
+
 
 #[derive(AppState)]
 struct State {
@@ -64,6 +73,16 @@ struct State {
     bg_color_mix_factor: f32,
     text_color: Color,
     dynamic_text_color: bool,
+}
+
+impl State {
+    fn reset_colors(&mut self) {
+        self.simple_color = CLEAR_COLOR;
+        self.bg_color = CLEAR_COLOR;
+        self.bg_color_mix_factor = STARTING_MIX_FACTOR;
+        self.text_color = TITLE_COLOR;
+        self.dynamic_text_color = DYNAMIC_TEXT_COLOR;
+    }
 }
 
 
@@ -91,10 +110,7 @@ fn init(gfx: &mut Graphics) -> State {
         view: View::HOME,
         // view: View::READ,
         emodocs: emodocs,
-        reading: ReadingViewState {
-            doc_index: 0,
-            analysis: 0,
-        },
+        reading: ReadingViewState::default(),
         font: font,
         title_font: title_font,
         simple_color: CLEAR_COLOR,
@@ -261,6 +277,14 @@ fn update_read_view(app: &mut App, state: &mut State) {
 
 
 fn update(app: &mut App, state: &mut State) {
+    if app.keyboard.was_pressed(KeyCode::M) {
+        log::debug!("m");
+        state.view = View::HOME;
+        state.reading = ReadingViewState::default();
+        state.reset_colors();
+    }
+
+
     match state.view {
         View::READ => update_read_view(app, state),
         _ => (),
@@ -396,24 +420,62 @@ fn draw_home_view_old(draw: &mut Draw, state: &State, work_size: Vec2) {
 }
 
 
-fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &State, work_size: Vec2) {
+fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let mut menu_width = work_size.x * 0.75;
 
     let mut output = plugins.egui(|ctx| {
         // Switch to light mode
         ctx.set_visuals(egui::Visuals::light());
 
+        let clear_color_u8 = CLEAR_COLOR.rgba_u8();
+        let fill_color =
+            egui::Color32::from_rgb(clear_color_u8[0], clear_color_u8[1], clear_color_u8[2]);
+        let menu_inner_margin = work_size.y * 0.1;
+        let menu_frame = egui::Frame::none()
+            .fill(fill_color)
+            .inner_margin(egui::style::Margin {
+                left: menu_inner_margin,
+                right: menu_inner_margin,
+                top: menu_inner_margin,
+                bottom: menu_inner_margin,
+            });
         egui::SidePanel::right("Menu")
             .resizable(false)
             .default_width(menu_width)
+            // Should experiment more with how these min/max settings behave when shrinking
+            // the app window
+            .max_width(menu_width)
+            .min_width(menu_width)
+            .frame(menu_frame)
             .show(&ctx, |ui| {
-                ui.heading("Egui Plugin Example");
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    // Add a lot of widgets here.
+                    // ui.heading("Egui Plugin Example");
+                    // ui.separator();
+                    // ui.label("Welcome to a basic example of how to use Egui with notan.");
+                    // ui.separator();
+                    // ui.label("Check the source code to learn more about how it works");
 
-                ui.separator();
-                ui.label("Welcome to a basic example of how to use Egui with notan.");
+                    for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
+                        // ui.heading(&emodoc.title);
+                        if ui.add(egui::Button::new(&emodoc.title)).clicked() {
+                            state.reading.doc_index = doc_index;
+                            state.view = View::READ;
+                            log::debug!("{}", &emodoc.title);
+                        }
+                        ui.label(&emodoc.author);
+                        ui.separator();
 
-                ui.separator();
-                ui.label("Check the source code to learn more about how it works");
+                        // draw.text(&state.title_font, &emodoc.title)
+                        //     .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
+                        //     .color(TITLE_COLOR)
+                        //     .size(scale_font(16.0, work_size))
+                        //     .max_width(menu_width)
+                        //     .position(work_size.x * 0.5 - menu_width * 0.5, menu_item_ypos)
+                        //     .h_align_left()
+                        //     .v_align_middle();
+                    }
+                });
             });
     });
 
