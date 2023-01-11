@@ -14,10 +14,10 @@ use FontFamily::{Monospace, Proportional};
 
 
 // See details at https://stackoverflow.com/a/42764117
-const EMOCAT_DOCS: [&'static str; 9] = [
+const EMOCAT_DOCS: [&'static str; 8] = [
     include_str!("assets/lb_bronte01.json"),
     include_str!("assets/lb_dickinson01.json"),
-    include_str!("assets/lb_dickinson02.json"),
+    // include_str!("assets/lb_dickinson02.json"),
     include_str!("assets/lb_howe01.json"),
     include_str!("assets/lb_hughes01.json"),
     include_str!("assets/lb_teasdale01.json"),
@@ -130,7 +130,9 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         include_bytes!("./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf");
     let title_font = gfx.create_font(title_font_bytes).unwrap();
 
+    // Using the regular font for egui title menu items b/c I want the line spacing
     let egui_fonts = configure_egui_fonts(title_font_bytes);
+    // let egui_fonts = configure_egui_fonts(font_bytes);
 
 
     let emodocs: Vec<EmocatOutputDoc> = EMOCAT_DOCS
@@ -460,6 +462,11 @@ fn title_button() -> TextStyle {
     TextStyle::Name("TitleButton".into())
 }
 
+#[inline]
+fn author_menu_text() -> TextStyle {
+    TextStyle::Name("AuthorMenuText".into())
+}
+
 ///
 /// Based on: https://github.com/emilk/egui/blob/master/examples/custom_font_style/src/main.rs
 ///
@@ -475,12 +482,17 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
             FontId::new(scale_font(16.0, work_size), Monospace),
         ),
         (
+            author_menu_text(),
+            FontId::new(scale_font(10.0, work_size), Proportional),
+        ),
+        (
             TextStyle::Button,
             FontId::new(scale_font(12.0, work_size), Monospace),
         ),
         (
             title_button(),
-            FontId::new(scale_font(22.0, work_size), Proportional),
+            // FontId::new(scale_font(22.0, work_size), Proportional),
+            FontId::new(scale_font(19.0, work_size), Proportional),
         ),
         (
             TextStyle::Small,
@@ -530,28 +542,51 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                 top: menu_inner_margin,
                 bottom: menu_inner_margin,
             });
+
+        let button_top_margin = work_size.y * 0.01;
+        let title_frame = egui::Frame::none()
+            // .fill(egui::Color32::RED)
+            .inner_margin(egui::style::Margin {
+                left: 0.0,
+                right: 0.0,
+                top: button_top_margin,
+                bottom: button_top_margin,
+            });
         egui::SidePanel::right("Menu")
             .resizable(false)
             .default_width(menu_width)
             // Should experiment more with how these min/max settings behave when shrinking
             // the app window
             // .max_width(menu_width)
-            // .min_width(menu_width)
+            .min_width(menu_width)
             .frame(menu_frame)
             .show(&ctx, |ui| {
+                let mut style = (*ctx.style()).clone();
+                let button_padding_x = work_size.x * 0.005;
+                let button_padding_y = work_size.y * 0.005;
+                style.spacing.button_padding = egui::Vec2::new(button_padding_x, button_padding_y);
+                ctx.set_style(style);
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
                         for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
                             // ui.heading(&emodoc.title);
-                            let title_text =
-                                RichText::new(&emodoc.title).text_style(title_button());
+                            let title_text = RichText::new(&emodoc.title)
+                                .color(egui::Color32::WHITE)
+                                .text_style(title_button());
                             // if ui.add(egui::Button::new(&emodoc.title)).clicked() {
-                            if ui.add(egui::Button::new(title_text)).clicked() {
-                                state.reading.doc_index = doc_index;
-                                state.view = View::READ;
-                                log::debug!("{}", &emodoc.title);
-                            }
-                            ui.label(&emodoc.author);
+                            let title_button = egui::Button::new(title_text)
+                                .wrap(true)
+                                .fill(egui::Color32::GRAY);
+                            title_frame.show(ui, |ui| {
+                                if ui.add(title_button).clicked() {
+                                    state.reading.doc_index = doc_index;
+                                    state.view = View::READ;
+                                    log::debug!("{}", &emodoc.title);
+                                }
+                                let author_text =
+                                    RichText::new(&emodoc.author).text_style(author_menu_text());
+                                ui.label(author_text);
+                            });
                             // ui.separator();
                         }
                     });
