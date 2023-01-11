@@ -6,8 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-notan = { version = "0.8.0", features = ["extra", "text"] }
+notan = { version = "0.8.0", features = ["egui", "extra", "text"] }
 # notan = { git = "https://github.com/Nazariglez/notan.git", branch = "c/glutin", features = ["extra", "text"] }
+# notan = { git = "https://github.com/Nazariglez/notan.git", branch = "f/wayland-nvidia", features = ["extra", "text", "nvidia-wayland"] }
 
 rapier2d = "0.16.0"
 serde_json = "1.0"

@@ -22,6 +22,22 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 cargo build --release --example emo_simple_color --target wasm32-unknown-unknown
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/emo_simple_color.wasm
 
+cargo build --release --example emo_bg_visualizer --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/emo_bg_visualizer.wasm
+
+
+cargo build --release --example schotter --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/schotter.wasm
+
+cargo build --release --example schotter_solid_v1 --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/schotter_solid_v1.wasm
+
+cargo build --release --example schotter_solid_v2 --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/schotter_solid_v2.wasm
+
+cargo build --release --example schotter_anim --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/schotter_anim.wasm
+
 
 ```
 
