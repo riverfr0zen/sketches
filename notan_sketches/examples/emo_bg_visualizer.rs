@@ -69,7 +69,8 @@ struct State {
     reading: ReadingViewState,
     font: Font,
     title_font: Font,
-    title_font_egui: FontData,
+    egui_fonts: FontDefinitions,
+    egui_fonts_configured: bool,
     simple_color: Color,
     bg_color: Color,
     bg_color_mix_factor: f32,
@@ -88,30 +89,55 @@ impl State {
 }
 
 
+fn configure_egui_fonts(title_font_bytes: &'static [u8]) -> FontDefinitions {
+    // Start with the default fonts (we will be adding to them rather than replacing them).
+    let mut egui_fonts = egui::FontDefinitions::default();
+
+    // Install my own font (maybe supporting non-latin characters).
+    // .ttf and .otf files supported.
+    let bytes = title_font_bytes.clone();
+    egui_fonts
+        .font_data
+        .insert("my_font".to_owned(), egui::FontData::from_static(&bytes));
+
+    // Put my font first (highest priority) for proportional text:
+    egui_fonts
+        .families
+        .entry(egui::FontFamily::Proportional)
+        .or_default()
+        .insert(0, "my_font".to_owned());
+
+    // Put my font as last fallback for monospace:
+    egui_fonts
+        .families
+        .entry(egui::FontFamily::Monospace)
+        .or_default()
+        .push("my_font".to_owned());
+
+    egui_fonts
+}
+
+
 fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
-    let font = gfx
-        .create_font(include_bytes!(
-            // "./assets/fonts/Ubuntu-B.ttf"
-            // "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
-            "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.spaced.ttf"
-        ))
-        .unwrap();
-
-    let title_font = gfx
-        .create_font(include_bytes!(
-            "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
-        ))
-        .unwrap();
-
-    let title_font_egui = egui::FontData::from_static(include_bytes!(
+    let font_bytes = include_bytes!(
+        // "./assets/fonts/Ubuntu-B.ttf"
+        // "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
         "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.spaced.ttf"
-    ));
+    );
+    let font = gfx.create_font(font_bytes).unwrap();
+
+    let title_font_bytes =
+        include_bytes!("./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf");
+    let title_font = gfx.create_font(title_font_bytes).unwrap();
+
+    let egui_fonts = configure_egui_fonts(title_font_bytes);
 
 
     let emodocs: Vec<EmocatOutputDoc> = EMOCAT_DOCS
         .iter()
         .map(|&doc| serde_json::from_str(doc).expect("Could not open emocat document"))
         .collect();
+
 
     let state = State {
         view: View::HOME,
@@ -120,7 +146,8 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         reading: ReadingViewState::default(),
         font: font,
         title_font: title_font,
-        title_font_egui: title_font_egui,
+        egui_fonts: egui_fonts,
+        egui_fonts_configured: false,
         simple_color: CLEAR_COLOR,
         bg_color: CLEAR_COLOR,
         bg_color_mix_factor: STARTING_MIX_FACTOR,
@@ -485,36 +512,16 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
 }
 
 
-fn setup_custom_fonts(ctx: &egui::Context, state: &State) {
-    // Start with the default fonts (we will be adding to them rather than replacing them).
-    let mut fonts = egui::FontDefinitions::default();
-
-    // Install my own font (maybe supporting non-latin characters).
-    // .ttf and .otf files supported.
-    fonts.font_data.insert(
-        "my_font".to_owned(),
-        // state.title_font_egui.clone(),
-        egui::FontData::from_static(include_bytes!(
-            "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.spaced.ttf"
-        )),
-    );
-
-    // Put my font first (highest priority) for proportional text:
-    fonts
-        .families
-        .entry(egui::FontFamily::Proportional)
-        .or_default()
-        .insert(0, "my_font".to_owned());
-
-    // Put my font as last fallback for monospace:
-    fonts
-        .families
-        .entry(egui::FontFamily::Monospace)
-        .or_default()
-        .push("my_font".to_owned());
+fn configure_custom_fonts(ctx: &egui::Context, state: &mut State) {
+    // Kind of a hack right now because I don't know a better way to avoid setting up
+    // font on every draw(). Still have to clone the whole fonts setup here, but at
+    // least we only do it once by setting the egui_fonts_configured flag.
 
     // Tell egui to use these fonts:
-    ctx.set_fonts(fonts);
+    if !state.egui_fonts_configured {
+        ctx.set_fonts(state.egui_fonts.clone());
+        state.egui_fonts_configured = true;
+    }
 }
 
 
@@ -524,8 +531,8 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     let mut output = plugins.egui(|ctx| {
         // Switch to light mode
         ctx.set_visuals(egui::Visuals::light());
+        configure_custom_fonts(ctx, state);
         configure_text_styles(ctx, work_size);
-        setup_custom_fonts(ctx, state);
 
 
         let clear_color_u8 = CLEAR_COLOR.rgba_u8();
