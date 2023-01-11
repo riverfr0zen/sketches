@@ -456,55 +456,35 @@ fn draw_home_view_old(draw: &mut Draw, state: &State, work_size: Vec2) {
 
 
 #[inline]
-fn heading2() -> TextStyle {
-    TextStyle::Name("Heading2".into())
-}
-
-#[inline]
-fn heading3() -> TextStyle {
-    TextStyle::Name("ContextHeading".into())
-}
-
-
-#[inline]
 fn title_button() -> TextStyle {
     TextStyle::Name("TitleButton".into())
 }
 
+///
+/// Based on: https://github.com/emilk/egui/blob/master/examples/custom_font_style/src/main.rs
+///
 fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
     let mut style = (*ctx.style()).clone();
     style.text_styles = [
         (
             TextStyle::Heading,
-            FontId::new(scale_font(25.0, work_size), Proportional),
-        ),
-        (
-            heading2(),
-            FontId::new(scale_font(22.0, work_size), Proportional),
-        ),
-        (
-            heading3(),
-            FontId::new(scale_font(19.0, work_size), Proportional),
+            FontId::new(scale_font(25.0, work_size), Monospace),
         ),
         (
             TextStyle::Body,
-            FontId::new(scale_font(16.0, work_size), Proportional),
+            FontId::new(scale_font(16.0, work_size), Monospace),
         ),
-        // (
-        //     TextStyle::Button,
-        //     FontId::new(scale_font(12.0, work_size), Proportional),
-        // ),
         (
             TextStyle::Button,
-            FontId::new(scale_font(22.0, work_size), Proportional),
+            FontId::new(scale_font(12.0, work_size), Monospace),
         ),
         (
             title_button(),
-            FontId::new(scale_font(16.0, work_size), Proportional),
+            FontId::new(scale_font(22.0, work_size), Proportional),
         ),
         (
             TextStyle::Small,
-            FontId::new(scale_font(8.0, work_size), Proportional),
+            FontId::new(scale_font(8.0, work_size), Monospace),
         ),
     ]
     .into();
@@ -512,6 +492,9 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
 }
 
 
+///
+/// Based on: https://github.com/emilk/egui/blob/master/examples/custom_font/src/main.rs
+///
 fn configure_custom_fonts(ctx: &egui::Context, state: &mut State) {
     // Kind of a hack right now because I don't know a better way to avoid setting up
     // font on every draw(). Still have to clone the whole fonts setup here, but at
@@ -552,21 +535,26 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
             .default_width(menu_width)
             // Should experiment more with how these min/max settings behave when shrinking
             // the app window
-            .max_width(menu_width)
-            .min_width(menu_width)
+            // .max_width(menu_width)
+            // .min_width(menu_width)
             .frame(menu_frame)
             .show(&ctx, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
-                        // ui.heading(&emodoc.title);
-                        if ui.add(egui::Button::new(&emodoc.title)).clicked() {
-                            state.reading.doc_index = doc_index;
-                            state.view = View::READ;
-                            log::debug!("{}", &emodoc.title);
+                    ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
+                        for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
+                            // ui.heading(&emodoc.title);
+                            let title_text =
+                                RichText::new(&emodoc.title).text_style(title_button());
+                            // if ui.add(egui::Button::new(&emodoc.title)).clicked() {
+                            if ui.add(egui::Button::new(title_text)).clicked() {
+                                state.reading.doc_index = doc_index;
+                                state.view = View::READ;
+                                log::debug!("{}", &emodoc.title);
+                            }
+                            ui.label(&emodoc.author);
+                            // ui.separator();
                         }
-                        ui.label(&emodoc.author);
-                        // ui.separator();
-                    }
+                    });
                 });
             });
     });
