@@ -43,6 +43,8 @@ const MAX_FPS: u8 = 240;
 // #[derive(PartialEq)]
 enum View {
     HOME,
+    PUBLIC_DOMAIN_MENU,
+    // MY_MENU,
     READ,
 }
 
@@ -409,54 +411,6 @@ fn draw_read_view(gfx: &mut Graphics, state: &State, work_size: Vec2) {
 }
 
 
-fn draw_home_view_old(draw: &mut Draw, state: &State, work_size: Vec2) {
-    let mut menu_width = work_size.x * 0.75;
-
-    let mut menu_item_ypos = work_size.y * 0.1;
-    let menu_item_spacing = work_size.y * 0.05;
-    for emodoc in state.emodocs.iter() {
-        draw.text(&state.title_font, &emodoc.title)
-            .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
-            .color(TITLE_COLOR)
-            .size(scale_font(16.0, work_size))
-            .max_width(menu_width)
-            .position(work_size.x * 0.5 - menu_width * 0.5, menu_item_ypos)
-            .h_align_left()
-            .v_align_middle();
-        let title_bounds = draw.last_text_bounds();
-
-        // let byline = format!("by {}", emodoc.author);
-        let byline = format!("    {}", emodoc.author);
-        // let byline_xpos = title_bounds.max_x();
-        let byline_xpos = title_bounds.min_x();
-        let byline_ypos = title_bounds.max_y() + work_size.y * 0.015;
-        draw.text(&state.title_font, &byline)
-            .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
-            .color(META_COLOR)
-            .size(scale_font(12.0, work_size))
-            .max_width(menu_width)
-            .position(byline_xpos, byline_ypos)
-            .h_align_left()
-            .v_align_middle();
-        let byline_bounds = draw.last_text_bounds();
-
-        draw.rect(
-            (title_bounds.min_x(), title_bounds.min_y()),
-            (
-                title_bounds.max_x().max(byline_bounds.max_x()) - title_bounds.min_x(),
-                // title_bounds.height + byline_bounds.height,
-                byline_bounds.max_y() - title_bounds.min_y(),
-            ),
-        )
-        .stroke(1.0)
-        .color(Color::RED);
-
-        menu_item_ypos = byline_bounds.max_y() + menu_item_spacing;
-        // log::debug!("{}", emodoc.title);
-    }
-}
-
-
 #[inline]
 fn title_button() -> TextStyle {
     TextStyle::Name("TitleButton".into())
@@ -492,7 +446,7 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
         (
             title_button(),
             // FontId::new(scale_font(22.0, work_size), Proportional),
-            FontId::new(scale_font(19.0, work_size), Proportional),
+            FontId::new(scale_font(18.0, work_size), Proportional),
         ),
         (
             TextStyle::Small,
@@ -519,23 +473,120 @@ fn configure_custom_fonts(ctx: &egui::Context, state: &mut State) {
     }
 }
 
+fn ui_common_setup(ctx: &Context, state: &mut State, work_size: Vec2) -> egui::Color32 {
+    // Switch to light mode
+    ctx.set_visuals(egui::Visuals::light());
+    configure_custom_fonts(ctx, state);
+    configure_text_styles(ctx, work_size);
+
+    let clear_color_u8 = CLEAR_COLOR.rgba_u8();
+    egui::Color32::from_rgb(clear_color_u8[0], clear_color_u8[1], clear_color_u8[2])
+}
+
+fn draw_public_domain_menu_items(
+    ctx: &egui::Context,
+    ui: &mut egui::Ui,
+    state: &mut State,
+    work_size: Vec2,
+) {
+    let mut style = (*ctx.style()).clone();
+    let button_top_margin = work_size.y * 0.01;
+    let title_frame = egui::Frame::none()
+        // .fill(egui::Color32::RED)
+        .inner_margin(egui::style::Margin {
+            left: 0.0,
+            right: 0.0,
+            top: button_top_margin,
+            bottom: button_top_margin,
+        });
+    let button_padding_x = work_size.x * 0.005;
+    let button_padding_y = work_size.y * 0.005;
+    style.spacing.button_padding = egui::Vec2::new(button_padding_x, button_padding_y);
+    ctx.set_style(style);
+
+
+    for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
+        // ui.heading(&emodoc.title);
+        let title_text = RichText::new(&emodoc.title)
+            .color(egui::Color32::WHITE)
+            .text_style(title_button());
+        // if ui.add(egui::Button::new(&emodoc.title)).clicked() {
+        let title_button = egui::Button::new(title_text)
+            .wrap(true)
+            .fill(egui::Color32::GRAY);
+        title_frame.show(ui, |ui| {
+            if ui.add(title_button).clicked() {
+                state.reading.doc_index = doc_index;
+                state.view = View::READ;
+                log::debug!("{}", &emodoc.title);
+            }
+            let author_text = RichText::new(&emodoc.author).text_style(author_menu_text());
+            ui.label(author_text);
+        });
+        // ui.separator();
+    }
+}
 
 fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
+    let mut output = plugins.egui(|ctx| {
+        let ui_fill = ui_common_setup(ctx, state, work_size);
+
+        let panel_inner_margin = work_size.y * 0.02;
+        let panel_frame = egui::Frame::none()
+            // .fill(ui_fill)
+            .inner_margin(egui::style::Margin {
+                left: panel_inner_margin,
+                right: panel_inner_margin,
+                // left: 200.0,
+                // right: 200.0,
+                top: panel_inner_margin,
+                bottom: panel_inner_margin,
+            });
+        egui::CentralPanel::default()
+            .frame(panel_frame)
+            .show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    ui.heading("emo bg visualizer");
+                    // ui.heading("emotion bg visualizer");
+                    // ui.heading("emotion background visualizer for text");
+                    ui.small("A background visualizer for emotions found in text");
+                    ui.small("Settings |  About");
+                    ui.label("");
+                    ui.label("Read select poems and prose from the public domain:");
+                    ui.label("");
+
+                    egui::ScrollArea::vertical()
+                        // .max_width(500.0)
+                        .show(ui, |ui| {
+                            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                                draw_public_domain_menu_items(ctx, ui, state, work_size);
+                            });
+                        });
+                });
+            });
+    });
+
+    output.clear_color(CLEAR_COLOR);
+    if output.needs_repaint() {
+        gfx.render(&output);
+    }
+}
+
+
+fn draw_public_domain_menu(
+    gfx: &mut Graphics,
+    plugins: &mut Plugins,
+    state: &mut State,
+    work_size: Vec2,
+) {
     let menu_width = work_size.x * 0.75;
 
     let mut output = plugins.egui(|ctx| {
-        // Switch to light mode
-        ctx.set_visuals(egui::Visuals::light());
-        configure_custom_fonts(ctx, state);
-        configure_text_styles(ctx, work_size);
+        let ui_fill = ui_common_setup(ctx, state, work_size);
 
-
-        let clear_color_u8 = CLEAR_COLOR.rgba_u8();
-        let fill_color =
-            egui::Color32::from_rgb(clear_color_u8[0], clear_color_u8[1], clear_color_u8[2]);
         let menu_inner_margin = work_size.y * 0.1;
         let menu_frame = egui::Frame::none()
-            .fill(fill_color)
+            .fill(ui_fill)
             .inner_margin(egui::style::Margin {
                 left: menu_inner_margin,
                 right: menu_inner_margin,
@@ -611,7 +662,9 @@ fn draw(
 
     match state.view {
         View::READ => draw_read_view(gfx, state, work_size),
+        View::PUBLIC_DOMAIN_MENU => draw_public_domain_menu(gfx, plugins, state, work_size),
         _ => draw_home_view(gfx, plugins, state, work_size),
+        // _ => draw_public_domain_menu(gfx, plugins, state, work_size),
     }
 
     // log::debug!("fps: {}", app.timer.fps().round());
