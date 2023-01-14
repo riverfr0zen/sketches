@@ -457,7 +457,7 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
         (
             title_button(),
             // FontId::new(scale_font(22.0, work_size), Proportional),
-            FontId::new(scale_font(18.0, work_size), Proportional),
+            FontId::new(scale_font(16.0, work_size), Proportional),
         ),
         (
             TextStyle::Small,
