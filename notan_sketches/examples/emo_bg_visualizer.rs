@@ -456,7 +456,6 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
         ),
         (
             title_button(),
-            // FontId::new(scale_font(22.0, work_size), Proportional),
             FontId::new(scale_font(16.0, work_size), Proportional),
         ),
         (
@@ -571,9 +570,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                         ui.heading("emo bg visualizer");
                         ui.small("A background visualizer for emotions found in text");
                     });
-                    let mut navi_frame = heading_frame.clone();
-                    // navi_frame.inner_margin.bottom *= 2.0;
-                    navi_frame.show(ui, |ui| {
+                    heading_frame.show(ui, |ui| {
                         ui.small("Settings |  About");
                     });
                     heading_frame.show(ui, |ui| {
@@ -701,6 +698,8 @@ fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     // let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
     let win_config = get_common_win_config().high_dpi(true).size(
+        // ScreenDimensions::RES_HDPLUS.x as i32,
+        // ScreenDimensions::RES_HDPLUS.y as i32,
         ScreenDimensions::RES_1080P.x as i32,
         ScreenDimensions::RES_1080P.y as i32,
         // ScreenDimensions::DEFAULT.x as i32,
