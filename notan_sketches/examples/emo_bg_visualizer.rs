@@ -602,9 +602,17 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     });
 
     output.clear_color(CLEAR_COLOR);
-    if output.needs_repaint() {
-        gfx.render(&output);
-    }
+    // Checking `output.needs_repaint()` seems to be the culprit of scrambled text
+    // issue on wasm target!
+    //
+    // Enable it and see the text get all scrambled. Sure, my approach to setting
+    // custom fonts and styles is non-standard, so that may be contributor, but should
+    // look further into what the issue is and if not checking `output.needs_repaint()`
+    // has any repurcussions.
+    // if output.needs_repaint() {
+    //     gfx.render(&output);
+    // }
+    gfx.render(&output);
 }
 
 
