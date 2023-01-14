@@ -170,20 +170,31 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
 ///
 /// @TODO: What about portrait dimensions?
 fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x {
-        // log::debug!("1080p");
-        return default_size * 2.25;
+    // if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x
+    // {
+    //     log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
+    //     return default_size * 2.2;
+    // }
+    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_HDPLUS.x
+    {
+        log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 2.2;
+    }
+    if work_size.x >= ScreenDimensions::RES_HDPLUS.x && work_size.x < ScreenDimensions::RES_1440P.x
+    {
+        log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 2.5;
     }
     if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
-        // log::debug!("1440p");
+        log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 3.0;
     }
     if work_size.x >= ScreenDimensions::RES_4K.x {
-        // log::debug!("4k");
-        return default_size * 4.5;
+        log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 4.4;
     }
-    // log::debug!("Default.");
-    return default_size * 1.0;
+    log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
+    return default_size;
 }
 
 
@@ -546,14 +557,28 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
             .frame(panel_frame)
             .show(ctx, |ui| {
                 ui.vertical_centered(|ui| {
-                    ui.heading("emo bg visualizer");
-                    // ui.heading("emotion bg visualizer");
-                    // ui.heading("emotion background visualizer for text");
-                    ui.small("A background visualizer for emotions found in text");
-                    ui.small("Settings |  About");
-                    ui.label("");
-                    ui.label("Read select poems and prose from the public domain:");
-                    ui.label("");
+                    let heading_frame_margin = work_size.y * 0.02;
+                    let heading_frame =
+                        egui::Frame::none()
+                            .fill(ui_fill)
+                            .inner_margin(egui::style::Margin {
+                                left: 0.0,
+                                right: 0.0,
+                                top: 0.0,
+                                bottom: heading_frame_margin,
+                            });
+                    heading_frame.show(ui, |ui| {
+                        ui.heading("emo bg visualizer");
+                        ui.small("A background visualizer for emotions found in text");
+                    });
+                    let mut navi_frame = heading_frame.clone();
+                    // navi_frame.inner_margin.bottom *= 2.0;
+                    navi_frame.show(ui, |ui| {
+                        ui.small("Settings |  About");
+                    });
+                    heading_frame.show(ui, |ui| {
+                        ui.label("Read select poems and prose from the public domain:");
+                    });
 
                     egui::ScrollArea::vertical()
                         // .max_width(500.0)
@@ -681,7 +706,6 @@ fn main() -> Result<(), String> {
         // ScreenDimensions::DEFAULT.x as i32,
         // ScreenDimensions::DEFAULT.y as i32,
     );
-
 
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
