@@ -1,3 +1,4 @@
+use notan::app::Event;
 use notan::draw::*;
 use notan::egui::{self, *};
 use notan::extra::FpsLimit;
@@ -72,12 +73,12 @@ struct State {
     font: Font,
     title_font: Font,
     egui_fonts: FontDefinitions,
-    egui_fonts_configured: bool,
     simple_color: Color,
     bg_color: Color,
     bg_color_mix_factor: f32,
     text_color: Color,
     dynamic_text_color: bool,
+    needs_handle_resize: bool,
 }
 
 impl State {
@@ -151,12 +152,12 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         font: font,
         title_font: title_font,
         egui_fonts: egui_fonts,
-        egui_fonts_configured: false,
         simple_color: CLEAR_COLOR,
         bg_color: CLEAR_COLOR,
         bg_color_mix_factor: STARTING_MIX_FACTOR,
         text_color: TITLE_COLOR,
         dynamic_text_color: DYNAMIC_TEXT_COLOR,
+        needs_handle_resize: true,
     };
     state
 }
@@ -177,23 +178,23 @@ fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
     // }
     if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_HDPLUS.x
     {
-        log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
+        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 2.2;
     }
     if work_size.x >= ScreenDimensions::RES_HDPLUS.x && work_size.x < ScreenDimensions::RES_1440P.x
     {
-        log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
+        // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 2.5;
     }
     if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
-        log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
+        // log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 3.0;
     }
     if work_size.x >= ScreenDimensions::RES_4K.x {
-        log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
+        // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 4.4;
     }
-    log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
+    // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
     return default_size;
 }
 
@@ -432,9 +433,8 @@ fn author_menu_text() -> TextStyle {
     TextStyle::Name("AuthorMenuText".into())
 }
 
-///
-/// Based on: https://github.com/emilk/egui/blob/master/examples/custom_font_style/src/main.rs
-///
+
+// Based on: https://github.com/emilk/egui/blob/master/examples/custom_font_style/src/main.rs
 fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
     let mut style = (*ctx.style()).clone();
     style.text_styles = [
@@ -448,7 +448,7 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
         ),
         (
             author_menu_text(),
-            FontId::new(scale_font(10.0, work_size), Proportional),
+            FontId::new(scale_font(9.0, work_size), Proportional),
         ),
         (
             TextStyle::Button,
@@ -468,30 +468,44 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
 }
 
 
-///
-/// Based on: https://github.com/emilk/egui/blob/master/examples/custom_font/src/main.rs
-///
+// Based on: https://github.com/emilk/egui/blob/master/examples/custom_font/src/main.rs
 fn configure_custom_fonts(ctx: &egui::Context, state: &mut State) {
     // Kind of a hack right now because I don't know a better way to avoid setting up
     // font on every draw(). Still have to clone the whole fonts setup here, but at
     // least we only do it once by setting the egui_fonts_configured flag.
 
     // Tell egui to use these fonts:
-    if !state.egui_fonts_configured {
-        ctx.set_fonts(state.egui_fonts.clone());
-        state.egui_fonts_configured = true;
+    ctx.set_fonts(state.egui_fonts.clone());
+}
+
+
+// Based on https://github.com/Nazariglez/notan/blob/main/examples/input_mouse_events.rs
+fn event(state: &mut State, evt: Event) {
+    match evt {
+        Event::WindowResize { width, height } => {
+            // state.text = "resize...".to_string();
+            log::debug!("Window resized to: w {}, h {}", width, height);
+            state.needs_handle_resize = true
+        }
+        _ => {}
     }
 }
+
 
 fn ui_common_setup(ctx: &Context, state: &mut State, work_size: Vec2) -> egui::Color32 {
     // Switch to light mode
     ctx.set_visuals(egui::Visuals::light());
-    configure_custom_fonts(ctx, state);
-    configure_text_styles(ctx, work_size);
 
+    // Custom font setup whenever resized:
+    if state.needs_handle_resize {
+        configure_custom_fonts(ctx, state);
+        state.needs_handle_resize = false;
+    }
+    configure_text_styles(ctx, work_size);
     let clear_color_u8 = CLEAR_COLOR.rgba_u8();
     egui::Color32::from_rgb(clear_color_u8[0], clear_color_u8[1], clear_color_u8[2])
 }
+
 
 fn draw_public_domain_menu_items(
     ctx: &egui::Context,
@@ -537,6 +551,7 @@ fn draw_public_domain_menu_items(
     }
 }
 
+
 fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let mut output = plugins.egui(|ctx| {
         let ui_fill = ui_common_setup(ctx, state, work_size);
@@ -547,8 +562,6 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
             .inner_margin(egui::style::Margin {
                 left: panel_inner_margin,
                 right: panel_inner_margin,
-                // left: 200.0,
-                // right: 200.0,
                 top: panel_inner_margin,
                 bottom: panel_inner_margin,
             });
@@ -595,85 +608,6 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
 }
 
 
-fn draw_public_domain_menu(
-    gfx: &mut Graphics,
-    plugins: &mut Plugins,
-    state: &mut State,
-    work_size: Vec2,
-) {
-    let menu_width = work_size.x * 0.75;
-
-    let mut output = plugins.egui(|ctx| {
-        let ui_fill = ui_common_setup(ctx, state, work_size);
-
-        let menu_inner_margin = work_size.y * 0.1;
-        let menu_frame = egui::Frame::none()
-            .fill(ui_fill)
-            .inner_margin(egui::style::Margin {
-                left: menu_inner_margin,
-                right: menu_inner_margin,
-                top: menu_inner_margin,
-                bottom: menu_inner_margin,
-            });
-
-        let button_top_margin = work_size.y * 0.01;
-        let title_frame = egui::Frame::none()
-            // .fill(egui::Color32::RED)
-            .inner_margin(egui::style::Margin {
-                left: 0.0,
-                right: 0.0,
-                top: button_top_margin,
-                bottom: button_top_margin,
-            });
-        egui::SidePanel::right("Menu")
-            .resizable(false)
-            .default_width(menu_width)
-            // Should experiment more with how these min/max settings behave when shrinking
-            // the app window
-            // .max_width(menu_width)
-            .min_width(menu_width)
-            .frame(menu_frame)
-            .show(&ctx, |ui| {
-                let mut style = (*ctx.style()).clone();
-                let button_padding_x = work_size.x * 0.005;
-                let button_padding_y = work_size.y * 0.005;
-                style.spacing.button_padding = egui::Vec2::new(button_padding_x, button_padding_y);
-                ctx.set_style(style);
-                egui::ScrollArea::vertical().show(ui, |ui| {
-                    ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
-                        for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
-                            // ui.heading(&emodoc.title);
-                            let title_text = RichText::new(&emodoc.title)
-                                .color(egui::Color32::WHITE)
-                                .text_style(title_button());
-                            // if ui.add(egui::Button::new(&emodoc.title)).clicked() {
-                            let title_button = egui::Button::new(title_text)
-                                .wrap(true)
-                                .fill(egui::Color32::GRAY);
-                            title_frame.show(ui, |ui| {
-                                if ui.add(title_button).clicked() {
-                                    state.reading.doc_index = doc_index;
-                                    state.view = View::READ;
-                                    log::debug!("{}", &emodoc.title);
-                                }
-                                let author_text =
-                                    RichText::new(&emodoc.author).text_style(author_menu_text());
-                                ui.label(author_text);
-                            });
-                            // ui.separator();
-                        }
-                    });
-                });
-            });
-    });
-
-    output.clear_color(CLEAR_COLOR);
-    if output.needs_repaint() {
-        gfx.render(&output);
-    }
-}
-
-
 fn draw(
     // app: &mut App,
     gfx: &mut Graphics,
@@ -684,7 +618,7 @@ fn draw(
 
     match state.view {
         View::READ => draw_read_view(gfx, state, work_size),
-        View::PUBLIC_DOMAIN_MENU => draw_public_domain_menu(gfx, plugins, state, work_size),
+        // View::PUBLIC_DOMAIN_MENU => draw_public_domain_menu(gfx, plugins, state, work_size),
         _ => draw_home_view(gfx, plugins, state, work_size),
         // _ => draw_public_domain_menu(gfx, plugins, state, work_size),
     }
@@ -716,6 +650,7 @@ fn main() -> Result<(), String> {
         .add_config(EguiConfig)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .add_plugin(FpsLimit::new(MAX_FPS))
+        .event(event)
         .draw(draw)
         .update(update)
         .build()
