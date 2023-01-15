@@ -134,9 +134,7 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         include_bytes!("./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf");
     let title_font = gfx.create_font(title_font_bytes).unwrap();
 
-    // Using the regular font for egui title menu items b/c I want the line spacing
     let egui_fonts = configure_egui_fonts(title_font_bytes);
-    // let egui_fonts = configure_egui_fonts(font_bytes);
 
 
     let emodocs: Vec<EmocatOutputDoc> = EMOCAT_DOCS
@@ -554,53 +552,56 @@ fn draw_public_domain_menu_items(
 }
 
 
+fn draw_main_panel(work_size: Vec2) -> CentralPanel {
+    let panel_inner_margin = work_size.y * 0.02;
+    let panel_frame = egui::Frame::none()
+        // .fill(ui_fill)
+        .inner_margin(egui::style::Margin {
+            left: panel_inner_margin,
+            right: panel_inner_margin,
+            top: panel_inner_margin,
+            bottom: panel_inner_margin,
+        });
+    egui::CentralPanel::default().frame(panel_frame)
+}
+
+
 fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let mut output = plugins.egui(|ctx| {
+        let main_panel = draw_main_panel(work_size);
         let ui_fill = ui_common_setup(ctx, state, work_size);
-
-        let panel_inner_margin = work_size.y * 0.02;
-        let panel_frame = egui::Frame::none()
-            // .fill(ui_fill)
-            .inner_margin(egui::style::Margin {
-                left: panel_inner_margin,
-                right: panel_inner_margin,
-                top: panel_inner_margin,
-                bottom: panel_inner_margin,
-            });
-        egui::CentralPanel::default()
-            .frame(panel_frame)
-            .show(ctx, |ui| {
-                ui.vertical_centered(|ui| {
-                    let heading_frame_margin = work_size.y * 0.02;
-                    let heading_frame =
-                        egui::Frame::none()
-                            .fill(ui_fill)
-                            .inner_margin(egui::style::Margin {
-                                left: 0.0,
-                                right: 0.0,
-                                top: 0.0,
-                                bottom: heading_frame_margin,
-                            });
-                    heading_frame.show(ui, |ui| {
-                        ui.heading("emo bg visualizer");
-                        ui.small("A background visualizer for emotions found in text");
-                    });
-                    heading_frame.show(ui, |ui| {
-                        ui.small("Settings |  About");
-                    });
-                    heading_frame.show(ui, |ui| {
-                        ui.label("Read select poems and prose from the public domain:");
-                    });
-
-                    egui::ScrollArea::vertical()
-                        // .max_width(500.0)
-                        .show(ui, |ui| {
-                            ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                                draw_public_domain_menu_items(ctx, ui, state, work_size);
-                            });
+        main_panel.show(ctx, |ui| {
+            ui.vertical_centered(|ui| {
+                let heading_frame_margin = work_size.y * 0.02;
+                let heading_frame =
+                    egui::Frame::none()
+                        .fill(ui_fill)
+                        .inner_margin(egui::style::Margin {
+                            left: 0.0,
+                            right: 0.0,
+                            top: 0.0,
+                            bottom: heading_frame_margin,
                         });
+                heading_frame.show(ui, |ui| {
+                    ui.heading("emo bg visualizer");
+                    ui.small("A background visualizer for emotions found in text");
                 });
+                heading_frame.show(ui, |ui| {
+                    ui.small("Settings |  About");
+                });
+                heading_frame.show(ui, |ui| {
+                    ui.label("Read select poems and prose from the public domain:");
+                });
+
+                egui::ScrollArea::vertical()
+                    // .max_width(500.0)
+                    .show(ui, |ui| {
+                        ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                            draw_public_domain_menu_items(ctx, ui, state, work_size);
+                        });
+                    });
             });
+        });
     });
 
     output.clear_color(CLEAR_COLOR);
