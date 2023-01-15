@@ -507,6 +507,59 @@ fn ui_common_setup(ctx: &Context, state: &mut State, work_size: Vec2) -> egui::C
 }
 
 
+fn draw_main_panel(
+    ctx: &egui::Context,
+    state: &mut State,
+    work_size: Vec2,
+    ui_fill: Color32,
+    view_fn: &dyn Fn(&egui::Context, &mut Ui, &mut State, Vec2),
+) {
+    let panel_inner_margin = work_size.y * 0.02;
+    let panel_frame = egui::Frame::none()
+        // .fill(ui_fill)
+        .inner_margin(egui::style::Margin {
+            left: panel_inner_margin,
+            right: panel_inner_margin,
+            top: panel_inner_margin,
+            bottom: panel_inner_margin,
+        });
+    egui::CentralPanel::default()
+        .frame(panel_frame)
+        .show(ctx, |ui| {
+            ui.vertical_centered(|ui| {
+                let heading_frame_margin = work_size.y * 0.02;
+                let heading_frame =
+                    egui::Frame::none()
+                        .fill(ui_fill)
+                        .inner_margin(egui::style::Margin {
+                            left: 0.0,
+                            right: 0.0,
+                            top: 0.0,
+                            bottom: heading_frame_margin,
+                        });
+                heading_frame.show(ui, |ui| {
+                    ui.heading("emo bg visualizer");
+                    ui.small("A background visualizer for emotions found in text");
+                });
+                heading_frame.show(ui, |ui| {
+                    ui.small("Settings |  About");
+                });
+                heading_frame.show(ui, |ui| {
+                    ui.label("Read select poems and prose from the public domain:");
+                });
+
+                egui::ScrollArea::vertical()
+                    // .max_width(500.0)
+                    .show(ui, |ui| {
+                        ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                            view_fn(ctx, ui, state, work_size);
+                        });
+                    });
+            });
+        });
+}
+
+
 fn draw_public_domain_menu_items(
     ctx: &egui::Context,
     ui: &mut egui::Ui,
@@ -552,56 +605,17 @@ fn draw_public_domain_menu_items(
 }
 
 
-fn draw_main_panel(work_size: Vec2) -> CentralPanel {
-    let panel_inner_margin = work_size.y * 0.02;
-    let panel_frame = egui::Frame::none()
-        // .fill(ui_fill)
-        .inner_margin(egui::style::Margin {
-            left: panel_inner_margin,
-            right: panel_inner_margin,
-            top: panel_inner_margin,
-            bottom: panel_inner_margin,
-        });
-    egui::CentralPanel::default().frame(panel_frame)
-}
-
-
 fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let mut output = plugins.egui(|ctx| {
-        let main_panel = draw_main_panel(work_size);
         let ui_fill = ui_common_setup(ctx, state, work_size);
-        main_panel.show(ctx, |ui| {
-            ui.vertical_centered(|ui| {
-                let heading_frame_margin = work_size.y * 0.02;
-                let heading_frame =
-                    egui::Frame::none()
-                        .fill(ui_fill)
-                        .inner_margin(egui::style::Margin {
-                            left: 0.0,
-                            right: 0.0,
-                            top: 0.0,
-                            bottom: heading_frame_margin,
-                        });
-                heading_frame.show(ui, |ui| {
-                    ui.heading("emo bg visualizer");
-                    ui.small("A background visualizer for emotions found in text");
-                });
-                heading_frame.show(ui, |ui| {
-                    ui.small("Settings |  About");
-                });
-                heading_frame.show(ui, |ui| {
-                    ui.label("Read select poems and prose from the public domain:");
-                });
-
-                egui::ScrollArea::vertical()
-                    // .max_width(500.0)
-                    .show(ui, |ui| {
-                        ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                            draw_public_domain_menu_items(ctx, ui, state, work_size);
-                        });
-                    });
-            });
-        });
+        let main_panel = draw_main_panel(
+            ctx,
+            state,
+            work_size,
+            ui_fill,
+            &draw_public_domain_menu_items,
+        );
+        main_panel
     });
 
     output.clear_color(CLEAR_COLOR);
