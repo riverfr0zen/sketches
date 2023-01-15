@@ -558,7 +558,26 @@ fn draw_with_main_panel<F>(
                     ui.small("A background visualizer for emotions found in text");
                 });
                 heading_frame.show(ui, |ui| {
-                    ui.small("Settings |  About");
+                    ui.horizontal(|ui| {
+                        ui.small("Settings |  About");
+                        fn make_small_button(text: &str) -> egui::Button {
+                            let richtext = RichText::new(text)
+                                // .color(egui::Color32::WHITE)
+                                .text_style(small_button());
+                            egui::Button::new(text).wrap(true).fill(egui::Color32::GRAY)
+                        }
+
+                        let about_button = make_small_button("About");
+                        if ui.add(about_button).clicked() {
+                            log::debug!("clicked about");
+                            state.view = View::ABOUT;
+                        }
+                        let settings_button = make_small_button("Settings");
+                        if ui.add(settings_button).clicked() {
+                            log::debug!("clicked settings");
+                            state.view = View::ABOUT;
+                        }
+                    });
                 });
                 view_fn(ctx, ui, state, work_size);
             });
