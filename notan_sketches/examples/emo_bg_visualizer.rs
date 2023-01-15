@@ -514,6 +514,32 @@ fn ui_common_setup(ctx: &Context, state: &mut State, work_size: Vec2) -> egui::C
     egui::Color32::from_rgb(clear_color_u8[0], clear_color_u8[1], clear_color_u8[2])
 }
 
+
+fn draw_main_nav(ui: &mut Ui, state: &mut State) {
+    fn make_small_button(text: &str) -> egui::Button {
+        let richtext = RichText::new(text)
+            .color(egui::Color32::WHITE)
+            .text_style(small_button());
+        egui::Button::new(richtext)
+            .wrap(true)
+            .fill(egui::Color32::GRAY)
+    }
+
+    ui.horizontal(|ui| {
+        let about_button = make_small_button("About");
+        if ui.add(about_button).clicked() {
+            state.view = View::ABOUT;
+        }
+        ui.separator();
+        let settings_button = make_small_button("Settings");
+        if ui.add(settings_button).clicked() {
+            log::debug!("clicked settings");
+            state.view = View::ABOUT;
+        }
+    });
+}
+
+
 // First time creating a fn that uses a a closure. Useful resources around closures
 // and passing them as fn params:
 //
@@ -542,7 +568,8 @@ fn draw_with_main_panel<F>(
     egui::CentralPanel::default()
         .frame(panel_frame)
         .show(ctx, |ui| {
-            ui.vertical_centered(|ui| {
+            // ui.vertical_centered(|ui| {
+            ui.vertical(|ui| {
                 let heading_frame_margin = work_size.y * 0.02;
                 let heading_frame =
                     egui::Frame::none()
@@ -558,27 +585,9 @@ fn draw_with_main_panel<F>(
                     ui.small("A background visualizer for emotions found in text");
                 });
                 heading_frame.show(ui, |ui| {
-                    ui.horizontal(|ui| {
-                        ui.small("Settings |  About");
-                        fn make_small_button(text: &str) -> egui::Button {
-                            let richtext = RichText::new(text)
-                                // .color(egui::Color32::WHITE)
-                                .text_style(small_button());
-                            egui::Button::new(text).wrap(true).fill(egui::Color32::GRAY)
-                        }
-
-                        let about_button = make_small_button("About");
-                        if ui.add(about_button).clicked() {
-                            log::debug!("clicked about");
-                            state.view = View::ABOUT;
-                        }
-                        let settings_button = make_small_button("Settings");
-                        if ui.add(settings_button).clicked() {
-                            log::debug!("clicked settings");
-                            state.view = View::ABOUT;
-                        }
-                    });
+                    draw_main_nav(ui, state);
                 });
+
                 view_fn(ctx, ui, state, work_size);
             });
         });
@@ -593,9 +602,12 @@ fn draw_about_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State,
             state,
             work_size,
             ui_fill,
-            // &draw_public_domain_menu_items,
-            |ctx, ui, state, work_size| {
-                ui.label("TODO: This is the about section");
+            // |ctx, ui, state, work_size| {
+            |_, ui, _, _| {
+                ui.label("Exploring the use of emotion analysis over written works to  drive background visual effects that might complement and enhance presentation of the text.\n");
+                ui.label("For each work, analysis is performed per paragraph (or stanza, in the case of poems) allowing the analysis-driven visualization to change as the reader progresses through the work.\n");
+                ui.label("Currently there is just one visualization model: a \"Simple Color\" model which uses emotion to color associations (based on some different color psychology models) to transition the background color as one goes through  the written piece. The plan is to develop further visualization models in the future.\n");
+
             },
         );
     });
@@ -617,7 +629,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
             ui_fill,
             // &draw_public_domain_menu_items,
             |ctx, ui, state, work_size| {
-                let heading_frame_margin = work_size.y * 0.02;
+                let heading_frame_margin = work_size.y * 0.01;
                 let heading_frame =
                     egui::Frame::none()
                         .fill(ui_fill)
@@ -635,8 +647,9 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
 
                 egui::ScrollArea::vertical()
                     // .max_width(500.0)
+                    .auto_shrink([false; 2])
                     .show(ui, |ui| {
-                        ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+                        ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
                             let mut style = (*ctx.style()).clone();
                             let button_top_margin = work_size.y * 0.01;
                             let title_frame = egui::Frame::none()
