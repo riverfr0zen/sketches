@@ -44,8 +44,7 @@ const MAX_FPS: u8 = 240;
 // #[derive(PartialEq)]
 enum View {
     HOME,
-    PUBLIC_DOMAIN_MENU,
-    // MY_MENU,
+    ABOUT,
     READ,
 }
 
@@ -424,6 +423,11 @@ fn title_button() -> TextStyle {
 }
 
 #[inline]
+fn small_button() -> TextStyle {
+    TextStyle::Name("SmallButton".into())
+}
+
+#[inline]
 fn author_menu_text() -> TextStyle {
     TextStyle::Name("AuthorMenuText".into())
 }
@@ -452,6 +456,10 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
         (
             title_button(),
             FontId::new(scale_font(16.0, work_size), Proportional),
+        ),
+        (
+            small_button(),
+            FontId::new(scale_font(8.0, work_size), Monospace),
         ),
         (
             TextStyle::Small,
@@ -506,14 +514,22 @@ fn ui_common_setup(ctx: &Context, state: &mut State, work_size: Vec2) -> egui::C
     egui::Color32::from_rgb(clear_color_u8[0], clear_color_u8[1], clear_color_u8[2])
 }
 
-
-fn draw_main_panel(
+// First time creating a fn that uses a a closure. Useful resources around closures
+// and passing them as fn params:
+//
+// https://www.programiz.com/rust/closure
+// https://doc.rust-lang.org/rust-by-example/fn/closures.html
+// https://doc.rust-lang.org/rust-by-example/fn/closures.html
+fn draw_with_main_panel<F>(
     ctx: &egui::Context,
     state: &mut State,
     work_size: Vec2,
     ui_fill: Color32,
-    view_fn: &dyn Fn(&egui::Context, &mut Ui, &mut State, Vec2),
-) {
+    // view_fn: &dyn Fn(&egui::Context, &mut Ui, &mut State, Vec2),
+    view_fn: F,
+) where
+    F: Fn(&egui::Context, &mut Ui, &mut State, Vec2),
+{
     let panel_inner_margin = work_size.y * 0.02;
     let panel_frame = egui::Frame::none()
         // .fill(ui_fill)
@@ -544,6 +560,56 @@ fn draw_main_panel(
                 heading_frame.show(ui, |ui| {
                     ui.small("Settings |  About");
                 });
+                view_fn(ctx, ui, state, work_size);
+            });
+        });
+}
+
+
+fn draw_about_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
+    let mut output = plugins.egui(|ctx| {
+        let ui_fill = ui_common_setup(ctx, state, work_size);
+        draw_with_main_panel(
+            ctx,
+            state,
+            work_size,
+            ui_fill,
+            // &draw_public_domain_menu_items,
+            |ctx, ui, state, work_size| {
+                ui.label("TODO: This is the about section");
+            },
+        );
+    });
+
+    output.clear_color(CLEAR_COLOR);
+    if output.needs_repaint() {
+        gfx.render(&output);
+    }
+}
+
+
+fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
+    let mut output = plugins.egui(|ctx| {
+        let ui_fill = ui_common_setup(ctx, state, work_size);
+        draw_with_main_panel(
+            ctx,
+            state,
+            work_size,
+            ui_fill,
+            // &draw_public_domain_menu_items,
+            |ctx, ui, state, work_size| {
+                let heading_frame_margin = work_size.y * 0.02;
+                let heading_frame =
+                    egui::Frame::none()
+                        .fill(ui_fill)
+                        .inner_margin(egui::style::Margin {
+                            left: 0.0,
+                            right: 0.0,
+                            top: 0.0,
+                            bottom: heading_frame_margin,
+                        });
+
+                // ui.separator();
                 heading_frame.show(ui, |ui| {
                     ui.label("Read select poems and prose from the public domain:");
                 });
@@ -552,70 +618,47 @@ fn draw_main_panel(
                     // .max_width(500.0)
                     .show(ui, |ui| {
                         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
-                            view_fn(ctx, ui, state, work_size);
+                            let mut style = (*ctx.style()).clone();
+                            let button_top_margin = work_size.y * 0.01;
+                            let title_frame = egui::Frame::none()
+                                // .fill(egui::Color32::RED)
+                                .inner_margin(egui::style::Margin {
+                                    left: 0.0,
+                                    right: 0.0,
+                                    top: button_top_margin,
+                                    bottom: button_top_margin,
+                                });
+                            let button_padding_x = work_size.x * 0.005;
+                            let button_padding_y = work_size.y * 0.005;
+                            style.spacing.button_padding =
+                                egui::Vec2::new(button_padding_x, button_padding_y);
+                            ctx.set_style(style);
+
+
+                            for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
+                                // ui.heading(&emodoc.title);
+                                let title_text = RichText::new(&emodoc.title)
+                                    .color(egui::Color32::WHITE)
+                                    .text_style(title_button());
+                                // if ui.add(egui::Button::new(&emodoc.title)).clicked() {
+                                let title_button = egui::Button::new(title_text)
+                                    .wrap(true)
+                                    .fill(egui::Color32::GRAY);
+                                title_frame.show(ui, |ui| {
+                                    if ui.add(title_button).clicked() {
+                                        state.reading.doc_index = doc_index;
+                                        state.view = View::READ;
+                                        log::debug!("{}", &emodoc.title);
+                                    }
+                                    let author_text = RichText::new(&emodoc.author)
+                                        .text_style(author_menu_text());
+                                    ui.label(author_text);
+                                });
+                            }
                         });
                     });
-            });
-        });
-}
-
-
-fn draw_public_domain_menu_items(
-    ctx: &egui::Context,
-    ui: &mut egui::Ui,
-    state: &mut State,
-    work_size: Vec2,
-) {
-    let mut style = (*ctx.style()).clone();
-    let button_top_margin = work_size.y * 0.01;
-    let title_frame = egui::Frame::none()
-        // .fill(egui::Color32::RED)
-        .inner_margin(egui::style::Margin {
-            left: 0.0,
-            right: 0.0,
-            top: button_top_margin,
-            bottom: button_top_margin,
-        });
-    let button_padding_x = work_size.x * 0.005;
-    let button_padding_y = work_size.y * 0.005;
-    style.spacing.button_padding = egui::Vec2::new(button_padding_x, button_padding_y);
-    ctx.set_style(style);
-
-
-    for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
-        // ui.heading(&emodoc.title);
-        let title_text = RichText::new(&emodoc.title)
-            .color(egui::Color32::WHITE)
-            .text_style(title_button());
-        // if ui.add(egui::Button::new(&emodoc.title)).clicked() {
-        let title_button = egui::Button::new(title_text)
-            .wrap(true)
-            .fill(egui::Color32::GRAY);
-        title_frame.show(ui, |ui| {
-            if ui.add(title_button).clicked() {
-                state.reading.doc_index = doc_index;
-                state.view = View::READ;
-                log::debug!("{}", &emodoc.title);
-            }
-            let author_text = RichText::new(&emodoc.author).text_style(author_menu_text());
-            ui.label(author_text);
-        });
-        // ui.separator();
-    }
-}
-
-
-fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
-    let mut output = plugins.egui(|ctx| {
-        let ui_fill = ui_common_setup(ctx, state, work_size);
-        let main_panel = draw_main_panel(
-            ctx,
-            state,
-            work_size,
-            ui_fill,
-            &draw_public_domain_menu_items,
+            },
         );
-        main_panel
     });
 
     output.clear_color(CLEAR_COLOR);
@@ -635,7 +678,7 @@ fn draw(
 
     match state.view {
         View::READ => draw_read_view(gfx, state, work_size),
-        // View::PUBLIC_DOMAIN_MENU => draw_public_domain_menu(gfx, plugins, state, work_size),
+        View::ABOUT => draw_about_view(gfx, plugins, state, work_size),
         _ => draw_home_view(gfx, plugins, state, work_size),
         // _ => draw_public_domain_menu(gfx, plugins, state, work_size),
     }
