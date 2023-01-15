@@ -79,6 +79,7 @@ struct State {
     text_color: Color,
     dynamic_text_color: bool,
     needs_handle_resize: bool,
+    needs_egui_font_setup: bool,
 }
 
 impl State {
@@ -158,6 +159,7 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         text_color: TITLE_COLOR,
         dynamic_text_color: DYNAMIC_TEXT_COLOR,
         needs_handle_resize: true,
+        needs_egui_font_setup: true,
     };
     state
 }
@@ -171,11 +173,6 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
 ///
 /// @TODO: What about portrait dimensions?
 fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    // if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x
-    // {
-    //     log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
-    //     return default_size * 2.2;
-    // }
     if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_HDPLUS.x
     {
         // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
@@ -192,7 +189,7 @@ fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
     }
     if work_size.x >= ScreenDimensions::RES_4K.x {
         // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 4.4;
+        return default_size * 4.5;
     }
     // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
     return default_size;
@@ -465,6 +462,7 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
     ]
     .into();
     ctx.set_style(style);
+    ctx.request_repaint();
 }
 
 
@@ -497,11 +495,15 @@ fn ui_common_setup(ctx: &Context, state: &mut State, work_size: Vec2) -> egui::C
     ctx.set_visuals(egui::Visuals::light());
 
     // Custom font setup whenever resized:
-    if state.needs_handle_resize {
+    if state.needs_egui_font_setup {
         configure_custom_fonts(ctx, state);
+        state.needs_egui_font_setup = false;
+    }
+    // Reconfigure styles if window resized
+    if state.needs_handle_resize {
+        configure_text_styles(ctx, work_size);
         state.needs_handle_resize = false;
     }
-    configure_text_styles(ctx, work_size);
     let clear_color_u8 = CLEAR_COLOR.rgba_u8();
     egui::Color32::from_rgb(clear_color_u8[0], clear_color_u8[1], clear_color_u8[2])
 }
@@ -602,17 +604,9 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     });
 
     output.clear_color(CLEAR_COLOR);
-    // Checking `output.needs_repaint()` seems to be the culprit of scrambled text
-    // issue on wasm target!
-    //
-    // Enable it and see the text get all scrambled. Sure, my approach to setting
-    // custom fonts and styles is non-standard, so that may be contributor, but should
-    // look further into what the issue is and if not checking `output.needs_repaint()`
-    // has any repurcussions.
-    // if output.needs_repaint() {
-    //     gfx.render(&output);
-    // }
-    gfx.render(&output);
+    if output.needs_repaint() {
+        gfx.render(&output);
+    }
 }
 
 
