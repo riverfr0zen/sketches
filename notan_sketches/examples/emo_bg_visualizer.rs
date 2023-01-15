@@ -531,7 +531,13 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
             state.view = View::ABOUT;
         }
         ui.separator();
-        let settings_button = make_small_button("Settings");
+        let settings_button = make_small_button("Visualizer Options");
+        if ui.add(settings_button).clicked() {
+            log::debug!("clicked settings");
+            state.view = View::ABOUT;
+        }
+        ui.separator();
+        let settings_button = make_small_button("Toggle Analysis");
         if ui.add(settings_button).clicked() {
             log::debug!("clicked settings");
             state.view = View::ABOUT;
@@ -556,14 +562,20 @@ fn draw_with_main_panel<F>(
 ) where
     F: Fn(&egui::Context, &mut Ui, &mut State, Vec2),
 {
-    let panel_inner_margin = work_size.y * 0.02;
+    let mut panel_inner_margin_w = work_size.y * 0.02;
+    if work_size.x > work_size.y {
+        panel_inner_margin_w = work_size.y * 0.1;
+    } else {
+        panel_inner_margin_w = work_size.y * 0.02;
+    }
+    let panel_inner_margin_h = work_size.y * 0.02;
     let panel_frame = egui::Frame::none()
         // .fill(ui_fill)
         .inner_margin(egui::style::Margin {
-            left: panel_inner_margin,
-            right: panel_inner_margin,
-            top: panel_inner_margin,
-            bottom: panel_inner_margin,
+            left: panel_inner_margin_w,
+            right: panel_inner_margin_w,
+            top: panel_inner_margin_h,
+            bottom: panel_inner_margin_h,
         });
     egui::CentralPanel::default()
         .frame(panel_frame)
@@ -605,7 +617,9 @@ fn draw_about_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State,
             // |ctx, ui, state, work_size| {
             |_, ui, _, _| {
                 ui.label("Exploring the use of emotion analysis over written works to  drive background visual effects that might complement and enhance presentation of the text.\n");
+                // Add bit about pre-preparing analysis to JSON files to the para below
                 ui.label("For each work, analysis is performed per paragraph (or stanza, in the case of poems) allowing the analysis-driven visualization to change as the reader progresses through the work.\n");
+                ui.label("Describe the analyzer & caveats.\n");
                 ui.label("Currently there is just one visualization model: a \"Simple Color\" model which uses emotion to color associations (based on some different color psychology models) to transition the background color as one goes through  the written piece. The plan is to develop further visualization models in the future.\n");
 
             },
