@@ -31,6 +31,7 @@ const EMOCAT_DOCS: [&'static str; 8] = [
 const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
 const META_COLOR: Color = Color::GRAY;
+const ANALYSIS_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(128, 97, 0, 128);
 const DYNAMIC_TEXT_COLOR: bool = false;
 const STARTING_MIX_FACTOR: f32 = 0.0;
 // const MIX_RATE: f32 = 0.001;
@@ -67,6 +68,7 @@ impl Default for ReadingViewState {
 #[derive(AppState)]
 struct State {
     view: View,
+    show_analysis: bool,
     emodocs: Vec<EmocatOutputDoc>,
     reading: ReadingViewState,
     font: Font,
@@ -145,6 +147,7 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
     let state = State {
         view: View::HOME,
         // view: View::READ,
+        show_analysis: false,
         emodocs: emodocs,
         reading: ReadingViewState::default(),
         font: font,
@@ -418,6 +421,11 @@ fn draw_read_view(gfx: &mut Graphics, state: &State, work_size: Vec2) {
 
 
 #[inline]
+fn analysis_panel_title() -> TextStyle {
+    TextStyle::Name("AnalysisPanelTitle".into())
+}
+
+#[inline]
 fn title_button() -> TextStyle {
     TextStyle::Name("TitleButton".into())
 }
@@ -440,6 +448,10 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
         (
             TextStyle::Heading,
             FontId::new(scale_font(25.0, work_size), Monospace),
+        ),
+        (
+            analysis_panel_title(),
+            FontId::new(scale_font(10.0, work_size), Monospace),
         ),
         (
             TextStyle::Body,
@@ -516,14 +528,25 @@ fn ui_common_setup(ctx: &Context, state: &mut State, work_size: Vec2) -> egui::C
 
 
 fn draw_main_nav(ui: &mut Ui, state: &mut State) {
-    fn make_small_button(text: &str) -> egui::Button {
+    fn _make_small_button(
+        text: &str,
+        fill: egui::Color32,
+        text_color: egui::Color32,
+    ) -> egui::Button {
         let richtext = RichText::new(text)
-            .color(egui::Color32::WHITE)
+            .color(text_color)
             .text_style(small_button());
-        egui::Button::new(richtext)
-            .wrap(true)
-            .fill(egui::Color32::GRAY)
+        egui::Button::new(richtext).wrap(true).fill(fill)
     }
+
+    fn make_small_button(text: &str) -> egui::Button {
+        _make_small_button(text, egui::Color32::GRAY, egui::Color32::WHITE)
+    }
+
+    fn make_small_analysis_button(text: &str) -> egui::Button {
+        _make_small_button(text, ANALYSIS_COLOR, egui::Color32::BLACK)
+    }
+
 
     ui.horizontal(|ui| {
         if state.view != View::HOME {
@@ -546,12 +569,38 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
             state.view = View::ABOUT;
         }
 
-        let settings_button = make_small_button("Toggle Analysis");
-        if ui.add(settings_button).clicked() {
+        let button: Button;
+        if state.show_analysis {
+            button = make_small_analysis_button("Close Analysis");
+        } else {
+            button = make_small_button("Show Analysis");
+        }
+        if ui.add(button).clicked() {
             log::debug!("clicked settings");
-            state.view = View::ABOUT;
+            state.show_analysis = !state.show_analysis;
         }
     });
+}
+
+
+fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) {
+    if state.show_analysis {
+        let title_text = RichText::new("Analysis Details")
+            .color(egui::Color32::BLACK)
+            .text_style(analysis_panel_title());
+
+        let panel_color = ANALYSIS_COLOR;
+        let panel_inner_margin_x = work_size.x * 0.02;
+        let panel_inner_margin_y = work_size.y * 0.02;
+        egui::Window::new(title_text)
+            .default_pos(egui::Pos2::new(work_size.x, work_size.y))
+            .frame(egui::Frame::none().fill(panel_color).inner_margin(
+                egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
+            ))
+            .show(ctx, |ui| {
+                ui.small("The emotion analysis stats will appear here when you start reading.");
+            });
+    }
 }
 
 
@@ -608,8 +657,8 @@ fn draw_with_main_panel<F>(
                 heading_frame.show(ui, |ui| {
                     draw_main_nav(ui, state);
                 });
-
                 view_fn(ctx, ui, state, work_size);
+                draw_analysis_panel(ctx, state, work_size);
             });
         });
 }
