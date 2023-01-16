@@ -41,7 +41,7 @@ const COLOR_COMPARISON_PRECISION: f32 = 3.0;
 const MAX_FPS: u8 = 240;
 
 
-// #[derive(PartialEq)]
+#[derive(PartialEq)]
 enum View {
     HOME,
     ABOUT,
@@ -526,17 +526,26 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
     }
 
     ui.horizontal(|ui| {
-        let about_button = make_small_button("About");
-        if ui.add(about_button).clicked() {
-            state.view = View::ABOUT;
+        if state.view != View::HOME {
+            let about_button = make_small_button("Home");
+            if ui.add(about_button).clicked() {
+                state.view = View::HOME;
+            }
         }
-        ui.separator();
+
+        if state.view != View::ABOUT {
+            let about_button = make_small_button("About");
+            if ui.add(about_button).clicked() {
+                state.view = View::ABOUT;
+            }
+        }
+
         let settings_button = make_small_button("Visualizer Options");
         if ui.add(settings_button).clicked() {
             log::debug!("clicked settings");
             state.view = View::ABOUT;
         }
-        ui.separator();
+
         let settings_button = make_small_button("Toggle Analysis");
         if ui.add(settings_button).clicked() {
             log::debug!("clicked settings");
@@ -616,7 +625,7 @@ fn draw_about_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State,
             ui_fill,
             // |ctx, ui, state, work_size| {
             |_, ui, _, _| {
-                ui.label("Exploring the use of emotion analysis over written works to  drive background visual effects that might complement and enhance presentation of the text.\n");
+                ui.label("This app explores the presentation of written works with background visualizations driven by emotion analysis of the text.\n");
                 // Add bit about pre-preparing analysis to JSON files to the para below
                 ui.label("For each work, analysis is performed per paragraph (or stanza, in the case of poems) allowing the analysis-driven visualization to change as the reader progresses through the work.\n");
                 ui.label("Describe the analyzer & caveats.\n");
