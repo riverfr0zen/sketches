@@ -36,8 +36,11 @@ const READ_VIEW_GUI_COLOR: egui::Color32 =
     egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
 const DYNAMIC_TEXT_COLOR: bool = false;
 const STARTING_MIX_FACTOR: f32 = 0.0;
-// const MIX_RATE: f32 = 0.001;
-// const MIX_RATE: f32 = 0.0001;
+/// Because vsync in wasm seems to be non-negotiable (I think), we need a faster mix rate
+/// to match what it looks like in native
+#[cfg(target_arch = "wasm32")]
+const MIX_RATE: f32 = 0.0001;
+#[cfg(not(target_arch = "wasm32"))]
 const MIX_RATE: f32 = 0.00001;
 // const MIX_RATE: f32 = 0.000001;
 const COLOR_COMPARISON_PRECISION: f32 = 3.0;
@@ -603,6 +606,7 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
         egui::Window::new(title_text)
             // .default_pos(egui::Pos2::new(work_size.x, work_size.y))
             .default_pos(egui::Pos2::new(work_size.x, 0.0))
+            .default_width(work_size.x * 0.2)
             .frame(egui::Frame::none().fill(panel_color).inner_margin(
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
@@ -841,7 +845,6 @@ fn main() -> Result<(), String> {
 
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
-
 
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
