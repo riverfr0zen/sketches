@@ -32,6 +32,8 @@ const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
 const META_COLOR: Color = Color::GRAY;
 const ANALYSIS_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(128, 97, 0, 128);
+const READ_VIEW_GUI_COLOR: egui::Color32 =
+    egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
 const DYNAMIC_TEXT_COLOR: bool = false;
 const STARTING_MIX_FACTOR: f32 = 0.0;
 // const MIX_RATE: f32 = 0.001;
@@ -353,19 +355,6 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
         .h_align_left()
         .v_align_middle();
 
-    // draw.text(&state.font, &state.emodoc.title)
-    //     .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
-    //     .color(Color::RED)
-    //     .size(scale_font(60.0, work_size))
-    //     .max_width(textbox_width)
-    //     .position(
-    //         work_size.x * 0.5 - textbox_width * 0.5 + 1.0,
-    //         work_size.y * 0.4 - 1.0,
-    //     )
-    //     .h_align_left()
-    //     .v_align_middle();
-
-
     let title_bounds = draw.last_text_bounds();
 
     textbox_width = textbox_width * 0.9;
@@ -406,17 +395,22 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
 
 
 // fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
-fn draw_read_view(gfx: &mut Graphics, state: &State, work_size: Vec2) {
+fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
+    // draw to screen
     let mut draw = get_draw_setup(gfx, work_size, true, state.bg_color);
-
+    // The following call to clear() is important when rendering draw & egui output together.
+    draw.clear(state.bg_color);
     if state.reading.analysis == 0 {
         draw_title(&mut draw, state, work_size);
     } else {
         draw_paragraph(&mut draw, state, work_size);
     }
-
-    // draw to screen
     gfx.render(&draw);
+
+    let output = plugins.egui(|ctx| {
+        draw_analysis_panel(ctx, state, work_size);
+    });
+    gfx.render(&output);
 }
 
 
@@ -589,16 +583,17 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
             .color(egui::Color32::BLACK)
             .text_style(analysis_panel_title());
 
-        let panel_color = ANALYSIS_COLOR;
+        let panel_color = READ_VIEW_GUI_COLOR;
         let panel_inner_margin_x = work_size.x * 0.02;
         let panel_inner_margin_y = work_size.y * 0.02;
         egui::Window::new(title_text)
-            .default_pos(egui::Pos2::new(work_size.x, work_size.y))
+            // .default_pos(egui::Pos2::new(work_size.x, work_size.y))
+            .default_pos(egui::Pos2::new(work_size.x, 0.0))
             .frame(egui::Frame::none().fill(panel_color).inner_margin(
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
             .show(ctx, |ui| {
-                ui.small("The emotion analysis stats will appear here when you start reading.");
+                ui.small("The emotion analysis metrics will appear here when you start reading.");
             });
     }
 }
@@ -781,7 +776,7 @@ fn draw(
     let work_size = get_work_size(gfx);
 
     match state.view {
-        View::READ => draw_read_view(gfx, state, work_size),
+        View::READ => draw_read_view(gfx, plugins, state, work_size),
         View::ABOUT => draw_about_view(gfx, plugins, state, work_size),
         _ => draw_home_view(gfx, plugins, state, work_size),
         // _ => draw_public_domain_menu(gfx, plugins, state, work_size),
