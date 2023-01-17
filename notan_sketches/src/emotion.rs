@@ -188,37 +188,79 @@ pub fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) ->
 }
 
 
-/// Simple Color Model. See README for description.
-pub fn get_simple_color(analysis: &EmocatTextAnalysis) -> Color {
-    let scores = &mut analysis.results.nrclex.clone();
-    // log::debug!("Scores before {:?}", scores);
+pub struct EmocatAnalysisSummary {
+    positive: f32,
+    negative: f32,
+    top_emotions: Vec<EmocatAnalyzerScore>,
+}
 
-    let positive_pos = scores.iter().position(|s| s.marker == "positive").unwrap();
-    let positive_sentiment = scores.remove(positive_pos);
-    let negative_pos = scores.iter().position(|s| s.marker == "negative").unwrap();
-    let negative_sentiment = scores.remove(negative_pos);
-    log::debug!(
-        "positive: {}, negative: {}",
-        positive_sentiment.score,
-        negative_sentiment.score
-    );
+impl EmocatAnalysisSummary {
+    fn from_analysis(analysis: &EmocatTextAnalysis) -> Self {
+        let mut scores = analysis.results.nrclex.clone();
+        // log::debug!("Scores before {:?}", scores);
 
-    scores.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
-    // log::debug!("Score after {:?}", scores);
+        let positive_pos = scores.iter().position(|s| s.marker == "positive").unwrap();
+        let positive_sentiment = scores.remove(positive_pos);
+        let negative_pos = scores.iter().position(|s| s.marker == "negative").unwrap();
+        let negative_sentiment = scores.remove(negative_pos);
+        log::debug!(
+            "positive: {}, negative: {}",
+            positive_sentiment.score,
+            negative_sentiment.score
+        );
 
-    let mut top_emotions: Vec<&EmocatAnalyzerScore> = Vec::new();
-    top_emotions.push(&scores[0]);
-    for score in scores.iter().skip(1) {
-        if score.score == top_emotions[0].score {
-            top_emotions.push(&score);
+        scores.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
+        // log::debug!("Score after {:?}", scores);
+
+        let mut top_emotions: Vec<EmocatAnalyzerScore> = Vec::new();
+        top_emotions.push(scores[0].clone());
+        for score in scores.iter().skip(1) {
+            if score.score == top_emotions[0].score {
+                top_emotions.push(score.clone());
+            }
+        }
+        Self {
+            positive: positive_sentiment.score,
+            negative: negative_sentiment.score,
+            top_emotions: top_emotions,
         }
     }
+}
+
+
+/// Simple Color Model. See README for description.
+pub fn get_simple_color(analysis: &EmocatTextAnalysis) -> Color {
+    // let scores = &mut analysis.results.nrclex.clone();
+    // // log::debug!("Scores before {:?}", scores);
+
+    // let positive_pos = scores.iter().position(|s| s.marker == "positive").unwrap();
+    // let positive_sentiment = scores.remove(positive_pos);
+    // let negative_pos = scores.iter().position(|s| s.marker == "negative").unwrap();
+    // let negative_sentiment = scores.remove(negative_pos);
+    // log::debug!(
+    //     "positive: {}, negative: {}",
+    //     positive_sentiment.score,
+    //     negative_sentiment.score
+    // );
+
+    // scores.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
+    // // log::debug!("Score after {:?}", scores);
+
+    // let mut top_emotions: Vec<&EmocatAnalyzerScore> = Vec::new();
+    // top_emotions.push(&scores[0]);
+    // for score in scores.iter().skip(1) {
+    //     if score.score == top_emotions[0].score {
+    //         top_emotions.push(&score);
+    //     }
+    // }
+    let score_summary = EmocatAnalysisSummary::from_analysis(&analysis);
+    let top_emotions = score_summary.top_emotions;
     if top_emotions[0].score > 0.0 {
         log::debug!("Top emotions: {:?}:", top_emotions);
         let mapping_func = get_mapped_color_plutchik;
         let emocolors: Vec<EmoColor> = top_emotions
             .iter()
-            .map(|&s| get_mapped_emocolor(&s.marker, &mapping_func))
+            .map(|s| get_mapped_emocolor(&s.marker, &mapping_func))
             .collect();
         // Start with a neutral gray
         if emocolors.len() > 1 {
@@ -226,9 +268,9 @@ pub fn get_simple_color(analysis: &EmocatTextAnalysis) -> Color {
             for emocolor in emocolors.iter() {
                 log::debug!("Before mix: {:?}", final_color);
                 let sentiment_value: f32 = match &emocolor.sentiment {
-                    Sentiment::POSITIVE => positive_sentiment.score,
-                    Sentiment::NEGATIVE => negative_sentiment.score,
-                    Sentiment::NEUTRAL => positive_sentiment.score.max(negative_sentiment.score),
+                    Sentiment::POSITIVE => score_summary.positive,
+                    Sentiment::NEGATIVE => score_summary.negative,
+                    Sentiment::NEUTRAL => score_summary.positive.max(score_summary.negative),
                 };
                 // The sentiment values don't often seem to go beyond 0.5, so I'm modifying the
                 // mix factor a little. Must test later with more examples of text.
