@@ -189,13 +189,13 @@ pub fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) ->
 
 
 pub struct EmocatAnalysisSummary {
-    positive: f32,
-    negative: f32,
-    top_emotions: Vec<EmocatAnalyzerScore>,
+    pub positive: f32,
+    pub negative: f32,
+    pub top_emotions: Vec<EmocatAnalyzerScore>,
 }
 
 impl EmocatAnalysisSummary {
-    fn from_analysis(analysis: &EmocatTextAnalysis) -> Self {
+    pub fn from_analysis(analysis: &EmocatTextAnalysis) -> Self {
         let mut scores = analysis.results.nrclex.clone();
         // log::debug!("Scores before {:?}", scores);
 
@@ -229,32 +229,8 @@ impl EmocatAnalysisSummary {
 
 
 /// Simple Color Model. See README for description.
-pub fn get_simple_color(analysis: &EmocatTextAnalysis) -> Color {
-    // let scores = &mut analysis.results.nrclex.clone();
-    // // log::debug!("Scores before {:?}", scores);
-
-    // let positive_pos = scores.iter().position(|s| s.marker == "positive").unwrap();
-    // let positive_sentiment = scores.remove(positive_pos);
-    // let negative_pos = scores.iter().position(|s| s.marker == "negative").unwrap();
-    // let negative_sentiment = scores.remove(negative_pos);
-    // log::debug!(
-    //     "positive: {}, negative: {}",
-    //     positive_sentiment.score,
-    //     negative_sentiment.score
-    // );
-
-    // scores.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
-    // // log::debug!("Score after {:?}", scores);
-
-    // let mut top_emotions: Vec<&EmocatAnalyzerScore> = Vec::new();
-    // top_emotions.push(&scores[0]);
-    // for score in scores.iter().skip(1) {
-    //     if score.score == top_emotions[0].score {
-    //         top_emotions.push(&score);
-    //     }
-    // }
-    let score_summary = EmocatAnalysisSummary::from_analysis(&analysis);
-    let top_emotions = score_summary.top_emotions;
+pub fn get_simple_color(score_summary: &EmocatAnalysisSummary) -> Color {
+    let top_emotions = &score_summary.top_emotions;
     if top_emotions[0].score > 0.0 {
         log::debug!("Top emotions: {:?}:", top_emotions);
         let mapping_func = get_mapped_color_plutchik;

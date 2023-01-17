@@ -55,6 +55,7 @@ enum View {
 struct ReadingViewState {
     doc_index: usize,
     analysis: usize,
+    analysis_summary: Option<EmocatAnalysisSummary>,
 }
 
 impl Default for ReadingViewState {
@@ -62,6 +63,7 @@ impl Default for ReadingViewState {
         Self {
             doc_index: 0,
             analysis: 0,
+            analysis_summary: None,
         }
     }
 }
@@ -301,7 +303,10 @@ fn update_read_view(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.reading.analysis = emodoc.analyses.len() - 1;
-        state.simple_color = get_simple_color(&emodoc.analyses[state.reading.analysis - 1]);
+        state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
+            &emodoc.analyses[state.reading.analysis - 1],
+        ));
+        state.simple_color = get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
 
 
@@ -309,7 +314,10 @@ fn update_read_view(app: &mut App, state: &mut State) {
         log::debug!("left");
         state.reading.analysis -= 1;
         if state.reading.analysis > 0 {
-            state.simple_color = get_simple_color(&emodoc.analyses[state.reading.analysis - 1]);
+            state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
+                &emodoc.analyses[state.reading.analysis - 1],
+            ));
+            state.simple_color = get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
         } else {
             state.simple_color = CLEAR_COLOR;
         }
@@ -318,7 +326,10 @@ fn update_read_view(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Right) && state.reading.analysis < emodoc.analyses.len() {
         log::debug!("right");
         state.reading.analysis += 1;
-        state.simple_color = get_simple_color(&emodoc.analyses[state.reading.analysis - 1]);
+        state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
+            &emodoc.analyses[state.reading.analysis - 1],
+        ));
+        state.simple_color = get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
     // update_bg_color_simple(state);
     update_bg_color(app, state);
@@ -474,6 +485,9 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
     ]
     .into();
     ctx.set_style(style);
+    // Must request a repaint after changing styles, otherwise the display will go awry
+    // if the draw method is checking egui Output's `needs_repaint()`, especially
+    // for wasm target
     ctx.request_repaint();
 }
 
@@ -593,7 +607,33 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
             .show(ctx, |ui| {
-                ui.small("The emotion analysis metrics will appear here when you start reading.");
+                if let Some(score_summary) = &state.reading.analysis_summary {
+                    ui.label("");
+                    let header = RichText::new("Sentiment scores:")
+                        .color(egui::Color32::BLACK)
+                        .text_style(analysis_panel_title());
+                    ui.label(header);
+                    ui.small(format!("positive: {}", score_summary.positive));
+                    ui.small(format!("negative: {}", score_summary.negative));
+                    ui.label("");
+                    let header = RichText::new("Top emotions:")
+                        .color(egui::Color32::BLACK)
+                        .text_style(analysis_panel_title());
+                    ui.label(header);
+                    if score_summary.top_emotions.len() > 0
+                        && score_summary.top_emotions[0].score > 0.0
+                    {
+                        for top_emo in score_summary.top_emotions.iter() {
+                            ui.small(format!("{}: {}", top_emo.marker, top_emo.score));
+                        }
+                    } else {
+                        ui.small("None");
+                    }
+                } else {
+                    ui.small(
+                        "The emotion analysis metrics will appear here when you start reading.",
+                    );
+                }
             });
     }
 }

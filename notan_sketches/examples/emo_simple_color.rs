@@ -45,6 +45,7 @@ struct State {
     font: Font,
     title_font: Font,
     analysis: usize,
+    analysis_summary: Option<EmocatAnalysisSummary>,
     simple_color: Color,
     bg_color: Color,
     bg_color_mix_factor: f32,
@@ -76,6 +77,7 @@ fn init(gfx: &mut Graphics) -> State {
         font: font,
         title_font: title_font,
         analysis: 0,
+        analysis_summary: None,
         simple_color: CLEAR_COLOR,
         bg_color: CLEAR_COLOR,
         bg_color_mix_factor: STARTING_MIX_FACTOR,
@@ -211,7 +213,10 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.analysis = state.emodoc.analyses.len() - 1;
-        state.simple_color = get_simple_color(&state.emodoc.analyses[state.analysis - 1]);
+        state.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
+            &state.emodoc.analyses[state.analysis - 1],
+        ));
+        state.simple_color = get_simple_color(state.analysis_summary.as_ref().unwrap());
     }
 
 
@@ -219,7 +224,10 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("left");
         state.analysis -= 1;
         if state.analysis > 0 {
-            state.simple_color = get_simple_color(&state.emodoc.analyses[state.analysis - 1]);
+            state.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
+                &state.emodoc.analyses[state.analysis - 1],
+            ));
+            state.simple_color = get_simple_color(state.analysis_summary.as_ref().unwrap());
         } else {
             state.simple_color = CLEAR_COLOR;
         }
@@ -228,7 +236,10 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
         log::debug!("right");
         state.analysis += 1;
-        state.simple_color = get_simple_color(&state.emodoc.analyses[state.analysis - 1]);
+        state.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
+            &state.emodoc.analyses[state.analysis - 1],
+        ));
+        state.simple_color = get_simple_color(state.analysis_summary.as_ref().unwrap());
     }
     // update_bg_color_simple(state);
     update_bg_color(app, state);
