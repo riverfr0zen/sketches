@@ -8,7 +8,9 @@ use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 // use serde_json::{Result as JsonResult, Value};
-use notan_sketches::emotion_bg_visualizer::visualizers::ColorTransitionVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::{
+    ColorTransitionVisualizer, EmoVisualizer,
+};
 use FontFamily::{Monospace, Proportional};
 
 // See details at https://stackoverflow.com/a/42764117
