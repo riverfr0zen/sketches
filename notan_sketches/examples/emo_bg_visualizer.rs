@@ -7,12 +7,9 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
-use palette::{FromColor, Hsl, Hsv, LinSrgb, Mix, RgbHue, Srgb};
-use serde::{Deserialize, Serialize};
 // use serde_json::{Result as JsonResult, Value};
-use std::fs;
+use notan_sketches::emotion_bg_visualizer::visualizers::ColorTransitionVisualizer;
 use FontFamily::{Monospace, Proportional};
-
 
 // See details at https://stackoverflow.com/a/42764117
 const EMOCAT_DOCS: [&'static str; 8] = [
@@ -26,8 +23,6 @@ const EMOCAT_DOCS: [&'static str; 8] = [
     include_str!("assets/lb_whitman01.json"),
     include_str!("assets/the_stagger.json"),
 ];
-
-
 const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
 const META_COLOR: Color = Color::GRAY;
@@ -35,15 +30,6 @@ const ANALYSIS_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(128
 const READ_VIEW_GUI_COLOR: egui::Color32 =
     egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
 const DYNAMIC_TEXT_COLOR: bool = false;
-const STARTING_MIX_FACTOR: f32 = 0.0;
-/// Because vsync in wasm seems to be non-negotiable (I think), we need a faster mix rate
-/// to match what it looks like in native
-#[cfg(target_arch = "wasm32")]
-const MIX_RATE: f32 = 0.0001;
-#[cfg(not(target_arch = "wasm32"))]
-const MIX_RATE: f32 = 0.00001;
-// const MIX_RATE: f32 = 0.000001;
-const COLOR_COMPARISON_PRECISION: f32 = 3.0;
 const MAX_FPS: u8 = 240;
 
 
@@ -72,105 +58,6 @@ impl Default for ReadingViewState {
 }
 
 
-fn round(val: f32, digits: f32) -> f32 {
-    // log::debug!("{}, {}", val, (val * 100.0).round() / 100.0);
-    // (val * 100.0).round() / 100.0
-
-    let mut multiplier: f32 = 10.0;
-    multiplier = multiplier.powf(digits);
-    // log::debug!("{}, {}", val, (val * multiplier).round() / multiplier);
-    (val * multiplier).round() / multiplier
-}
-
-
-pub struct ColorTransitionVisualizer {
-    pub target_color: Color,
-    pub bg_color: Color,
-    pub bg_color_mix_factor: f32,
-    pub text_color: Color,
-    pub dynamic_text_color: bool,
-}
-
-impl ColorTransitionVisualizer {
-    pub fn reset_colors(&mut self) {
-        self.target_color = CLEAR_COLOR;
-        self.bg_color = CLEAR_COLOR;
-        self.bg_color_mix_factor = STARTING_MIX_FACTOR;
-        self.text_color = TITLE_COLOR;
-        self.dynamic_text_color = DYNAMIC_TEXT_COLOR;
-    }
-
-    /// Return black or white depending on the current background color
-    ///
-    /// Based on this algorithm:
-    /// https://stackoverflow.com/a/1855903/4655636
-    ///
-    pub fn get_text_color(&self) -> Color {
-        let luminance: f32;
-        if self.dynamic_text_color {
-            luminance =
-                0.299 * self.bg_color.r + 0.587 * self.bg_color.g + 0.114 * self.bg_color.b / 255.0;
-        } else {
-            luminance = 0.299 * self.target_color.r
-                + 0.587 * self.target_color.g
-                + 0.114 * self.target_color.b / 255.0;
-        }
-
-        // log::debug!("Luminance {}", luminance);
-        if luminance < 0.5 {
-            return Color::WHITE;
-        }
-        Color::BLACK
-    }
-
-    pub fn update_text_color(&mut self) {
-        self.text_color = self.get_text_color();
-    }
-
-    // pub fn update_bg_color(app: &App, state: &mut State) {
-    pub fn update_bg_color(&mut self) {
-        // The mix function used to blend colors below doesn't always end up with the
-        // exact floating point numbers of the end color, so comparing with rounded
-        // color values instead of comparing the colors directly.
-        let precision = COLOR_COMPARISON_PRECISION;
-        // log::debug!(
-        //     "{}::{}, {}::{}, {}::{}",
-        //     round(state.bg_color.r, precision),
-        //     round(state.target_color.r, precision),
-        //     round(state.bg_color.g, precision),
-        //     round(state.target_color.g, precision),
-        //     round(state.bg_color.b, precision),
-        //     round(state.target_color.b, precision),
-        // );
-        if round(self.bg_color.r, precision) != round(self.target_color.r, precision)
-            || round(self.bg_color.g, precision) != round(self.target_color.g, precision)
-            || round(self.bg_color.b, precision) != round(self.target_color.b, precision)
-        {
-            // log::debug!("Mix factor: {}", state.bg_color_mix_factor);
-            let bg_color = Srgb::new(self.bg_color.r, self.bg_color.g, self.bg_color.b);
-            let target_color = Srgb::new(
-                self.target_color.r,
-                self.target_color.g,
-                self.target_color.b,
-            );
-            let mut bg_color = LinSrgb::from_color(bg_color);
-            let target_color = LinSrgb::from_color(target_color);
-            bg_color = bg_color.mix(&target_color, self.bg_color_mix_factor);
-            let bg_color = Srgb::from_color(bg_color);
-            self.bg_color = Color::from_rgb(bg_color.red, bg_color.green, bg_color.blue);
-            self.bg_color_mix_factor += MIX_RATE;
-        } else {
-            self.bg_color_mix_factor = STARTING_MIX_FACTOR;
-        }
-    }
-
-
-    fn update_bg_color_simple(&mut self) {
-        self.bg_color = self.target_color.clone();
-    }
-}
-
-
 #[derive(AppState)]
 struct State {
     view: View,
@@ -181,24 +68,9 @@ struct State {
     title_font: Font,
     egui_fonts: FontDefinitions,
     color_transition: ColorTransitionVisualizer,
-    // target_color: Color,
-    // bg_color: Color,
-    // bg_color_mix_factor: f32,
-    // text_color: Color,
-    // dynamic_text_color: bool,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
 }
-
-// impl State {
-//     fn reset_colors(&mut self) {
-//         self.target_color = CLEAR_COLOR;
-//         self.bg_color = CLEAR_COLOR;
-//         self.bg_color_mix_factor = STARTING_MIX_FACTOR;
-//         self.text_color = TITLE_COLOR;
-//         self.dynamic_text_color = DYNAMIC_TEXT_COLOR;
-//     }
-// }
 
 
 fn configure_egui_fonts(title_font_bytes: &'static [u8]) -> FontDefinitions {
@@ -260,13 +132,11 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         font: font,
         title_font: title_font,
         egui_fonts: egui_fonts,
-        color_transition: ColorTransitionVisualizer {
-            target_color: CLEAR_COLOR,
-            bg_color: CLEAR_COLOR,
-            bg_color_mix_factor: STARTING_MIX_FACTOR,
-            text_color: TITLE_COLOR,
-            dynamic_text_color: DYNAMIC_TEXT_COLOR,
-        },
+        color_transition: ColorTransitionVisualizer::new(
+            CLEAR_COLOR,
+            TITLE_COLOR,
+            DYNAMIC_TEXT_COLOR,
+        ),
         needs_handle_resize: true,
         needs_egui_font_setup: true,
     };
@@ -374,7 +244,8 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("m");
         state.view = View::HOME;
         state.reading = ReadingViewState::default();
-        state.color_transition.reset_colors();
+        state.color_transition =
+            ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
     }
 
 
