@@ -72,6 +72,105 @@ impl Default for ReadingViewState {
 }
 
 
+fn round(val: f32, digits: f32) -> f32 {
+    // log::debug!("{}, {}", val, (val * 100.0).round() / 100.0);
+    // (val * 100.0).round() / 100.0
+
+    let mut multiplier: f32 = 10.0;
+    multiplier = multiplier.powf(digits);
+    // log::debug!("{}, {}", val, (val * multiplier).round() / multiplier);
+    (val * multiplier).round() / multiplier
+}
+
+
+pub struct ColorTransitionVisualizer {
+    pub target_color: Color,
+    pub bg_color: Color,
+    pub bg_color_mix_factor: f32,
+    pub text_color: Color,
+    pub dynamic_text_color: bool,
+}
+
+impl ColorTransitionVisualizer {
+    pub fn reset_colors(&mut self) {
+        self.target_color = CLEAR_COLOR;
+        self.bg_color = CLEAR_COLOR;
+        self.bg_color_mix_factor = STARTING_MIX_FACTOR;
+        self.text_color = TITLE_COLOR;
+        self.dynamic_text_color = DYNAMIC_TEXT_COLOR;
+    }
+
+    /// Return black or white depending on the current background color
+    ///
+    /// Based on this algorithm:
+    /// https://stackoverflow.com/a/1855903/4655636
+    ///
+    pub fn get_text_color(&self) -> Color {
+        let luminance: f32;
+        if self.dynamic_text_color {
+            luminance =
+                0.299 * self.bg_color.r + 0.587 * self.bg_color.g + 0.114 * self.bg_color.b / 255.0;
+        } else {
+            luminance = 0.299 * self.target_color.r
+                + 0.587 * self.target_color.g
+                + 0.114 * self.target_color.b / 255.0;
+        }
+
+        // log::debug!("Luminance {}", luminance);
+        if luminance < 0.5 {
+            return Color::WHITE;
+        }
+        Color::BLACK
+    }
+
+    pub fn update_text_color(&mut self) {
+        self.text_color = self.get_text_color();
+    }
+
+    // pub fn update_bg_color(app: &App, state: &mut State) {
+    pub fn update_bg_color(&mut self) {
+        // The mix function used to blend colors below doesn't always end up with the
+        // exact floating point numbers of the end color, so comparing with rounded
+        // color values instead of comparing the colors directly.
+        let precision = COLOR_COMPARISON_PRECISION;
+        // log::debug!(
+        //     "{}::{}, {}::{}, {}::{}",
+        //     round(state.bg_color.r, precision),
+        //     round(state.target_color.r, precision),
+        //     round(state.bg_color.g, precision),
+        //     round(state.target_color.g, precision),
+        //     round(state.bg_color.b, precision),
+        //     round(state.target_color.b, precision),
+        // );
+        if round(self.bg_color.r, precision) != round(self.target_color.r, precision)
+            || round(self.bg_color.g, precision) != round(self.target_color.g, precision)
+            || round(self.bg_color.b, precision) != round(self.target_color.b, precision)
+        {
+            // log::debug!("Mix factor: {}", state.bg_color_mix_factor);
+            let bg_color = Srgb::new(self.bg_color.r, self.bg_color.g, self.bg_color.b);
+            let target_color = Srgb::new(
+                self.target_color.r,
+                self.target_color.g,
+                self.target_color.b,
+            );
+            let mut bg_color = LinSrgb::from_color(bg_color);
+            let target_color = LinSrgb::from_color(target_color);
+            bg_color = bg_color.mix(&target_color, self.bg_color_mix_factor);
+            let bg_color = Srgb::from_color(bg_color);
+            self.bg_color = Color::from_rgb(bg_color.red, bg_color.green, bg_color.blue);
+            self.bg_color_mix_factor += MIX_RATE;
+        } else {
+            self.bg_color_mix_factor = STARTING_MIX_FACTOR;
+        }
+    }
+
+
+    fn update_bg_color_simple(&mut self) {
+        self.bg_color = self.target_color.clone();
+    }
+}
+
+
 #[derive(AppState)]
 struct State {
     view: View,
@@ -81,24 +180,25 @@ struct State {
     font: Font,
     title_font: Font,
     egui_fonts: FontDefinitions,
-    simple_color: Color,
-    bg_color: Color,
-    bg_color_mix_factor: f32,
-    text_color: Color,
-    dynamic_text_color: bool,
+    color_transition: ColorTransitionVisualizer,
+    // target_color: Color,
+    // bg_color: Color,
+    // bg_color_mix_factor: f32,
+    // text_color: Color,
+    // dynamic_text_color: bool,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
 }
 
-impl State {
-    fn reset_colors(&mut self) {
-        self.simple_color = CLEAR_COLOR;
-        self.bg_color = CLEAR_COLOR;
-        self.bg_color_mix_factor = STARTING_MIX_FACTOR;
-        self.text_color = TITLE_COLOR;
-        self.dynamic_text_color = DYNAMIC_TEXT_COLOR;
-    }
-}
+// impl State {
+//     fn reset_colors(&mut self) {
+//         self.target_color = CLEAR_COLOR;
+//         self.bg_color = CLEAR_COLOR;
+//         self.bg_color_mix_factor = STARTING_MIX_FACTOR;
+//         self.text_color = TITLE_COLOR;
+//         self.dynamic_text_color = DYNAMIC_TEXT_COLOR;
+//     }
+// }
 
 
 fn configure_egui_fonts(title_font_bytes: &'static [u8]) -> FontDefinitions {
@@ -160,11 +260,13 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         font: font,
         title_font: title_font,
         egui_fonts: egui_fonts,
-        simple_color: CLEAR_COLOR,
-        bg_color: CLEAR_COLOR,
-        bg_color_mix_factor: STARTING_MIX_FACTOR,
-        text_color: TITLE_COLOR,
-        dynamic_text_color: DYNAMIC_TEXT_COLOR,
+        color_transition: ColorTransitionVisualizer {
+            target_color: CLEAR_COLOR,
+            bg_color: CLEAR_COLOR,
+            bg_color_mix_factor: STARTING_MIX_FACTOR,
+            text_color: TITLE_COLOR,
+            dynamic_text_color: DYNAMIC_TEXT_COLOR,
+        },
         needs_handle_resize: true,
         needs_egui_font_setup: true,
     };
@@ -218,89 +320,13 @@ fn get_work_size(gfx: &Graphics) -> Vec2 {
 }
 
 
-/// Return black or white depending on the current background color
-///
-/// Based on this algorithm:
-/// https://stackoverflow.com/a/1855903/4655636
-///
-fn get_text_color(state: &State) -> Color {
-    let luminance: f32;
-    if state.dynamic_text_color {
-        luminance =
-            0.299 * state.bg_color.r + 0.587 * state.bg_color.g + 0.114 * state.bg_color.b / 255.0;
-    } else {
-        luminance = 0.299 * state.simple_color.r
-            + 0.587 * state.simple_color.g
-            + 0.114 * state.simple_color.b / 255.0;
-    }
-
-    // log::debug!("Luminance {}", luminance);
-    if luminance < 0.5 {
-        return Color::WHITE;
-    }
-    Color::BLACK
-}
-
-fn round(val: f32, digits: f32) -> f32 {
-    // log::debug!("{}, {}", val, (val * 100.0).round() / 100.0);
-    // (val * 100.0).round() / 100.0
-
-    let mut multiplier: f32 = 10.0;
-    multiplier = multiplier.powf(digits);
-    // log::debug!("{}, {}", val, (val * multiplier).round() / multiplier);
-    (val * multiplier).round() / multiplier
-}
-
-
-fn update_bg_color(app: &App, state: &mut State) {
-    // The mix function used to blend colors below doesn't always end up with the
-    // exact floating point numbers of the end color, so comparing with rounded
-    // color values instead of comparing the colors directly.
-    let precision = COLOR_COMPARISON_PRECISION;
-    // log::debug!(
-    //     "{}::{}, {}::{}, {}::{}",
-    //     round(state.bg_color.r, precision),
-    //     round(state.simple_color.r, precision),
-    //     round(state.bg_color.g, precision),
-    //     round(state.simple_color.g, precision),
-    //     round(state.bg_color.b, precision),
-    //     round(state.simple_color.b, precision),
-    // );
-    if round(state.bg_color.r, precision) != round(state.simple_color.r, precision)
-        || round(state.bg_color.g, precision) != round(state.simple_color.g, precision)
-        || round(state.bg_color.b, precision) != round(state.simple_color.b, precision)
-    {
-        // log::debug!("Mix factor: {}", state.bg_color_mix_factor);
-        let bg_color = Srgb::new(state.bg_color.r, state.bg_color.g, state.bg_color.b);
-        let simple_color = Srgb::new(
-            state.simple_color.r,
-            state.simple_color.g,
-            state.simple_color.b,
-        );
-        let mut bg_color = LinSrgb::from_color(bg_color);
-        let simple_color = LinSrgb::from_color(simple_color);
-        bg_color = bg_color.mix(&simple_color, state.bg_color_mix_factor);
-        let bg_color = Srgb::from_color(bg_color);
-        state.bg_color = Color::from_rgb(bg_color.red, bg_color.green, bg_color.blue);
-        state.bg_color_mix_factor += MIX_RATE;
-    } else {
-        state.bg_color_mix_factor = STARTING_MIX_FACTOR;
-    }
-}
-
-
-fn update_bg_color_simple(state: &mut State) {
-    state.bg_color = state.simple_color.clone();
-}
-
-
 fn update_read_view(app: &mut App, state: &mut State) {
     let emodoc = &state.emodocs[state.reading.doc_index];
 
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
         state.reading.analysis = 0;
-        state.simple_color = CLEAR_COLOR;
+        state.color_transition.target_color = CLEAR_COLOR;
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
@@ -309,7 +335,8 @@ fn update_read_view(app: &mut App, state: &mut State) {
         state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
             &emodoc.analyses[state.reading.analysis - 1],
         ));
-        state.simple_color = get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
+        state.color_transition.target_color =
+            get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
 
 
@@ -320,9 +347,10 @@ fn update_read_view(app: &mut App, state: &mut State) {
             state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
                 &emodoc.analyses[state.reading.analysis - 1],
             ));
-            state.simple_color = get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
+            state.color_transition.target_color =
+                get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
         } else {
-            state.simple_color = CLEAR_COLOR;
+            state.color_transition.target_color = CLEAR_COLOR;
         }
     }
 
@@ -332,11 +360,12 @@ fn update_read_view(app: &mut App, state: &mut State) {
         state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
             &emodoc.analyses[state.reading.analysis - 1],
         ));
-        state.simple_color = get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
+        state.color_transition.target_color =
+            get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
     // update_bg_color_simple(state);
-    update_bg_color(app, state);
-    state.text_color = get_text_color(&state);
+    state.color_transition.update_bg_color();
+    state.color_transition.update_text_color();
 }
 
 
@@ -345,7 +374,7 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("m");
         state.view = View::HOME;
         state.reading = ReadingViewState::default();
-        state.reset_colors();
+        state.color_transition.reset_colors();
     }
 
 
@@ -395,7 +424,7 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
         &emodoc.analyses[state.reading.analysis - 1].text,
     )
     .alpha_mode(BlendMode::OVER)
-    .color(state.text_color)
+    .color(state.color_transition.text_color)
     .size(scale_font(32.0, work_size))
     .max_width(textbox_width)
     .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
@@ -411,9 +440,9 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
 // fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
 fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     // draw to screen
-    let mut draw = get_draw_setup(gfx, work_size, true, state.bg_color);
+    let mut draw = get_draw_setup(gfx, work_size, true, state.color_transition.bg_color);
     // The following call to clear() is important when rendering draw & egui output together.
-    draw.clear(state.bg_color);
+    draw.clear(state.color_transition.bg_color);
     if state.reading.analysis == 0 {
         draw_title(&mut draw, state, work_size);
     } else {

@@ -1,5 +1,6 @@
 pub mod colors;
 pub mod emotion;
+pub mod emotion_bg_visualizer;
 pub mod fractals;
 pub mod mathutils;
 pub mod schotter;
