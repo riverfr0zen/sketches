@@ -69,7 +69,7 @@ struct State {
     font: Font,
     title_font: Font,
     egui_fonts: FontDefinitions,
-    color_transition: ColorTransitionVisualizer,
+    visualizer: ColorTransitionVisualizer,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
 }
@@ -134,11 +134,7 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         font: font,
         title_font: title_font,
         egui_fonts: egui_fonts,
-        color_transition: ColorTransitionVisualizer::new(
-            CLEAR_COLOR,
-            TITLE_COLOR,
-            DYNAMIC_TEXT_COLOR,
-        ),
+        visualizer: ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR),
         needs_handle_resize: true,
         needs_egui_font_setup: true,
     };
@@ -198,7 +194,9 @@ fn update_read_view(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
         state.reading.analysis = 0;
-        state.color_transition.target_color = CLEAR_COLOR;
+        state
+            .visualizer
+            .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
@@ -207,7 +205,7 @@ fn update_read_view(app: &mut App, state: &mut State) {
         state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
             &emodoc.analyses[state.reading.analysis - 1],
         ));
-        state.color_transition.target_color =
+        state.visualizer.target_color =
             get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
 
@@ -219,10 +217,12 @@ fn update_read_view(app: &mut App, state: &mut State) {
             state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
                 &emodoc.analyses[state.reading.analysis - 1],
             ));
-            state.color_transition.target_color =
+            state.visualizer.target_color =
                 get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
         } else {
-            state.color_transition.target_color = CLEAR_COLOR;
+            state
+                .visualizer
+                .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
         }
     }
 
@@ -232,10 +232,10 @@ fn update_read_view(app: &mut App, state: &mut State) {
         state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
             &emodoc.analyses[state.reading.analysis - 1],
         ));
-        state.color_transition.target_color =
+        state.visualizer.target_color =
             get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
-    state.color_transition.update_visualization();
+    state.visualizer.update_visualization();
 }
 
 
@@ -244,8 +244,11 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("m");
         state.view = View::HOME;
         state.reading = ReadingViewState::default();
-        state.color_transition =
-            ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+        // state.visualizer =
+        //     ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+        state.visualizer = state
+            .visualizer
+            .new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
     }
 
 
@@ -295,7 +298,7 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
         &emodoc.analyses[state.reading.analysis - 1].text,
     )
     .alpha_mode(BlendMode::OVER)
-    .color(state.color_transition.text_color)
+    .color(state.visualizer.text_color)
     .size(scale_font(32.0, work_size))
     .max_width(textbox_width)
     .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
@@ -313,7 +316,7 @@ fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     // NOTE: If the egui ui seems to be "blocking" the draw, it may be because the visualizer
     // draw() method is not calling `draw.clear()`. If this isn't done, the egui background
     // will block the draw. For an example, see impl method of ColorTransitionVisualizer::draw().
-    state.color_transition.draw(&mut draw);
+    state.visualizer.draw(&mut draw);
 
     if state.reading.analysis == 0 {
         draw_title(&mut draw, state, work_size);

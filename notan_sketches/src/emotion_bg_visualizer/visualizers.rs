@@ -27,6 +27,13 @@ fn round(val: f32, digits: f32) -> f32 {
 pub trait EmoVisualizer {
     fn draw(&self, draw: &mut Draw);
     fn update_visualization(&mut self);
+    fn new(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self;
+    fn gracefully_reset(
+        &mut self,
+        bg_color: Color,
+        text_color: Color,
+        enable_dynamic_text_color: bool,
+    );
 }
 
 
@@ -129,5 +136,18 @@ impl EmoVisualizer for ColorTransitionVisualizer {
     fn update_visualization(&mut self) {
         self.update_bg_color();
         self.update_text_color();
+    }
+
+    fn new(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
+        return Self::new(bg_color, text_color, enable_dynamic_text_color);
+    }
+
+    fn gracefully_reset(
+        &mut self,
+        bg_color: Color,
+        _text_color: Color,
+        _enable_dynamic_text_color: bool,
+    ) {
+        self.target_color = bg_color;
     }
 }
