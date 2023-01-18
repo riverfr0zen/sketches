@@ -233,9 +233,7 @@ fn update_read_view(app: &mut App, state: &mut State) {
         state.color_transition.target_color =
             get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
-    // update_bg_color_simple(state);
-    state.color_transition.update_bg_color();
-    state.color_transition.update_text_color();
+    state.color_transition.update_visualization();
 }
 
 
@@ -300,8 +298,6 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
     .max_width(textbox_width)
     .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
     .v_align_middle()
-    // .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.3)
-    // .v_align_top()
     .h_align_left();
 
     // let title_bounds = draw.last_text_bounds();
@@ -310,10 +306,13 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
 
 // fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
 fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
-    // draw to screen
-    let mut draw = get_draw_setup(gfx, work_size, true, state.color_transition.bg_color);
-    // The following call to clear() is important when rendering draw & egui output together.
-    draw.clear(state.color_transition.bg_color);
+    let mut draw = get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
+
+    // NOTE: If the egui ui seems to be "blocking" the draw, it may be because the visualizer
+    // draw() method is not calling `draw.clear()`. If this isn't done, the egui background
+    // will block the draw. For an example, see impl method of ColorTransitionVisualizer::draw().
+    state.color_transition.draw(&mut draw);
+
     if state.reading.analysis == 0 {
         draw_title(&mut draw, state, work_size);
     } else {

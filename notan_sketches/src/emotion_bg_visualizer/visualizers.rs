@@ -1,3 +1,4 @@
+use notan::draw::*;
 use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Srgb};
 
@@ -107,7 +108,17 @@ impl ColorTransitionVisualizer {
     }
 
 
-    fn update_bg_color_simple(&mut self) {
+    pub fn update_bg_color_simple(&mut self) {
         self.bg_color = self.target_color.clone();
+    }
+
+    pub fn update_visualization(&mut self) {
+        self.update_bg_color();
+        self.update_text_color();
+    }
+
+    pub fn draw(&self, draw: &mut Draw) {
+        // The following call to clear() is important when rendering draw & egui output together.
+        draw.clear(self.bg_color);
     }
 }
