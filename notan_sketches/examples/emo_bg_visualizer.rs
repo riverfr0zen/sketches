@@ -46,7 +46,6 @@ enum View {
 struct ReadingViewState {
     doc_index: usize,
     analysis: usize,
-    analysis_summary: Option<EmocatAnalysisSummary>,
 }
 
 impl Default for ReadingViewState {
@@ -54,7 +53,6 @@ impl Default for ReadingViewState {
         Self {
             doc_index: 0,
             analysis: 0,
-            analysis_summary: None,
         }
     }
 }
@@ -202,11 +200,14 @@ fn update_read_view(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.reading.analysis = emodoc.analyses.len() - 1;
-        state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-            &emodoc.analyses[state.reading.analysis - 1],
-        ));
-        state.visualizer.target_color =
-            get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
+        state
+            .visualizer
+            .update_model(&emodoc.analyses[state.reading.analysis - 1]);
+        // state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
+        //     &emodoc.analyses[state.reading.analysis - 1],
+        // ));
+        // state.visualizer.target_color =
+        //     get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
 
 
@@ -214,11 +215,14 @@ fn update_read_view(app: &mut App, state: &mut State) {
         log::debug!("left");
         state.reading.analysis -= 1;
         if state.reading.analysis > 0 {
-            state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-                &emodoc.analyses[state.reading.analysis - 1],
-            ));
-            state.visualizer.target_color =
-                get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
+            state
+                .visualizer
+                .update_model(&emodoc.analyses[state.reading.analysis - 1]);
+            // state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
+            //     &emodoc.analyses[state.reading.analysis - 1],
+            // ));
+            // state.visualizer.target_color =
+            //     get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
         } else {
             state
                 .visualizer
@@ -229,11 +233,14 @@ fn update_read_view(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Right) && state.reading.analysis < emodoc.analyses.len() {
         log::debug!("right");
         state.reading.analysis += 1;
-        state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-            &emodoc.analyses[state.reading.analysis - 1],
-        ));
-        state.visualizer.target_color =
-            get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
+        state
+            .visualizer
+            .update_model(&emodoc.analyses[state.reading.analysis - 1]);
+        // state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
+        //     &emodoc.analyses[state.reading.analysis - 1],
+        // ));
+        // state.visualizer.target_color =
+        //     get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
     state.visualizer.update_visualization();
 }
@@ -515,7 +522,8 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
             .show(ctx, |ui| {
-                if let Some(score_summary) = &state.reading.analysis_summary {
+                // @TODO move into SimpleColorModel impl
+                if let Some(score_summary) = &state.visualizer.model {
                     ui.label("");
                     let header = RichText::new("Sentiment scores:")
                         .color(egui::Color32::BLACK)

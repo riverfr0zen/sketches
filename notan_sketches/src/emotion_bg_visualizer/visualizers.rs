@@ -1,3 +1,4 @@
+use crate::emotion::{get_simple_color, EmocatTextAnalysis, SimpleColorModel};
 use notan::draw::*;
 use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Srgb};
@@ -25,9 +26,10 @@ fn round(val: f32, digits: f32) -> f32 {
 
 
 pub trait EmoVisualizer {
-    fn draw(&self, draw: &mut Draw);
-    fn update_visualization(&mut self);
     fn new(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self;
+    fn draw(&self, draw: &mut Draw);
+    fn update_model(&mut self, analysis: &EmocatTextAnalysis);
+    fn update_visualization(&mut self);
     fn gracefully_reset(
         &mut self,
         bg_color: Color,
@@ -38,6 +40,7 @@ pub trait EmoVisualizer {
 
 
 pub struct ColorTransitionVisualizer {
+    pub model: Option<SimpleColorModel>,
     pub target_color: Color,
     pub bg_color: Color,
     pub bg_color_mix_factor: f32,
@@ -48,6 +51,7 @@ pub struct ColorTransitionVisualizer {
 impl ColorTransitionVisualizer {
     pub fn new(bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
         Self {
+            model: None,
             target_color: bg_color,
             bg_color: bg_color,
             bg_color_mix_factor: STARTING_MIX_FACTOR,
@@ -149,5 +153,10 @@ impl EmoVisualizer for ColorTransitionVisualizer {
         _enable_dynamic_text_color: bool,
     ) {
         self.target_color = bg_color;
+    }
+
+    fn update_model(&mut self, analysis: &EmocatTextAnalysis) {
+        self.model = Some(SimpleColorModel::from_analysis(&analysis));
+        self.target_color = get_simple_color(self.model.as_ref().unwrap());
     }
 }

@@ -188,13 +188,13 @@ pub fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) ->
 }
 
 
-pub struct EmocatAnalysisSummary {
+pub struct SimpleColorModel {
     pub positive: f32,
     pub negative: f32,
     pub top_emotions: Vec<EmocatAnalyzerScore>,
 }
 
-impl EmocatAnalysisSummary {
+impl SimpleColorModel {
     pub fn from_analysis(analysis: &EmocatTextAnalysis) -> Self {
         let mut scores = analysis.results.nrclex.clone();
         // log::debug!("Scores before {:?}", scores);
@@ -229,7 +229,7 @@ impl EmocatAnalysisSummary {
 
 
 /// Simple Color Model. See README for description.
-pub fn get_simple_color(score_summary: &EmocatAnalysisSummary) -> Color {
+pub fn get_simple_color(score_summary: &SimpleColorModel) -> Color {
     let top_emotions = &score_summary.top_emotions;
     if top_emotions[0].score > 0.0 {
         log::debug!("Top emotions: {:?}:", top_emotions);
