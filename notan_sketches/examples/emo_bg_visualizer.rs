@@ -8,7 +8,7 @@ use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 // use serde_json::{Result as JsonResult, Value};
-use notan_sketches::emotion_bg_visualizer::ui::DisplayMetrics;
+use notan_sketches::emotion_bg_visualizer::ui::{DisplayMetrics, SettingsUi};
 use notan_sketches::emotion_bg_visualizer::visualizers::{
     ColorTransitionVisualizer, EmoVisualizer,
 };
@@ -41,6 +41,7 @@ enum View {
     HOME,
     ABOUT,
     READ,
+    SETTINGS,
 }
 
 
@@ -322,6 +323,11 @@ fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     gfx.render(&output);
 }
 
+#[inline]
+fn logo() -> TextStyle {
+    TextStyle::Name("Logo".into())
+}
+
 
 #[inline]
 fn analysis_panel_title() -> TextStyle {
@@ -350,15 +356,16 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
     style.text_styles = [
         (
             TextStyle::Heading,
-            FontId::new(scale_font(25.0, work_size), Monospace),
+            FontId::new(scale_font(16.0, work_size), Monospace),
         ),
+        (logo(), FontId::new(scale_font(25.0, work_size), Monospace)),
         (
             analysis_panel_title(),
             FontId::new(scale_font(10.0, work_size), Monospace),
         ),
         (
             TextStyle::Body,
-            FontId::new(scale_font(16.0, work_size), Monospace),
+            FontId::new(scale_font(12.0, work_size), Monospace),
         ),
         (
             author_menu_text(),
@@ -469,10 +476,12 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
             }
         }
 
-        let settings_button = make_small_button("Visualizer Options");
-        if ui.add(settings_button).clicked() {
-            log::debug!("clicked settings");
-            state.view = View::ABOUT;
+        if state.view != View::SETTINGS {
+            let settings_button = make_small_button("Visualizer Options");
+            if ui.add(settings_button).clicked() {
+                log::debug!("clicked settings");
+                state.view = View::SETTINGS;
+            }
         }
 
         let button: Button;
@@ -506,7 +515,7 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
             .show(ctx, |ui| {
-                state.visualizer.egui(ui, &analysis_panel_title);
+                state.visualizer.egui_metrics(ui, &analysis_panel_title);
             });
     }
 }
@@ -559,7 +568,9 @@ fn draw_with_main_panel<F>(
                             bottom: heading_frame_margin,
                         });
                 heading_frame.show(ui, |ui| {
-                    ui.heading("emo bg visualizer");
+                    let logo_text = RichText::new("emo bg visualizer").text_style(logo());
+
+                    ui.label(logo_text);
                     ui.small("A background visualizer for emotions found in text");
                 });
                 heading_frame.show(ui, |ui| {
@@ -599,6 +610,34 @@ fn draw_about_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State,
 }
 
 
+fn draw_settings_view(
+    gfx: &mut Graphics,
+    plugins: &mut Plugins,
+    state: &mut State,
+    work_size: Vec2,
+) {
+    let mut output = plugins.egui(|ctx| {
+        let ui_fill = ui_common_setup(ctx, state, work_size);
+        draw_with_main_panel(
+            ctx,
+            state,
+            work_size,
+            ui_fill,
+            // |ctx, ui, state, work_size| {
+            |_, ui, state, _| {
+                ui.heading("Visualizer Settings");
+                state.visualizer.egui_settings(ui);
+            },
+        );
+    });
+
+    output.clear_color(CLEAR_COLOR);
+    if output.needs_repaint() {
+        gfx.render(&output);
+    }
+}
+
+
 fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let mut output = plugins.egui(|ctx| {
         let ui_fill = ui_common_setup(ctx, state, work_size);
@@ -622,7 +661,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
 
                 // ui.separator();
                 heading_frame.show(ui, |ui| {
-                    ui.label("Read select poems and prose from the public domain:");
+                    ui.heading("Read select poems and prose from the public domain:");
                 });
 
                 egui::ScrollArea::vertical()
@@ -691,6 +730,7 @@ fn draw(
     match state.view {
         View::READ => draw_read_view(gfx, plugins, state, work_size),
         View::ABOUT => draw_about_view(gfx, plugins, state, work_size),
+        View::SETTINGS => draw_settings_view(gfx, plugins, state, work_size),
         _ => draw_home_view(gfx, plugins, state, work_size),
         // _ => draw_public_domain_menu(gfx, plugins, state, work_size),
     }

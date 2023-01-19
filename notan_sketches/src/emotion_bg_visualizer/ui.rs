@@ -3,12 +3,12 @@ use notan::egui::{self, RichText, TextStyle, Ui};
 
 
 pub trait DisplayMetrics {
-    fn egui(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle);
+    fn egui_metrics(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle);
 }
 
 
 impl DisplayMetrics for ColorTransitionVisualizer {
-    fn egui(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle) {
+    fn egui_metrics(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle) {
         if let Some(model) = &self.model {
             ui.label("");
             let header = RichText::new("Sentiment scores:")
@@ -32,5 +32,16 @@ impl DisplayMetrics for ColorTransitionVisualizer {
         } else {
             ui.small("The emotion analysis metrics will appear here when you start reading.");
         }
+    }
+}
+
+
+pub trait SettingsUi {
+    fn egui_settings(&self, ui: &mut Ui);
+}
+
+impl SettingsUi for ColorTransitionVisualizer {
+    fn egui_settings(&self, ui: &mut Ui) {
+        ui.label("Settings from SettingsUi impl!");
     }
 }
