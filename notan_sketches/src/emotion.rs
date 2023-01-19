@@ -225,48 +225,47 @@ impl SimpleColorModel {
             top_emotions: top_emotions,
         }
     }
-}
 
-
-/// Simple Color Model. See README for description.
-pub fn get_simple_color(score_summary: &SimpleColorModel) -> Color {
-    let top_emotions = &score_summary.top_emotions;
-    if top_emotions[0].score > 0.0 {
-        log::debug!("Top emotions: {:?}:", top_emotions);
-        let mapping_func = get_mapped_color_plutchik;
-        let emocolors: Vec<EmoColor> = top_emotions
-            .iter()
-            .map(|s| get_mapped_emocolor(&s.marker, &mapping_func))
-            .collect();
-        // Start with a neutral gray
-        if emocolors.len() > 1 {
-            let mut final_color = get_mapped_emocolor("", &mapping_func).hsv;
-            for emocolor in emocolors.iter() {
-                log::debug!("Before mix: {:?}", final_color);
-                let sentiment_value: f32 = match &emocolor.sentiment {
-                    Sentiment::POSITIVE => score_summary.positive,
-                    Sentiment::NEGATIVE => score_summary.negative,
-                    Sentiment::NEUTRAL => score_summary.positive.max(score_summary.negative),
-                };
-                // The sentiment values don't often seem to go beyond 0.5, so I'm modifying the
-                // mix factor a little. Must test later with more examples of text.
-                let mix_factor = sentiment_value * 2.0;
-                log::debug!(
-                    "Emotion: {}, Sentiment value: {}, Mix_factor: {}",
-                    emocolor.emotion,
-                    sentiment_value,
-                    mix_factor
-                );
-                // final_color = final_color.mix(&emocolor.hsv, 0.5);
-                final_color = final_color.mix(&emocolor.hsv, mix_factor);
-                log::debug!("After mix: {:?}", final_color);
+    /// Simple Color Model. See README for description.
+    pub fn get_simple_color(&self) -> Color {
+        let top_emotions = &self.top_emotions;
+        if top_emotions[0].score > 0.0 {
+            log::debug!("Top emotions: {:?}:", top_emotions);
+            let mapping_func = get_mapped_color_plutchik;
+            let emocolors: Vec<EmoColor> = top_emotions
+                .iter()
+                .map(|s| get_mapped_emocolor(&s.marker, &mapping_func))
+                .collect();
+            // Start with a neutral gray
+            if emocolors.len() > 1 {
+                let mut final_color = get_mapped_emocolor("", &mapping_func).hsv;
+                for emocolor in emocolors.iter() {
+                    log::debug!("Before mix: {:?}", final_color);
+                    let sentiment_value: f32 = match &emocolor.sentiment {
+                        Sentiment::POSITIVE => self.positive,
+                        Sentiment::NEGATIVE => self.negative,
+                        Sentiment::NEUTRAL => self.positive.max(self.negative),
+                    };
+                    // The sentiment values don't often seem to go beyond 0.5, so I'm modifying the
+                    // mix factor a little. Must test later with more examples of text.
+                    let mix_factor = sentiment_value * 2.0;
+                    log::debug!(
+                        "Emotion: {}, Sentiment value: {}, Mix_factor: {}",
+                        emocolor.emotion,
+                        sentiment_value,
+                        mix_factor
+                    );
+                    // final_color = final_color.mix(&emocolor.hsv, 0.5);
+                    final_color = final_color.mix(&emocolor.hsv, mix_factor);
+                    log::debug!("After mix: {:?}", final_color);
+                }
+                let color = Srgb::from_color(final_color);
+                return Color::from_rgb(color.red, color.green, color.blue);
+            } else {
+                let color = Srgb::from_color(emocolors[0].hsv);
+                return Color::from_rgb(color.red, color.green, color.blue);
             }
-            let color = Srgb::from_color(final_color);
-            return Color::from_rgb(color.red, color.green, color.blue);
-        } else {
-            let color = Srgb::from_color(emocolors[0].hsv);
-            return Color::from_rgb(color.red, color.green, color.blue);
         }
+        Color::GRAY
     }
-    Color::GRAY
 }

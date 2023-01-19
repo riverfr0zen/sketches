@@ -1,4 +1,4 @@
-use crate::emotion::{get_simple_color, EmocatTextAnalysis, SimpleColorModel};
+use crate::emotion::{EmocatTextAnalysis, SimpleColorModel};
 use notan::draw::*;
 use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Srgb};
@@ -156,7 +156,8 @@ impl EmoVisualizer for ColorTransitionVisualizer {
     }
 
     fn update_model(&mut self, analysis: &EmocatTextAnalysis) {
-        self.model = Some(SimpleColorModel::from_analysis(&analysis));
-        self.target_color = get_simple_color(self.model.as_ref().unwrap());
+        let model = SimpleColorModel::from_analysis(&analysis);
+        self.target_color = model.get_simple_color();
+        self.model = Some(model);
     }
 }
