@@ -8,6 +8,7 @@ use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 // use serde_json::{Result as JsonResult, Value};
+use notan_sketches::emotion_bg_visualizer::ui::DisplayMetrics;
 use notan_sketches::emotion_bg_visualizer::visualizers::{
     ColorTransitionVisualizer, EmoVisualizer,
 };
@@ -203,11 +204,6 @@ fn update_read_view(app: &mut App, state: &mut State) {
         state
             .visualizer
             .update_model(&emodoc.analyses[state.reading.analysis - 1]);
-        // state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-        //     &emodoc.analyses[state.reading.analysis - 1],
-        // ));
-        // state.visualizer.target_color =
-        //     get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
 
 
@@ -218,11 +214,6 @@ fn update_read_view(app: &mut App, state: &mut State) {
             state
                 .visualizer
                 .update_model(&emodoc.analyses[state.reading.analysis - 1]);
-            // state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-            //     &emodoc.analyses[state.reading.analysis - 1],
-            // ));
-            // state.visualizer.target_color =
-            //     get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
         } else {
             state
                 .visualizer
@@ -236,11 +227,6 @@ fn update_read_view(app: &mut App, state: &mut State) {
         state
             .visualizer
             .update_model(&emodoc.analyses[state.reading.analysis - 1]);
-        // state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-        //     &emodoc.analyses[state.reading.analysis - 1],
-        // ));
-        // state.visualizer.target_color =
-        //     get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
     }
     state.visualizer.update_visualization();
 }
@@ -251,8 +237,6 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("m");
         state.view = View::HOME;
         state.reading = ReadingViewState::default();
-        // state.visualizer =
-        //     ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
         state.visualizer = state
             .visualizer
             .new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
@@ -522,9 +506,7 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
             .show(ctx, |ui| {
-                state
-                    .visualizer
-                    .display_model_data(ui, &analysis_panel_title);
+                state.visualizer.egui(ui, &analysis_panel_title);
             });
     }
 }
