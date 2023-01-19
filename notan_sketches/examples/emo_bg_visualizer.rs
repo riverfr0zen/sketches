@@ -522,34 +522,9 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
             .show(ctx, |ui| {
-                // @TODO move into SimpleColorModel impl
-                if let Some(score_summary) = &state.visualizer.model {
-                    ui.label("");
-                    let header = RichText::new("Sentiment scores:")
-                        .color(egui::Color32::BLACK)
-                        .text_style(analysis_panel_title());
-                    ui.label(header);
-                    ui.small(format!("positive: {}", score_summary.positive));
-                    ui.small(format!("negative: {}", score_summary.negative));
-                    ui.label("");
-                    let header = RichText::new("Top emotions:")
-                        .color(egui::Color32::BLACK)
-                        .text_style(analysis_panel_title());
-                    ui.label(header);
-                    if score_summary.top_emotions.len() > 0
-                        && score_summary.top_emotions[0].score > 0.0
-                    {
-                        for top_emo in score_summary.top_emotions.iter() {
-                            ui.small(format!("{}: {}", top_emo.marker, top_emo.score));
-                        }
-                    } else {
-                        ui.small("None");
-                    }
-                } else {
-                    ui.small(
-                        "The emotion analysis metrics will appear here when you start reading.",
-                    );
-                }
+                state
+                    .visualizer
+                    .display_model_data(ui, &analysis_panel_title);
             });
     }
 }

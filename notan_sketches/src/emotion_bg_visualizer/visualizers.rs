@@ -1,5 +1,6 @@
 use crate::emotion::{EmocatTextAnalysis, SimpleColorModel};
 use notan::draw::*;
+use notan::egui::{self, RichText, TextStyle, Ui};
 use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Srgb};
 
@@ -36,6 +37,7 @@ pub trait EmoVisualizer {
         text_color: Color,
         enable_dynamic_text_color: bool,
     );
+    fn display_model_data(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle);
 }
 
 
@@ -159,5 +161,31 @@ impl EmoVisualizer for ColorTransitionVisualizer {
         let model = SimpleColorModel::from_analysis(&analysis);
         self.target_color = model.get_simple_color();
         self.model = Some(model);
+    }
+
+    fn display_model_data(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle) {
+        if let Some(model) = &self.model {
+            ui.label("");
+            let header = RichText::new("Sentiment scores:")
+                .color(egui::Color32::BLACK)
+                .text_style(title_style());
+            ui.label(header);
+            ui.small(format!("positive: {}", model.positive));
+            ui.small(format!("negative: {}", model.negative));
+            ui.label("");
+            let header = RichText::new("Top emotions:")
+                .color(egui::Color32::BLACK)
+                .text_style(title_style());
+            ui.label(header);
+            if model.top_emotions.len() > 0 && model.top_emotions[0].score > 0.0 {
+                for top_emo in model.top_emotions.iter() {
+                    ui.small(format!("{}: {}", top_emo.marker, top_emo.score));
+                }
+            } else {
+                ui.small("None");
+            }
+        } else {
+            ui.small("The emotion analysis metrics will appear here when you start reading.");
+        }
     }
 }
