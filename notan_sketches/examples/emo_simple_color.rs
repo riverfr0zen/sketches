@@ -45,7 +45,7 @@ struct State {
     font: Font,
     title_font: Font,
     analysis: usize,
-    analysis_summary: Option<EmocatAnalysisSummary>,
+    analysis_summary: Option<TopEmotionsModel>,
     simple_color: Color,
     bg_color: Color,
     bg_color_mix_factor: f32,
@@ -213,10 +213,9 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.analysis = state.emodoc.analyses.len() - 1;
-        state.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-            &state.emodoc.analyses[state.analysis - 1],
-        ));
-        state.simple_color = get_simple_color(state.analysis_summary.as_ref().unwrap());
+        let model = TopEmotionsModel::from_analysis(&state.emodoc.analyses[state.analysis - 1]);
+        state.simple_color = model.get_simple_color();
+        state.analysis_summary = Some(model);
     }
 
 
@@ -224,10 +223,9 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("left");
         state.analysis -= 1;
         if state.analysis > 0 {
-            state.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-                &state.emodoc.analyses[state.analysis - 1],
-            ));
-            state.simple_color = get_simple_color(state.analysis_summary.as_ref().unwrap());
+            let model = TopEmotionsModel::from_analysis(&state.emodoc.analyses[state.analysis - 1]);
+            state.simple_color = model.get_simple_color();
+            state.analysis_summary = Some(model);
         } else {
             state.simple_color = CLEAR_COLOR;
         }
@@ -236,10 +234,9 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
         log::debug!("right");
         state.analysis += 1;
-        state.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-            &state.emodoc.analyses[state.analysis - 1],
-        ));
-        state.simple_color = get_simple_color(state.analysis_summary.as_ref().unwrap());
+        let model = TopEmotionsModel::from_analysis(&state.emodoc.analyses[state.analysis - 1]);
+        state.simple_color = model.get_simple_color();
+        state.analysis_summary = Some(model);
     }
     // update_bg_color_simple(state);
     update_bg_color(app, state);

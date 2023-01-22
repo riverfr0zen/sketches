@@ -188,13 +188,13 @@ pub fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) ->
 }
 
 
-pub struct EmocatAnalysisSummary {
+pub struct TopEmotionsModel {
     pub positive: f32,
     pub negative: f32,
     pub top_emotions: Vec<EmocatAnalyzerScore>,
 }
 
-impl EmocatAnalysisSummary {
+impl TopEmotionsModel {
     pub fn from_analysis(analysis: &EmocatTextAnalysis) -> Self {
         let mut scores = analysis.results.nrclex.clone();
         // log::debug!("Scores before {:?}", scores);
@@ -225,48 +225,70 @@ impl EmocatAnalysisSummary {
             top_emotions: top_emotions,
         }
     }
-}
 
 
-/// Simple Color Model. See README for description.
-pub fn get_simple_color(score_summary: &EmocatAnalysisSummary) -> Color {
-    let top_emotions = &score_summary.top_emotions;
-    if top_emotions[0].score > 0.0 {
-        log::debug!("Top emotions: {:?}:", top_emotions);
-        let mapping_func = get_mapped_color_plutchik;
-        let emocolors: Vec<EmoColor> = top_emotions
-            .iter()
-            .map(|s| get_mapped_emocolor(&s.marker, &mapping_func))
-            .collect();
-        // Start with a neutral gray
-        if emocolors.len() > 1 {
-            let mut final_color = get_mapped_emocolor("", &mapping_func).hsv;
-            for emocolor in emocolors.iter() {
-                log::debug!("Before mix: {:?}", final_color);
-                let sentiment_value: f32 = match &emocolor.sentiment {
-                    Sentiment::POSITIVE => score_summary.positive,
-                    Sentiment::NEGATIVE => score_summary.negative,
-                    Sentiment::NEUTRAL => score_summary.positive.max(score_summary.negative),
-                };
-                // The sentiment values don't often seem to go beyond 0.5, so I'm modifying the
-                // mix factor a little. Must test later with more examples of text.
-                let mix_factor = sentiment_value * 2.0;
-                log::debug!(
-                    "Emotion: {}, Sentiment value: {}, Mix_factor: {}",
-                    emocolor.emotion,
-                    sentiment_value,
-                    mix_factor
-                );
-                // final_color = final_color.mix(&emocolor.hsv, 0.5);
-                final_color = final_color.mix(&emocolor.hsv, mix_factor);
-                log::debug!("After mix: {:?}", final_color);
-            }
-            let color = Srgb::from_color(final_color);
-            return Color::from_rgb(color.red, color.green, color.blue);
-        } else {
-            let color = Srgb::from_color(emocolors[0].hsv);
-            return Color::from_rgb(color.red, color.green, color.blue);
+    pub fn get_black_or_white(&self) -> Color {
+        if (self.positive > self.negative) {
+            return Color::WHITE;
         }
+        if (self.negative > self.positive) {
+            return Color::BLACK;
+        }
+        Color::GRAY
     }
-    Color::GRAY
+
+    pub fn get_grayscale(&self) -> Color {
+        let base_val = 0.5;
+        if (self.positive > self.negative) {
+            let color_val = base_val + self.positive;
+            return Color::from_rgb(color_val, color_val, color_val);
+        }
+        if (self.negative > self.positive) {
+            let color_val = base_val - self.negative;
+            return Color::from_rgb(color_val, color_val, color_val);
+        }
+        return Color::from_rgb(base_val, base_val, base_val);
+    }
+
+    pub fn get_simple_color(&self) -> Color {
+        let top_emotions = &self.top_emotions;
+        if top_emotions[0].score > 0.0 {
+            log::debug!("Top emotions: {:?}:", top_emotions);
+            let mapping_func = get_mapped_color_plutchik;
+            let emocolors: Vec<EmoColor> = top_emotions
+                .iter()
+                .map(|s| get_mapped_emocolor(&s.marker, &mapping_func))
+                .collect();
+            // Start with a neutral gray
+            if emocolors.len() > 1 {
+                let mut final_color = get_mapped_emocolor("", &mapping_func).hsv;
+                for emocolor in emocolors.iter() {
+                    log::debug!("Before mix: {:?}", final_color);
+                    let sentiment_value: f32 = match &emocolor.sentiment {
+                        Sentiment::POSITIVE => self.positive,
+                        Sentiment::NEGATIVE => self.negative,
+                        Sentiment::NEUTRAL => self.positive.max(self.negative),
+                    };
+                    // The sentiment values don't often seem to go beyond 0.5, so I'm modifying the
+                    // mix factor a little. Must test later with more examples of text.
+                    let mix_factor = sentiment_value * 2.0;
+                    log::debug!(
+                        "Emotion: {}, Sentiment value: {}, Mix_factor: {}",
+                        emocolor.emotion,
+                        sentiment_value,
+                        mix_factor
+                    );
+                    // final_color = final_color.mix(&emocolor.hsv, 0.5);
+                    final_color = final_color.mix(&emocolor.hsv, mix_factor);
+                    log::debug!("After mix: {:?}", final_color);
+                }
+                let color = Srgb::from_color(final_color);
+                return Color::from_rgb(color.red, color.green, color.blue);
+            } else {
+                let color = Srgb::from_color(emocolors[0].hsv);
+                return Color::from_rgb(color.red, color.green, color.blue);
+            }
+        }
+        Color::GRAY
+    }
 }

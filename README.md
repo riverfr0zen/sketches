@@ -51,37 +51,47 @@ wasm-pack build --out-name eg_notan --out-dir www/wasms  --target web --release 
 
 # Text to emotion visualization models
 
-## Simple Color Model
+## Top Emotions Model (previously called "SimpleColor")
 
-The model will return a color calculated as below:
+The model lists "top emotions": emotions sharing the highest score in the text analysis. The sentiment (positive/negative) scores from the analysis are also available.
 
-The color model will select the emotion(s) with the highest score in the text analysis.
+### Model methods
+
+#### Simple color method
+
+This method will return a color calculated as below:
 
 If no emotion has a score, a neutral gray color will be returned.
 
-If only one emotion has the high score, the color corresponding to the emotion in one of the mappings (see "Mappings" below) will be returned. 
+If only one emotion has the high score, the color corresponding to the emotion in one of the mappings (see "Emotion to Color Mappings" below) will be returned. 
 
-If there are multiple emotions in the high score, the top emotions will be further grouped into "positive",  "negative", and "neutral" emotions. Following this, starting with a neutral gray HSV value, each emotion's color (based on the color mappings) will be "mixed" in. The factor by which one color mixes into the total will be based on the analysis value of the sentiment (positive/negative) that the color corresponds to. For example, if the emotion is "joy", which is a positive emotion, then the value of "positive" from the analysis will be the factor. If the color is neutral, the factor will be dominant sentiment value.
+If there are multiple emotions in the high score, the top emotions will be further grouped into "positive",  "negative", and "neutral" emotions. Following this, starting with a neutral gray HSV value, each emotion's color (based on the color mappings) will be "mixed" in. The factor by which one color mixes into the total will be based on the analysis value of the sentiment (positive/negative) that the color corresponds to. For example, if the emotion is "joy", which is a positive emotion, then the value of "positive" from the analysis will be the factor. If the emotion is neutral, the factor will be the dominant sentiment value.
+
+#### Black or white method
+
+This simple toy method will return black if the dominant sentiment of the text is positive, or white if it is negative. If the sentiments are equal, gray will be returned.
 
 
-### Mappings 
+## Multi Hue Color Model
+(TODO: update name above and contents below to match learnings from implementing Top Emotions Model. This is still a separate model, but its main difference will be how the top emotions are grouped up. The model should be named after said grouping. The hues calculations and returns described will be part of some new method of this model which is yet to be articulated).
+
+Similar to Top Emotions Model above, except that if more than one emotion has the high score:
+
+* First, top emotions that are adjacent on the color wheel (in the same quadrant) will be grouped. 
+===probably the separator between model & method===
+* For each group, the avg hue will be calculated.
+* The model will return a list of the averaged hues.
+
+This model may also do the same with a "second ranked color" if only one emotion is at the top.
+
+
+## Emotion to Color Mappings 
 I want to experiment with two different mappings, based on different theories, so switching the used mapping is an important capability.
 
 The first mapping is based on the theories of psychologist Dr. Robert Plutchik as described in [this article](http://shelleycrick.com/how-color-affects-emotions/). I'll call it the Plutchik mapping.
 
 
 The second mapping will come from the "art therapy" world, as described in [this article](http://www.arttherapyblog.com/online/color-meanings-symbolism):
-
-
-## Multi Hue Color Model
-
-Similar to Simple Color Model above, except that if more than one emotion has the high score:
-
-* First, top emotions that are adjacent on the color wheel (in the same quadrant) will be grouped. 
-* For each group, the avg hue will be calculated.
-* The model will return a list of the averaged hues.
-
-This model may also do the same with a "second ranked color" if only one emotion is at the top.
 
 
 ## FontForge

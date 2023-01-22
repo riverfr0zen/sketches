@@ -8,7 +8,10 @@ use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 // use serde_json::{Result as JsonResult, Value};
-use notan_sketches::emotion_bg_visualizer::visualizers::ColorTransitionVisualizer;
+use notan_sketches::emotion_bg_visualizer::ui::{DisplayMetrics, SettingsUi};
+use notan_sketches::emotion_bg_visualizer::visualizers::{
+    ColorTransitionVisualizer, EmoVisualizer,
+};
 use FontFamily::{Monospace, Proportional};
 
 // See details at https://stackoverflow.com/a/42764117
@@ -38,13 +41,13 @@ enum View {
     HOME,
     ABOUT,
     READ,
+    SETTINGS,
 }
 
 
 struct ReadingViewState {
     doc_index: usize,
     analysis: usize,
-    analysis_summary: Option<EmocatAnalysisSummary>,
 }
 
 impl Default for ReadingViewState {
@@ -52,7 +55,6 @@ impl Default for ReadingViewState {
         Self {
             doc_index: 0,
             analysis: 0,
-            analysis_summary: None,
         }
     }
 }
@@ -67,7 +69,7 @@ struct State {
     font: Font,
     title_font: Font,
     egui_fonts: FontDefinitions,
-    color_transition: ColorTransitionVisualizer,
+    visualizer: ColorTransitionVisualizer,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
 }
@@ -132,11 +134,7 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         font: font,
         title_font: title_font,
         egui_fonts: egui_fonts,
-        color_transition: ColorTransitionVisualizer::new(
-            CLEAR_COLOR,
-            TITLE_COLOR,
-            DYNAMIC_TEXT_COLOR,
-        ),
+        visualizer: ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR),
         needs_handle_resize: true,
         needs_egui_font_setup: true,
     };
@@ -196,17 +194,17 @@ fn update_read_view(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
         state.reading.analysis = 0;
-        state.color_transition.target_color = CLEAR_COLOR;
+        state
+            .visualizer
+            .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.reading.analysis = emodoc.analyses.len() - 1;
-        state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-            &emodoc.analyses[state.reading.analysis - 1],
-        ));
-        state.color_transition.target_color =
-            get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
+        state
+            .visualizer
+            .update_model(&emodoc.analyses[state.reading.analysis - 1]);
     }
 
 
@@ -214,26 +212,24 @@ fn update_read_view(app: &mut App, state: &mut State) {
         log::debug!("left");
         state.reading.analysis -= 1;
         if state.reading.analysis > 0 {
-            state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-                &emodoc.analyses[state.reading.analysis - 1],
-            ));
-            state.color_transition.target_color =
-                get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
+            state
+                .visualizer
+                .update_model(&emodoc.analyses[state.reading.analysis - 1]);
         } else {
-            state.color_transition.target_color = CLEAR_COLOR;
+            state
+                .visualizer
+                .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
         }
     }
 
     if app.keyboard.was_pressed(KeyCode::Right) && state.reading.analysis < emodoc.analyses.len() {
         log::debug!("right");
         state.reading.analysis += 1;
-        state.reading.analysis_summary = Some(EmocatAnalysisSummary::from_analysis(
-            &emodoc.analyses[state.reading.analysis - 1],
-        ));
-        state.color_transition.target_color =
-            get_simple_color(state.reading.analysis_summary.as_ref().unwrap());
+        state
+            .visualizer
+            .update_model(&emodoc.analyses[state.reading.analysis - 1]);
     }
-    state.color_transition.update_visualization();
+    state.visualizer.update_visualization();
 }
 
 
@@ -242,8 +238,9 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("m");
         state.view = View::HOME;
         state.reading = ReadingViewState::default();
-        state.color_transition =
-            ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+        state
+            .visualizer
+            .reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
     }
 
 
@@ -293,7 +290,7 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
         &emodoc.analyses[state.reading.analysis - 1].text,
     )
     .alpha_mode(BlendMode::OVER)
-    .color(state.color_transition.text_color)
+    .color(state.visualizer.text_color)
     .size(scale_font(32.0, work_size))
     .max_width(textbox_width)
     .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
@@ -311,7 +308,7 @@ fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     // NOTE: If the egui ui seems to be "blocking" the draw, it may be because the visualizer
     // draw() method is not calling `draw.clear()`. If this isn't done, the egui background
     // will block the draw. For an example, see impl method of ColorTransitionVisualizer::draw().
-    state.color_transition.draw(&mut draw);
+    state.visualizer.draw(&mut draw);
 
     if state.reading.analysis == 0 {
         draw_title(&mut draw, state, work_size);
@@ -324,6 +321,11 @@ fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
         draw_analysis_panel(ctx, state, work_size);
     });
     gfx.render(&output);
+}
+
+#[inline]
+fn logo() -> TextStyle {
+    TextStyle::Name("Logo".into())
 }
 
 
@@ -354,15 +356,16 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
     style.text_styles = [
         (
             TextStyle::Heading,
-            FontId::new(scale_font(25.0, work_size), Monospace),
+            FontId::new(scale_font(16.0, work_size), Monospace),
         ),
+        (logo(), FontId::new(scale_font(25.0, work_size), Monospace)),
         (
             analysis_panel_title(),
             FontId::new(scale_font(10.0, work_size), Monospace),
         ),
         (
             TextStyle::Body,
-            FontId::new(scale_font(16.0, work_size), Monospace),
+            FontId::new(scale_font(12.0, work_size), Monospace),
         ),
         (
             author_menu_text(),
@@ -473,10 +476,12 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
             }
         }
 
-        let settings_button = make_small_button("Visualizer Options");
-        if ui.add(settings_button).clicked() {
-            log::debug!("clicked settings");
-            state.view = View::ABOUT;
+        if state.view != View::SETTINGS {
+            let settings_button = make_small_button("Visualizer Options");
+            if ui.add(settings_button).clicked() {
+                log::debug!("clicked settings");
+                state.view = View::SETTINGS;
+            }
         }
 
         let button: Button;
@@ -510,33 +515,7 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
             .show(ctx, |ui| {
-                if let Some(score_summary) = &state.reading.analysis_summary {
-                    ui.label("");
-                    let header = RichText::new("Sentiment scores:")
-                        .color(egui::Color32::BLACK)
-                        .text_style(analysis_panel_title());
-                    ui.label(header);
-                    ui.small(format!("positive: {}", score_summary.positive));
-                    ui.small(format!("negative: {}", score_summary.negative));
-                    ui.label("");
-                    let header = RichText::new("Top emotions:")
-                        .color(egui::Color32::BLACK)
-                        .text_style(analysis_panel_title());
-                    ui.label(header);
-                    if score_summary.top_emotions.len() > 0
-                        && score_summary.top_emotions[0].score > 0.0
-                    {
-                        for top_emo in score_summary.top_emotions.iter() {
-                            ui.small(format!("{}: {}", top_emo.marker, top_emo.score));
-                        }
-                    } else {
-                        ui.small("None");
-                    }
-                } else {
-                    ui.small(
-                        "The emotion analysis metrics will appear here when you start reading.",
-                    );
-                }
+                state.visualizer.egui_metrics(ui, &analysis_panel_title);
             });
     }
 }
@@ -589,7 +568,9 @@ fn draw_with_main_panel<F>(
                             bottom: heading_frame_margin,
                         });
                 heading_frame.show(ui, |ui| {
-                    ui.heading("emo bg visualizer");
+                    let logo_text = RichText::new("emo bg visualizer").text_style(logo());
+
+                    ui.label(logo_text);
                     ui.small("A background visualizer for emotions found in text");
                 });
                 heading_frame.show(ui, |ui| {
@@ -629,6 +610,49 @@ fn draw_about_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State,
 }
 
 
+fn draw_settings_view(
+    gfx: &mut Graphics,
+    plugins: &mut Plugins,
+    state: &mut State,
+    work_size: Vec2,
+) {
+    let mut output = plugins.egui(|ctx| {
+        let ui_fill = ui_common_setup(ctx, state, work_size);
+        draw_with_main_panel(
+            ctx,
+            state,
+            work_size,
+            ui_fill,
+            // |ctx, ui, state, work_size| {
+            |_, ui, state, _| {
+                let margin = work_size.y * 0.02;
+                let heading_frame =
+                    egui::Frame::none()
+                        .fill(ui_fill)
+                        .inner_margin(egui::style::Margin {
+                            left: 0.0,
+                            right: 0.0,
+                            top: 0.0,
+                            bottom: margin,
+                        });
+                heading_frame.show(ui, |ui| {
+                    ui.heading("Misc Options");
+                });
+                heading_frame.show(ui, |ui| {
+                    ui.heading("Visualizer Options");
+                });
+                state.visualizer.egui_settings(ui, &small_button);
+            },
+        );
+    });
+
+    output.clear_color(CLEAR_COLOR);
+    if output.needs_repaint() {
+        gfx.render(&output);
+    }
+}
+
+
 fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let mut output = plugins.egui(|ctx| {
         let ui_fill = ui_common_setup(ctx, state, work_size);
@@ -652,7 +676,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
 
                 // ui.separator();
                 heading_frame.show(ui, |ui| {
-                    ui.label("Read select poems and prose from the public domain:");
+                    ui.heading("Read select poems and prose from the public domain:");
                 });
 
                 egui::ScrollArea::vertical()
@@ -721,6 +745,7 @@ fn draw(
     match state.view {
         View::READ => draw_read_view(gfx, plugins, state, work_size),
         View::ABOUT => draw_about_view(gfx, plugins, state, work_size),
+        View::SETTINGS => draw_settings_view(gfx, plugins, state, work_size),
         _ => draw_home_view(gfx, plugins, state, work_size),
         // _ => draw_public_domain_menu(gfx, plugins, state, work_size),
     }
