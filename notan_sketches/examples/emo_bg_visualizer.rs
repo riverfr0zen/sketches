@@ -238,9 +238,9 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("m");
         state.view = View::HOME;
         state.reading = ReadingViewState::default();
-        state.visualizer = state
+        state
             .visualizer
-            .new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+            .reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
     }
 
 
@@ -626,17 +626,21 @@ fn draw_settings_view(
             // |ctx, ui, state, work_size| {
             |_, ui, state, _| {
                 let margin = work_size.y * 0.02;
-                egui::Frame::none()
-                    .fill(ui_fill)
-                    .inner_margin(egui::style::Margin {
-                        left: 0.0,
-                        right: 0.0,
-                        top: 0.0,
-                        bottom: margin,
-                    })
-                    .show(ui, |ui| {
-                        ui.heading("Visualizer Settings");
-                    });
+                let heading_frame =
+                    egui::Frame::none()
+                        .fill(ui_fill)
+                        .inner_margin(egui::style::Margin {
+                            left: 0.0,
+                            right: 0.0,
+                            top: 0.0,
+                            bottom: margin,
+                        });
+                heading_frame.show(ui, |ui| {
+                    ui.heading("Misc Options");
+                });
+                heading_frame.show(ui, |ui| {
+                    ui.heading("Visualizer Options");
+                });
                 state.visualizer.egui_settings(ui, &small_button);
             },
         );

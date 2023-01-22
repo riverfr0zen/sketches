@@ -2,6 +2,8 @@ use crate::emotion::{EmocatTextAnalysis, TopEmotionsModel};
 use notan::draw::*;
 use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Srgb};
+use std::collections::HashMap;
+
 
 const COLOR_COMPARISON_PRECISION: f32 = 3.0;
 const STARTING_MIX_FACTOR: f32 = 0.0;
@@ -24,20 +26,6 @@ fn round(val: f32, digits: f32) -> f32 {
     (val * multiplier).round() / multiplier
 }
 
-use std::collections::HashMap;
-pub trait EmoVisualizer {
-    fn new(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self;
-    fn get_options() -> HashMap<String, Vec<String>>;
-    fn draw(&self, draw: &mut Draw);
-    fn update_model(&mut self, analysis: &EmocatTextAnalysis);
-    fn update_visualization(&mut self);
-    fn gracefully_reset(
-        &mut self,
-        bg_color: Color,
-        text_color: Color,
-        enable_dynamic_text_color: bool,
-    );
-}
 
 pub struct ColorTransitionVisualizer {
     pub model: Option<TopEmotionsModel>,
@@ -133,7 +121,53 @@ impl ColorTransitionVisualizer {
 }
 
 
+pub trait EmoVisualizer {
+    fn new(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self;
+
+    /// Similar to new(), but does not reset user-configurable properties
+    fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool);
+
+    /// Used for a less abrupt transition between reading a paragraph and the title screen of a
+    /// work
+    fn gracefully_reset(
+        &mut self,
+        bg_color: Color,
+        text_color: Color,
+        enable_dynamic_text_color: bool,
+    );
+
+    fn get_options() -> HashMap<String, Vec<String>>;
+
+    fn draw(&self, draw: &mut Draw);
+
+    fn update_model(&mut self, analysis: &EmocatTextAnalysis);
+
+    fn update_visualization(&mut self);
+}
+
+
 impl EmoVisualizer for ColorTransitionVisualizer {
+    fn new(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
+        return Self::new(bg_color, text_color, enable_dynamic_text_color);
+    }
+
+    fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
+        self.bg_color = bg_color;
+        self.target_color = bg_color;
+        self.bg_color_mix_factor = STARTING_MIX_FACTOR;
+        self.text_color = text_color;
+        self.dynamic_text_color = enable_dynamic_text_color;
+    }
+
+    fn gracefully_reset(
+        &mut self,
+        bg_color: Color,
+        _text_color: Color,
+        _enable_dynamic_text_color: bool,
+    ) {
+        self.target_color = bg_color;
+    }
+
     fn get_options() -> HashMap<String, Vec<String>> {
         let mut options = HashMap::new();
         options.insert(
@@ -166,18 +200,5 @@ impl EmoVisualizer for ColorTransitionVisualizer {
     fn update_visualization(&mut self) {
         self.update_bg_color();
         self.update_text_color();
-    }
-
-    fn new(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
-        return Self::new(bg_color, text_color, enable_dynamic_text_color);
-    }
-
-    fn gracefully_reset(
-        &mut self,
-        bg_color: Color,
-        _text_color: Color,
-        _enable_dynamic_text_color: bool,
-    ) {
-        self.target_color = bg_color;
     }
 }
