@@ -1,4 +1,5 @@
-use super::visualizers::{ColorTransitionVisualizer, EmoVisualizer};
+use super::visualizers::color_transition::ColorTransitionVisualizer;
+use super::visualizers::EmoVisualizer;
 use notan::egui::{self, RichText, TextStyle, Ui};
 
 
