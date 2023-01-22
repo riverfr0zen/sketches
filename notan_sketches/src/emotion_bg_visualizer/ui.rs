@@ -1,4 +1,4 @@
-use super::visualizers::ColorTransitionVisualizer;
+use super::visualizers::{ColorTransitionVisualizer, EmoVisualizer};
 use notan::egui::{self, RichText, TextStyle, Ui};
 
 
@@ -37,11 +37,32 @@ impl DisplayMetrics for ColorTransitionVisualizer {
 
 
 pub trait SettingsUi {
-    fn egui_settings(&self, ui: &mut Ui);
+    fn egui_settings(&mut self, ui: &mut Ui, option_style: &dyn Fn() -> TextStyle);
 }
 
 impl SettingsUi for ColorTransitionVisualizer {
-    fn egui_settings(&self, ui: &mut Ui) {
-        ui.label("Settings from SettingsUi impl!");
+    fn egui_settings(&mut self, ui: &mut Ui, option_style: &dyn Fn() -> TextStyle) {
+        ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+            let viz_options = &mut Self::get_options();
+
+            ui.label("Color Method");
+            let option_text = RichText::new(&self.color_method).text_style(option_style());
+            egui::ComboBox::from_id_source("color-method")
+                .selected_text(option_text)
+                .show_ui(ui, |ui| {
+                    for option in viz_options.get_mut("Color Method").unwrap().iter() {
+                        let option_text = RichText::new(option).text_style(option_style());
+                        ui.selectable_value(
+                            &mut self.color_method,
+                            option.to_string(),
+                            option_text,
+                        );
+                    }
+                });
+        });
+        // ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+        //     ui.label("Something Else:");
+        //     ui.label(&self.options["Color Method"]);
+        // });
     }
 }

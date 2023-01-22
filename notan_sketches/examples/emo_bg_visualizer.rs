@@ -625,8 +625,19 @@ fn draw_settings_view(
             ui_fill,
             // |ctx, ui, state, work_size| {
             |_, ui, state, _| {
-                ui.heading("Visualizer Settings");
-                state.visualizer.egui_settings(ui);
+                let margin = work_size.y * 0.02;
+                egui::Frame::none()
+                    .fill(ui_fill)
+                    .inner_margin(egui::style::Margin {
+                        left: 0.0,
+                        right: 0.0,
+                        top: 0.0,
+                        bottom: margin,
+                    })
+                    .show(ui, |ui| {
+                        ui.heading("Visualizer Settings");
+                    });
+                state.visualizer.egui_settings(ui, &small_button);
             },
         );
     });

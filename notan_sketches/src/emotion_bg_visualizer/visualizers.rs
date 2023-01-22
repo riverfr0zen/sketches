@@ -40,8 +40,8 @@ pub trait EmoVisualizer {
 }
 
 pub struct ColorTransitionVisualizer {
-    pub options: HashMap<String, String>,
     pub model: Option<TopEmotionsModel>,
+    pub color_method: String,
     pub target_color: Color,
     pub bg_color: Color,
     pub bg_color_mix_factor: f32,
@@ -50,17 +50,10 @@ pub struct ColorTransitionVisualizer {
 }
 
 impl ColorTransitionVisualizer {
-    fn get_default_options() -> HashMap<String, String> {
-        let mut options = HashMap::new();
-        options.insert("Color Method".to_string(), "Simple Color".to_string());
-        // options.insert("Color Method".to_string(), "Grayscale".to_string());
-        options
-    }
-
     pub fn new(bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
         Self {
-            options: Self::get_default_options(),
             model: None,
+            color_method: "Simple Color".to_string(),
             target_color: bg_color,
             bg_color: bg_color,
             bg_color_mix_factor: STARTING_MIX_FACTOR,
@@ -161,7 +154,7 @@ impl EmoVisualizer for ColorTransitionVisualizer {
 
     fn update_model(&mut self, analysis: &EmocatTextAnalysis) {
         let model = TopEmotionsModel::from_analysis(&analysis);
-        match self.options["Color Method"].as_str() {
+        match self.color_method.as_str() {
             "Simple Color" => self.target_color = model.get_simple_color(),
             "Black, White, Gray" => self.target_color = model.get_black_or_white(),
             "Grayscale" => self.target_color = model.get_grayscale(),
