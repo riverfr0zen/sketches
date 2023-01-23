@@ -31,9 +31,9 @@ pub struct ColorTransitionVisualizer {
     pub model: Option<TopEmotionsModel>,
     pub color_method: String,
     pub target_color: Color,
-    pub bg_color: Color,
+    bg_color: Color,
     pub bg_color_mix_factor: f32,
-    pub text_color: Color,
+    text_color: Color,
     pub dynamic_text_color: bool,
 }
 
@@ -156,6 +156,11 @@ impl EmoVisualizer for ColorTransitionVisualizer {
         );
         options
     }
+
+    fn get_text_color(&self) -> Color {
+        self.text_color
+    }
+
 
     fn draw(&self, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.

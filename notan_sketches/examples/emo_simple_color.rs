@@ -1,14 +1,14 @@
 use notan::draw::*;
 use notan::extra::FpsLimit;
 use notan::log;
-use notan::math::{vec2, Vec2};
+use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::emotion::*;
+use notan_sketches::emotion_bg_visualizer::get_work_size;
+use notan_sketches::emotion_bg_visualizer::ui::scale_font;
+use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
-use palette::{FromColor, Hsl, Hsv, LinSrgb, Mix, RgbHue, Srgb};
-use serde::{Deserialize, Serialize};
-// use serde_json::{Result as JsonResult, Value};
-use std::fs;
 
 
 macro_rules! EMOCAT_OUTPUT_FILE {
@@ -30,12 +30,6 @@ const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
 const META_COLOR: Color = Color::GRAY;
 const DYNAMIC_TEXT_COLOR: bool = false;
-const STARTING_MIX_FACTOR: f32 = 0.0;
-// const MIX_RATE: f32 = 0.001;
-// const MIX_RATE: f32 = 0.0001;
-const MIX_RATE: f32 = 0.00001;
-// const MIX_RATE: f32 = 0.000001;
-const COLOR_COMPARISON_PRECISION: f32 = 3.0;
 const MAX_FPS: u8 = 240;
 
 
@@ -45,12 +39,7 @@ struct State {
     font: Font,
     title_font: Font,
     analysis: usize,
-    analysis_summary: Option<TopEmotionsModel>,
-    simple_color: Color,
-    bg_color: Color,
-    bg_color_mix_factor: f32,
-    text_color: Color,
-    dynamic_text_color: bool,
+    visualizer: ColorTransitionVisualizer,
 }
 
 
@@ -77,129 +66,9 @@ fn init(gfx: &mut Graphics) -> State {
         font: font,
         title_font: title_font,
         analysis: 0,
-        analysis_summary: None,
-        simple_color: CLEAR_COLOR,
-        bg_color: CLEAR_COLOR,
-        bg_color_mix_factor: STARTING_MIX_FACTOR,
-        text_color: TITLE_COLOR,
-        dynamic_text_color: DYNAMIC_TEXT_COLOR,
+        visualizer: ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR),
     };
     state
-}
-
-
-/// Scale the font according to the current work size. Quite simple right now,
-/// probably lots of room for improving this.
-///
-/// These return values were decided by comparing sizes on my own setup. Needs testing
-/// across devices.
-///
-/// @TODO: What about portrait dimensions?
-fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x {
-        // log::debug!("1080p");
-        return default_size * 2.25;
-    }
-    if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
-        // log::debug!("1440p");
-        return default_size * 3.0;
-    }
-    if work_size.x >= ScreenDimensions::RES_4K.x {
-        // log::debug!("4k");
-        return default_size * 4.5;
-    }
-    // log::debug!("Default.");
-    return default_size * 1.0;
-}
-
-
-/// In this application, where font scaling is involved, a work size that matches
-/// the window size results in nicer looking fonts. This comes at the expense of
-/// not being able to use literal values for sizing shapes and such (not being able
-/// to work against a known scale). Instead, one can use fractions of the work size
-/// values.
-fn get_work_size(gfx: &Graphics) -> Vec2 {
-    // If we don't guard against a minimum like this, the app crashes if the window
-    // is shrunk to a small size.
-    if gfx.device.size().0 as f32 > ScreenDimensions::MINIMUM.x {
-        return vec2(gfx.device.size().0 as f32, gfx.device.size().1 as f32);
-    }
-    ScreenDimensions::MINIMUM
-}
-
-
-/// Return black or white depending on the current background color
-///
-/// Based on this algorithm:
-/// https://stackoverflow.com/a/1855903/4655636
-///
-fn get_text_color(state: &State) -> Color {
-    let luminance: f32;
-    if state.dynamic_text_color {
-        luminance =
-            0.299 * state.bg_color.r + 0.587 * state.bg_color.g + 0.114 * state.bg_color.b / 255.0;
-    } else {
-        luminance = 0.299 * state.simple_color.r
-            + 0.587 * state.simple_color.g
-            + 0.114 * state.simple_color.b / 255.0;
-    }
-
-    // log::debug!("Luminance {}", luminance);
-    if luminance < 0.5 {
-        return Color::WHITE;
-    }
-    Color::BLACK
-}
-
-fn round(val: f32, digits: f32) -> f32 {
-    // log::debug!("{}, {}", val, (val * 100.0).round() / 100.0);
-    // (val * 100.0).round() / 100.0
-
-    let mut multiplier: f32 = 10.0;
-    multiplier = multiplier.powf(digits);
-    // log::debug!("{}, {}", val, (val * multiplier).round() / multiplier);
-    (val * multiplier).round() / multiplier
-}
-
-
-fn update_bg_color_simple(state: &mut State) {
-    state.bg_color = state.simple_color.clone();
-}
-
-fn update_bg_color(app: &App, state: &mut State) {
-    // The mix function used to blend colors below doesn't always end up with the
-    // exact floating point numbers of the end color, so comparing with rounded
-    // color values instead of comparing the colors directly.
-    let precision = COLOR_COMPARISON_PRECISION;
-    // log::debug!(
-    //     "{}::{}, {}::{}, {}::{}",
-    //     round(state.bg_color.r, precision),
-    //     round(state.simple_color.r, precision),
-    //     round(state.bg_color.g, precision),
-    //     round(state.simple_color.g, precision),
-    //     round(state.bg_color.b, precision),
-    //     round(state.simple_color.b, precision),
-    // );
-    if round(state.bg_color.r, precision) != round(state.simple_color.r, precision)
-        || round(state.bg_color.g, precision) != round(state.simple_color.g, precision)
-        || round(state.bg_color.b, precision) != round(state.simple_color.b, precision)
-    {
-        // log::debug!("Mix factor: {}", state.bg_color_mix_factor);
-        let bg_color = Srgb::new(state.bg_color.r, state.bg_color.g, state.bg_color.b);
-        let simple_color = Srgb::new(
-            state.simple_color.r,
-            state.simple_color.g,
-            state.simple_color.b,
-        );
-        let mut bg_color = LinSrgb::from_color(bg_color);
-        let simple_color = LinSrgb::from_color(simple_color);
-        bg_color = bg_color.mix(&simple_color, state.bg_color_mix_factor);
-        let bg_color = Srgb::from_color(bg_color);
-        state.bg_color = Color::from_rgb(bg_color.red, bg_color.green, bg_color.blue);
-        state.bg_color_mix_factor += MIX_RATE;
-    } else {
-        state.bg_color_mix_factor = STARTING_MIX_FACTOR;
-    }
 }
 
 
@@ -207,15 +76,17 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
         state.analysis = 0;
-        state.simple_color = CLEAR_COLOR;
+        state
+            .visualizer
+            .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.analysis = state.emodoc.analyses.len() - 1;
-        let model = TopEmotionsModel::from_analysis(&state.emodoc.analyses[state.analysis - 1]);
-        state.simple_color = model.get_simple_color();
-        state.analysis_summary = Some(model);
+        state
+            .visualizer
+            .update_model(&state.emodoc.analyses[state.analysis - 1]);
     }
 
 
@@ -223,24 +94,24 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("left");
         state.analysis -= 1;
         if state.analysis > 0 {
-            let model = TopEmotionsModel::from_analysis(&state.emodoc.analyses[state.analysis - 1]);
-            state.simple_color = model.get_simple_color();
-            state.analysis_summary = Some(model);
+            state
+                .visualizer
+                .update_model(&state.emodoc.analyses[state.analysis - 1]);
         } else {
-            state.simple_color = CLEAR_COLOR;
+            state
+                .visualizer
+                .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
         }
     }
 
     if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
         log::debug!("right");
         state.analysis += 1;
-        let model = TopEmotionsModel::from_analysis(&state.emodoc.analyses[state.analysis - 1]);
-        state.simple_color = model.get_simple_color();
-        state.analysis_summary = Some(model);
+        state
+            .visualizer
+            .update_model(&state.emodoc.analyses[state.analysis - 1]);
     }
-    // update_bg_color_simple(state);
-    update_bg_color(app, state);
-    state.text_color = get_text_color(&state);
+    state.visualizer.update_visualization();
 }
 
 
@@ -256,18 +127,6 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
         .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.4)
         .h_align_left()
         .v_align_middle();
-
-    // draw.text(&state.font, &state.emodoc.title)
-    //     .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
-    //     .color(Color::RED)
-    //     .size(scale_font(60.0, work_size))
-    //     .max_width(textbox_width)
-    //     .position(
-    //         work_size.x * 0.5 - textbox_width * 0.5 + 1.0,
-    //         work_size.y * 0.4 - 1.0,
-    //     )
-    //     .h_align_left()
-    //     .v_align_middle();
 
 
     let title_bounds = draw.last_text_bounds();
@@ -291,17 +150,14 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
     let textbox_width = work_size.x * 0.75;
     draw.text(&state.font, &state.emodoc.analyses[state.analysis - 1].text)
         .alpha_mode(BlendMode::OVER)
-        .color(state.text_color)
+        .color(state.visualizer.get_text_color())
         .size(scale_font(32.0, work_size))
         .max_width(textbox_width)
         .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
         .v_align_middle()
-        // .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.3)
-        // .v_align_top()
         .h_align_left();
-
-    // let title_bounds = draw.last_text_bounds();
 }
+
 
 fn draw(
     gfx: &mut Graphics,
@@ -309,16 +165,18 @@ fn draw(
     // app: &mut App,
 ) {
     let work_size = get_work_size(gfx);
-    let mut draw = get_draw_setup(gfx, work_size, true, state.bg_color);
+    let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
+
+    state.visualizer.draw(draw);
 
     if state.analysis == 0 {
-        draw_title(&mut draw, state, work_size);
+        draw_title(draw, state, work_size);
     } else {
-        draw_paragraph(&mut draw, state, work_size);
+        draw_paragraph(draw, state, work_size);
     }
 
     // draw to screen
-    gfx.render(&draw);
+    gfx.render(draw);
 
     // log::debug!("fps: {}", app.timer.fps().round());
 }

@@ -8,7 +8,8 @@ use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 // use serde_json::{Result as JsonResult, Value};
-use notan_sketches::emotion_bg_visualizer::ui::{DisplayMetrics, SettingsUi};
+use notan_sketches::emotion_bg_visualizer::get_work_size;
+use notan_sketches::emotion_bg_visualizer::ui::{scale_font, DisplayMetrics, SettingsUi};
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
 use FontFamily::{Monospace, Proportional};
@@ -141,52 +142,6 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
 }
 
 
-/// Scale the font according to the current work size. Quite simple right now,
-/// probably lots of room for improving this.
-///
-/// These return values were decided by comparing sizes on my own setup. Needs testing
-/// across devices.
-///
-/// @TODO: What about portrait dimensions?
-fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_HDPLUS.x
-    {
-        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 2.2;
-    }
-    if work_size.x >= ScreenDimensions::RES_HDPLUS.x && work_size.x < ScreenDimensions::RES_1440P.x
-    {
-        // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 2.5;
-    }
-    if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
-        // log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 3.0;
-    }
-    if work_size.x >= ScreenDimensions::RES_4K.x {
-        // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 4.5;
-    }
-    // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
-    return default_size;
-}
-
-
-/// In this application, where font scaling is involved, a work size that matches
-/// the window size results in nicer looking fonts. This comes at the expense of
-/// not being able to use literal values for sizing shapes and such (not being able
-/// to work against a known scale). Instead, one can use fractions of the work size
-/// values.
-fn get_work_size(gfx: &Graphics) -> Vec2 {
-    // If we don't guard against a minimum like this, the app crashes if the window
-    // is shrunk to a small size.
-    if gfx.device.size().0 as f32 > ScreenDimensions::MINIMUM.x {
-        return vec2(gfx.device.size().0 as f32, gfx.device.size().1 as f32);
-    }
-    ScreenDimensions::MINIMUM
-}
-
-
 fn update_read_view(app: &mut App, state: &mut State) {
     let emodoc = &state.emodocs[state.reading.doc_index];
 
@@ -289,7 +244,7 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
         &emodoc.analyses[state.reading.analysis - 1].text,
     )
     .alpha_mode(BlendMode::OVER)
-    .color(state.visualizer.text_color)
+    .color(state.visualizer.get_text_color())
     .size(scale_font(32.0, work_size))
     .max_width(textbox_width)
     .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
@@ -302,19 +257,19 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
 
 // fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
 fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
-    let mut draw = get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
+    let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
 
     // NOTE: If the egui ui seems to be "blocking" the draw, it may be because the visualizer
     // draw() method is not calling `draw.clear()`. If this isn't done, the egui background
     // will block the draw. For an example, see impl method of ColorTransitionVisualizer::draw().
-    state.visualizer.draw(&mut draw);
+    state.visualizer.draw(draw);
 
     if state.reading.analysis == 0 {
-        draw_title(&mut draw, state, work_size);
+        draw_title(draw, state, work_size);
     } else {
-        draw_paragraph(&mut draw, state, work_size);
+        draw_paragraph(draw, state, work_size);
     }
-    gfx.render(&draw);
+    gfx.render(draw);
 
     let output = plugins.egui(|ctx| {
         draw_analysis_panel(ctx, state, work_size);

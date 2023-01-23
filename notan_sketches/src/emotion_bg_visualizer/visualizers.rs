@@ -23,6 +23,8 @@ pub trait EmoVisualizer {
 
     fn get_options() -> HashMap<String, Vec<String>>;
 
+    fn get_text_color(&self) -> Color;
+
     fn draw(&self, draw: &mut Draw);
 
     fn update_model(&mut self, analysis: &EmocatTextAnalysis);
