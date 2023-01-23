@@ -30,11 +30,11 @@ fn round(val: f32, digits: f32) -> f32 {
 pub struct ColorTransitionVisualizer {
     pub model: Option<TopEmotionsModel>,
     pub color_method: String,
-    pub target_color: Color,
+    target_color: Color,
     bg_color: Color,
-    pub bg_color_mix_factor: f32,
+    bg_color_mix_factor: f32,
     text_color: Color,
-    pub dynamic_text_color: bool,
+    dynamic_text_color: bool,
 }
 
 impl ColorTransitionVisualizer {
