@@ -7,8 +7,6 @@ use std::collections::HashMap;
 pub mod color_transition;
 
 pub trait EmoVisualizer {
-    fn new(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self;
-
     /// Similar to new(), but does not reset user-configurable properties
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool);
 
@@ -20,8 +18,6 @@ pub trait EmoVisualizer {
         text_color: Color,
         enable_dynamic_text_color: bool,
     );
-
-    fn get_options() -> HashMap<String, Vec<String>>;
 
     fn get_text_color(&self) -> Color;
 

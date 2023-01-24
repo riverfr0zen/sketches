@@ -50,6 +50,19 @@ impl ColorTransitionVisualizer {
         }
     }
 
+    pub fn get_options() -> HashMap<String, Vec<String>> {
+        let mut options = HashMap::new();
+        options.insert(
+            "Color Method".to_string(),
+            vec![
+                "Simple Color".to_string(),
+                "Black, White, Gray".to_string(),
+                "Grayscale".to_string(),
+            ],
+        );
+        options
+    }
+
     /// Return black or white depending on the current background color
     ///
     /// Based on this algorithm:
@@ -122,10 +135,6 @@ impl ColorTransitionVisualizer {
 
 
 impl EmoVisualizer for ColorTransitionVisualizer {
-    fn new(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
-        return Self::new(bg_color, text_color, enable_dynamic_text_color);
-    }
-
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
         self.model = None;
         self.bg_color = bg_color;
@@ -144,18 +153,6 @@ impl EmoVisualizer for ColorTransitionVisualizer {
         self.target_color = bg_color;
     }
 
-    fn get_options() -> HashMap<String, Vec<String>> {
-        let mut options = HashMap::new();
-        options.insert(
-            "Color Method".to_string(),
-            vec![
-                "Simple Color".to_string(),
-                "Black, White, Gray".to_string(),
-                "Grayscale".to_string(),
-            ],
-        );
-        options
-    }
 
     fn get_text_color(&self) -> Color {
         self.text_color

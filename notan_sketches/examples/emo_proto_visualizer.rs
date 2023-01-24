@@ -39,7 +39,8 @@ struct State {
     font: Font,
     title_font: Font,
     analysis: usize,
-    visualizer: ColorTransitionVisualizer,
+    // visualizer: ColorTransitionVisualizer,
+    visualizer: Box<dyn EmoVisualizer>,
 }
 
 
@@ -66,7 +67,11 @@ fn init(gfx: &mut Graphics) -> State {
         font: font,
         title_font: title_font,
         analysis: 0,
-        visualizer: ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR),
+        visualizer: Box::new(ColorTransitionVisualizer::new(
+            CLEAR_COLOR,
+            TITLE_COLOR,
+            DYNAMIC_TEXT_COLOR,
+        )),
     };
     state
 }
@@ -187,10 +192,12 @@ fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     // let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
     let win_config = get_common_win_config().high_dpi(true).size(
-        // ScreenDimensions::RES_1080P.x as i32,
-        // ScreenDimensions::RES_1080P.y as i32,
-        ScreenDimensions::DEFAULT.x as i32,
-        ScreenDimensions::DEFAULT.y as i32,
+        // ScreenDimensions::RES_HDPLUS.x as i32,
+        // ScreenDimensions::RES_HDPLUS.y as i32,
+        ScreenDimensions::RES_1080P.x as i32,
+        ScreenDimensions::RES_1080P.y as i32,
+        // ScreenDimensions::DEFAULT.x as i32,
+        // ScreenDimensions::DEFAULT.y as i32,
     );
 
     #[cfg(target_arch = "wasm32")]
