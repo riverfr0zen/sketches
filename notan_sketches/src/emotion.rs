@@ -135,9 +135,18 @@ pub fn get_mapped_color_therapy(emotion: &str) -> Hsv {
     }
 }
 
+pub enum ColorMapping {
+    PLUTCHIK,
+    THERAPY,
+}
+
 
 /// Returns colors & sentiment mapped to the emotion provided
-pub fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) -> EmoColor {
+pub fn get_mapped_emocolor(emotion: &str, color_mapping: &ColorMapping) -> EmoColor {
+    let mapping_func = match color_mapping {
+        ColorMapping::THERAPY => get_mapped_color_therapy,
+        _ => get_mapped_color_plutchik,
+    };
     match emotion {
         "fear" => EmoColor {
             emotion: emotion.to_string(),
@@ -250,18 +259,24 @@ impl TopEmotionsModel {
         return Color::from_rgb(base_val, base_val, base_val);
     }
 
+    pub fn get_top_emocolors(&self, color_mapping: &ColorMapping) -> Vec<EmoColor> {
+        let top_emotions = &self.top_emotions;
+        top_emotions
+            .iter()
+            .map(|s| get_mapped_emocolor(&s.marker, &color_mapping))
+            .collect()
+    }
+
     pub fn get_simple_color(&self) -> Color {
         let top_emotions = &self.top_emotions;
         if top_emotions[0].score > 0.0 {
             log::debug!("Top emotions: {:?}:", top_emotions);
-            let mapping_func = get_mapped_color_plutchik;
-            let emocolors: Vec<EmoColor> = top_emotions
-                .iter()
-                .map(|s| get_mapped_emocolor(&s.marker, &mapping_func))
-                .collect();
+
+            let color_mapping = ColorMapping::PLUTCHIK;
+            let emocolors: Vec<EmoColor> = self.get_top_emocolors(&color_mapping);
             // Start with a neutral gray
             if emocolors.len() > 1 {
-                let mut final_color = get_mapped_emocolor("", &mapping_func).hsv;
+                let mut final_color = get_mapped_emocolor("", &color_mapping).hsv;
                 for emocolor in emocolors.iter() {
                     log::debug!("Before mix: {:?}", final_color);
                     let sentiment_value: f32 = match &emocolor.sentiment {

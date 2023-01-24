@@ -7,6 +7,7 @@ use notan_sketches::emotion::*;
 use notan_sketches::emotion_bg_visualizer::get_work_size;
 use notan_sketches::emotion_bg_visualizer::ui::scale_font;
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::square_collage::SquareCollageVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 
@@ -67,7 +68,12 @@ fn init(gfx: &mut Graphics) -> State {
         font: font,
         title_font: title_font,
         analysis: 0,
-        visualizer: Box::new(ColorTransitionVisualizer::new(
+        // visualizer: Box::new(ColorTransitionVisualizer::new(
+        //     CLEAR_COLOR,
+        //     TITLE_COLOR,
+        //     DYNAMIC_TEXT_COLOR,
+        // )),
+        visualizer: Box::new(SquareCollageVisualizer::new(
             CLEAR_COLOR,
             TITLE_COLOR,
             DYNAMIC_TEXT_COLOR,
