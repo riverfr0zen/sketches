@@ -30,6 +30,22 @@ impl Tile {
 }
 
 
+pub struct TilesLayout {
+    tile_size: Vec2,
+    rows: i32,
+    cols: i32,
+}
+
+impl TilesLayout {
+    fn none() -> Self {
+        Self {
+            tile_size: vec2(0.0, 0.0),
+            rows: 0,
+            cols: 0,
+        }
+    }
+}
+
 pub struct TileVisualizer {
     rng: Random,
     pub model: Option<TopEmotionsModel>,
@@ -37,8 +53,8 @@ pub struct TileVisualizer {
     text_color: Color,
     dynamic_text_color: bool,
     tiles: Vec<Tile>,
-    tile_size: Vec2,
-    refresh_tile_size: bool,
+    layout: TilesLayout,
+    refresh_layout: bool,
 }
 
 
@@ -52,8 +68,8 @@ impl TileVisualizer {
             text_color: text_color,
             dynamic_text_color: enable_dynamic_text_color,
             tiles: vec![],
-            tile_size: vec2(0.0, 0.0),
-            refresh_tile_size: false,
+            layout: TilesLayout::none(),
+            refresh_layout: false,
         }
     }
 
@@ -77,14 +93,14 @@ impl TileVisualizer {
 
         let num_cols: f32;
         let num_rows: f32;
-        if self.refresh_tile_size {
+        if self.refresh_layout {
             num_cols = self.rng.gen_range(self.tiles.len()..10) as f32;
             num_rows = self.rng.gen_range(1..10) as f32;
-            self.tile_size = vec2(draw.width() / num_cols, draw.height() / num_rows);
-            self.refresh_tile_size = false;
+            self.layout.tile_size = vec2(draw.width() / num_cols, draw.height() / num_rows);
+            self.refresh_layout = false;
         } else {
-            num_cols = draw.width() / self.tile_size.x; // Not sure why this doesn't seem to need a ceil()
-            num_rows = (draw.height() / self.tile_size.y).ceil();
+            num_cols = draw.width() / self.layout.tile_size.x; // Not sure why this doesn't seem to need a ceil()
+            num_rows = (draw.height() / self.layout.tile_size.y).ceil();
         }
         log::debug!(
             "cols: {}, rows: {}, rowsc: {}",
@@ -106,8 +122,11 @@ impl TileVisualizer {
                 let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
 
                 draw.rect(
-                    (col as f32 * self.tile_size.x, row as f32 * self.tile_size.y),
-                    (self.tile_size.x, self.tile_size.y),
+                    (
+                        col as f32 * self.layout.tile_size.x,
+                        row as f32 * self.layout.tile_size.y,
+                    ),
+                    (self.layout.tile_size.x, self.layout.tile_size.y),
                 )
                 .fill_color(fill_color)
                 .fill();
@@ -126,8 +145,8 @@ impl EmoVisualizer for TileVisualizer {
         self.text_color = text_color;
         self.dynamic_text_color = enable_dynamic_text_color;
         self.tiles = vec![];
-        self.tile_size = vec2(0.0, 0.0);
-        self.refresh_tile_size = false;
+        self.layout = TilesLayout::none();
+        self.refresh_layout = false;
     }
 
     fn gracefully_reset(
@@ -137,8 +156,8 @@ impl EmoVisualizer for TileVisualizer {
         _enable_dynamic_text_color: bool,
     ) {
         self.tiles = vec![];
-        self.tile_size = vec2(0.0, 0.0);
-        self.refresh_tile_size = false;
+        self.layout = TilesLayout::none();
+        self.refresh_layout = false;
     }
 
 
@@ -153,7 +172,7 @@ impl EmoVisualizer for TileVisualizer {
             .iter()
             .map(|emocolor| Tile::new(emocolor))
             .collect();
-        self.refresh_tile_size = true;
+        self.refresh_layout = true;
         self.model = Some(model);
     }
 
