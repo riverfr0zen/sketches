@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 
 pub mod color_transition;
-pub mod square_collage;
+pub mod tile;
 
 pub trait EmoVisualizer {
     /// Similar to new(), but does not reset user-configurable properties
@@ -22,12 +22,12 @@ pub trait EmoVisualizer {
 
     fn get_text_color(&self) -> Color;
 
-    fn draw(&self, draw: &mut Draw);
-
     /// The model would be updated whenever a new text analysis is requested.
     /// Also a good place to update any state props that only change alongside
     /// the analysis.
     fn update_model(&mut self, analysis: &EmocatTextAnalysis);
 
     fn update_visualization(&mut self);
+
+    fn draw(&self, draw: &mut Draw);
 }

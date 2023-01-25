@@ -67,6 +67,7 @@ pub struct EmoColor {
 }
 
 
+#[derive(Clone)]
 pub enum Sentiment {
     POSITIVE,
     NEGATIVE,
@@ -248,11 +249,11 @@ impl TopEmotionsModel {
 
     pub fn get_grayscale(&self) -> Color {
         let base_val = 0.5;
-        if (self.positive > self.negative) {
+        if self.positive > self.negative {
             let color_val = base_val + self.positive;
             return Color::from_rgb(color_val, color_val, color_val);
         }
-        if (self.negative > self.positive) {
+        if self.negative > self.positive {
             let color_val = base_val - self.negative;
             return Color::from_rgb(color_val, color_val, color_val);
         }

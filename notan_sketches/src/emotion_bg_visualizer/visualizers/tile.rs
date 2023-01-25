@@ -6,23 +6,44 @@ use palette::{FromColor, LinSrgb, Mix, Srgb};
 use std::collections::HashMap;
 
 
-pub struct SquareCollageVisualizer {
+/// Represents different Tile "baselines/archetypes"
+///
+/// For now just contains an EmoColor, but anticipating expansion
+struct Tile {
+    emocolor: EmoColor,
+}
+
+
+impl Tile {
+    fn new(emocolor: &EmoColor) -> Self {
+        Self {
+            emocolor: EmoColor {
+                emotion: emocolor.emotion.clone(),
+                hsv: emocolor.hsv,
+                sentiment: emocolor.sentiment.clone(),
+            },
+        }
+    }
+}
+
+
+pub struct TileVisualizer {
     pub model: Option<TopEmotionsModel>,
     bg_color: Color,
     text_color: Color,
     dynamic_text_color: bool,
-    emocolors: Vec<EmoColor>,
+    tiles: Vec<Tile>,
 }
 
 
-impl SquareCollageVisualizer {
+impl TileVisualizer {
     pub fn new(bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
         Self {
             model: None,
             bg_color: bg_color,
             text_color: text_color,
             dynamic_text_color: enable_dynamic_text_color,
-            emocolors: vec![],
+            tiles: vec![],
         }
     }
 
@@ -41,7 +62,7 @@ impl SquareCollageVisualizer {
 }
 
 
-impl EmoVisualizer for SquareCollageVisualizer {
+impl EmoVisualizer for TileVisualizer {
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
         self.model = None;
         self.bg_color = bg_color;
@@ -63,23 +84,32 @@ impl EmoVisualizer for SquareCollageVisualizer {
         self.text_color
     }
 
-
-    fn draw(&self, draw: &mut Draw) {
-        // The following call to clear() is important when rendering draw & egui output together.
-        draw.clear(self.bg_color);
-        draw.rect((100.0, 100.0), (300.0, 200.0))
-            .fill_color(Color::RED);
-    }
-
     fn update_model(&mut self, analysis: &EmocatTextAnalysis) {
         let model = TopEmotionsModel::from_analysis(&analysis);
-        self.emocolors = model.get_top_emocolors(&ColorMapping::PLUTCHIK);
-        // self.bg_color = model.get_simple_color();
+        let top_emocolors = model.get_top_emocolors(&ColorMapping::PLUTCHIK);
+        self.tiles = top_emocolors
+            .iter()
+            .map(|emocolor| Tile::new(emocolor))
+            .collect();
         self.model = Some(model);
     }
 
     fn update_visualization(&mut self) {
         // self.update_bg_color();
         // self.update_text_color();
+    }
+
+
+    fn draw(&self, draw: &mut Draw) {
+        // The following call to clear() is important when rendering draw & egui output together.
+        draw.clear(self.bg_color);
+
+        for (index, tile) in self.tiles.iter().enumerate() {
+            // let mut fill_color = tile.emocolor.hsv.clone();
+            let srgb = Srgb::from_color(tile.emocolor.hsv);
+            let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
+            draw.rect((100.0 * (index + 1) as f32, 100.0), (300.0, 200.0))
+                .fill_color(fill_color);
+        }
     }
 }
