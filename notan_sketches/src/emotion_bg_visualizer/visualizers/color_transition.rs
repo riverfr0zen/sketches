@@ -1,3 +1,4 @@
+use super::get_optimal_text_color;
 use super::EmoVisualizer;
 use crate::emotion::{EmocatTextAnalysis, TopEmotionsModel};
 use notan::draw::*;
@@ -63,31 +64,13 @@ impl ColorTransitionVisualizer {
         options
     }
 
-    /// Return black or white depending on the current background color
-    ///
-    /// Based on this algorithm:
-    /// https://stackoverflow.com/a/1855903/4655636
-    ///
-    pub fn get_text_color(&self) -> Color {
-        let luminance: f32;
-        if self.dynamic_text_color {
-            luminance =
-                0.299 * self.bg_color.r + 0.587 * self.bg_color.g + 0.114 * self.bg_color.b / 255.0;
-        } else {
-            luminance = 0.299 * self.target_color.r
-                + 0.587 * self.target_color.g
-                + 0.114 * self.target_color.b / 255.0;
-        }
-
-        // log::debug!("Luminance {}", luminance);
-        if luminance < 0.5 {
-            return Color::WHITE;
-        }
-        Color::BLACK
-    }
 
     pub fn update_text_color(&mut self) {
-        self.text_color = self.get_text_color();
+        if self.dynamic_text_color {
+            self.text_color = get_optimal_text_color(&self.bg_color);
+        } else {
+            self.text_color = get_optimal_text_color(&self.target_color);
+        }
     }
 
     // pub fn update_bg_color(app: &App, state: &mut State) {

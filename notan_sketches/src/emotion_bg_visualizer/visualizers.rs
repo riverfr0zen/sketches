@@ -31,3 +31,20 @@ pub trait EmoVisualizer {
 
     fn draw(&mut self, draw: &mut Draw);
 }
+
+
+/// Return black or white depending on provided background color
+///
+/// Based on this algorithm:
+/// https://stackoverflow.com/a/1855903/4655636
+///
+pub fn get_optimal_text_color(bgcolor: &Color) -> Color {
+    let luminance: f32;
+    luminance = 0.299 * bgcolor.r + 0.587 * bgcolor.g + 0.114 * bgcolor.b / 255.0;
+
+    // log::debug!("Luminance {}", luminance);
+    if luminance < 0.5 {
+        return Color::WHITE;
+    }
+    Color::BLACK
+}

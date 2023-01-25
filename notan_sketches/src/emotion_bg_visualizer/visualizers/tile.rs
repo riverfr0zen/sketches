@@ -1,3 +1,4 @@
+use super::get_optimal_text_color;
 use super::EmoVisualizer;
 use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, Sentiment, TopEmotionsModel};
 use crate::utils::get_rng;
@@ -10,6 +11,10 @@ use std::collections::HashMap;
 
 /// For modifies the sentiment score to be used as a value for HSV
 const VALUE_MODIFIER: f32 = 3.0;
+// const TILE_ALPHA: f32 = 0.5;
+const TILE_ALPHA: f32 = 0.8;
+const MAX_COLS: usize = 3;
+const MAX_ROWS: usize = 3;
 
 
 /// Represents different Tile "baselines/archetypes"
@@ -35,8 +40,8 @@ impl Tile {
 
 pub struct TilesLayout {
     tile_size: Vec2,
-    rows: i32,
-    cols: i32,
+    rows: usize,
+    cols: usize,
 }
 
 impl TilesLayout {
@@ -53,6 +58,12 @@ pub struct TileVisualizer {
     rng: Random,
     pub model: Option<TopEmotionsModel>,
     bg_color: Color,
+    /// As I experiment, I want a separate property to base the optimal text color on,
+    /// because `bgcolor` above may not change per analysis (i.e. it might just remain
+    /// white or whatever color the visualizer was initialized with).
+    ///
+    /// See `update_model()` in impl for EmoVisualizer
+    bg_color_for_text: Color,
     text_color: Color,
     dynamic_text_color: bool,
     tiles: Vec<Tile>,
@@ -68,6 +79,7 @@ impl TileVisualizer {
             rng: rng,
             model: None,
             bg_color: bg_color,
+            bg_color_for_text: bg_color,
             text_color: text_color,
             dynamic_text_color: enable_dynamic_text_color,
             tiles: vec![],
@@ -89,31 +101,37 @@ impl TileVisualizer {
     //     options
     // }
 
+
+    pub fn update_text_color(&mut self) {
+        // self.text_color = get_optimal_text_color(&self.bg_color);
+        self.text_color = get_optimal_text_color(&self.bg_color_for_text);
+    }
+
+
     fn draw_flurry(&mut self, draw: &mut Draw) {
         if self.tiles.len() < 1 {
             return;
         }
 
-        let num_cols: f32;
-        let num_rows: f32;
         if self.refresh_layout {
-            num_cols = self.rng.gen_range(self.tiles.len()..10) as f32;
-            num_rows = self.rng.gen_range(1..10) as f32;
-            self.layout.tile_size = vec2(draw.width() / num_cols, draw.height() / num_rows);
+            if self.tiles.len() > MAX_COLS {
+                self.layout.cols = self.tiles.len();
+            } else {
+                self.layout.cols = self.rng.gen_range(self.tiles.len()..=MAX_COLS);
+            }
+            self.layout.rows = self.rng.gen_range(1..=MAX_ROWS);
+            self.layout.tile_size = vec2(
+                draw.width() / self.layout.cols as f32,
+                draw.height() / self.layout.rows as f32,
+            );
             self.refresh_layout = false;
         } else {
-            num_cols = draw.width() / self.layout.tile_size.x; // Not sure why this doesn't seem to need a ceil()
-            num_rows = (draw.height() / self.layout.tile_size.y).ceil();
+            self.layout.cols = (draw.width() / self.layout.tile_size.x).ceil() as usize;
+            self.layout.rows = (draw.height() / self.layout.tile_size.y).ceil() as usize;
         }
-        log::debug!(
-            "cols: {}, rows: {}, rowsc: {}",
-            num_cols,
-            num_rows,
-            num_rows.ceil()
-        );
 
-        for row in 0..num_rows as i32 {
-            for col in 0..num_cols as i32 {
+        for row in 0..self.layout.rows as i32 {
+            for col in 0..self.layout.cols as i32 {
                 let lucky_tile;
                 if self.tiles.len() > 1 {
                     lucky_tile = self.rng.gen_range(0..self.tiles.len());
@@ -132,7 +150,6 @@ impl TileVisualizer {
                         _ => hsv_color,
                     };
                 let srgb = Srgb::from_color(hsv_color);
-                // let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
                 let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
 
                 draw.rect(
@@ -142,8 +159,8 @@ impl TileVisualizer {
                     ),
                     (self.layout.tile_size.x, self.layout.tile_size.y),
                 )
-                // .alpha_mode(BlendMode::OVER)
-                // .alpha(0.8)
+                .alpha_mode(BlendMode::OVER)
+                .alpha(TILE_ALPHA)
                 .fill_color(fill_color)
                 .fill();
             }
@@ -156,6 +173,7 @@ impl EmoVisualizer for TileVisualizer {
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
         self.model = None;
         self.bg_color = bg_color;
+        self.bg_color_for_text = bg_color;
         self.text_color = text_color;
         self.dynamic_text_color = enable_dynamic_text_color;
         self.tiles = vec![];
@@ -165,10 +183,13 @@ impl EmoVisualizer for TileVisualizer {
 
     fn gracefully_reset(
         &mut self,
-        _bg_color: Color,
-        _text_color: Color,
-        _enable_dynamic_text_color: bool,
+        bg_color: Color,
+        text_color: Color,
+        enable_dynamic_text_color: bool,
     ) {
+        self.bg_color = bg_color;
+        self.text_color = text_color;
+        self.dynamic_text_color = enable_dynamic_text_color;
         self.tiles = vec![];
         self.layout = TilesLayout::none();
         self.refresh_layout = false;
@@ -186,13 +207,16 @@ impl EmoVisualizer for TileVisualizer {
             .iter()
             .map(|emocolor| Tile::new(emocolor))
             .collect();
+        self.bg_color = model.get_simple_color();
+        self.bg_color_for_text = self.bg_color;
+        // self.bg_color_for_text = model.get_simple_color();
         self.refresh_layout = true;
         self.model = Some(model);
     }
 
     fn update_visualization(&mut self) {
         // self.update_bg_color();
-        // self.update_text_color();
+        self.update_text_color();
     }
 
 
