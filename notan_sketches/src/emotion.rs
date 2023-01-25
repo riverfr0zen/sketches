@@ -238,10 +238,10 @@ impl TopEmotionsModel {
 
 
     pub fn get_black_or_white(&self) -> Color {
-        if (self.positive > self.negative) {
+        if self.positive > self.negative {
             return Color::WHITE;
         }
-        if (self.negative > self.positive) {
+        if self.negative > self.positive {
             return Color::BLACK;
         }
         Color::GRAY

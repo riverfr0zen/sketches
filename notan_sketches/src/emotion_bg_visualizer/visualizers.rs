@@ -29,5 +29,5 @@ pub trait EmoVisualizer {
 
     fn update_visualization(&mut self);
 
-    fn draw(&self, draw: &mut Draw);
+    fn draw(&mut self, draw: &mut Draw);
 }
