@@ -69,6 +69,53 @@ impl TileVisualizer {
     //     );
     //     options
     // }
+
+    fn draw_flurry(&mut self, draw: &mut Draw) {
+        if self.tiles.len() < 1 {
+            return;
+        }
+
+        let num_cols: f32;
+        let num_rows: f32;
+        if self.refresh_tile_size {
+            num_cols = self.rng.gen_range(self.tiles.len()..10) as f32;
+            num_rows = self.rng.gen_range(1..10) as f32;
+            self.tile_size = vec2(draw.width() / num_cols, draw.height() / num_rows);
+            self.refresh_tile_size = false;
+        } else {
+            num_cols = draw.width() / self.tile_size.x; // Not sure why this doesn't seem to need a ceil()
+            num_rows = (draw.height() / self.tile_size.y).ceil();
+        }
+        log::debug!(
+            "cols: {}, rows: {}, rowsc: {}",
+            num_cols,
+            num_rows,
+            num_rows.ceil()
+        );
+
+        for row in 0..num_rows as i32 {
+            for col in 0..num_cols as i32 {
+                let lucky_tile;
+                if self.tiles.len() > 1 {
+                    lucky_tile = self.rng.gen_range(0..self.tiles.len());
+                } else {
+                    lucky_tile = 0;
+                }
+                // let mut fill_color = tile.emocolor.hsv.clone();
+                let srgb = Srgb::from_color(self.tiles[lucky_tile].emocolor.hsv);
+                let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
+
+                draw.rect(
+                    (col as f32 * self.tile_size.x, row as f32 * self.tile_size.y),
+                    (self.tile_size.x, self.tile_size.y),
+                )
+                .fill_color(fill_color)
+                .fill();
+                //     .stroke_color(Color::BLACK)
+                //     .stroke(1.0);
+            }
+        }
+    }
 }
 
 
@@ -115,54 +162,10 @@ impl EmoVisualizer for TileVisualizer {
         // self.update_text_color();
     }
 
+
     fn draw(&mut self, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.bg_color);
-
-        if self.tiles.len() < 1 {
-            return;
-        }
-
-        let num_cols: f32;
-        let num_rows: f32;
-        if self.refresh_tile_size {
-            num_cols = self.rng.gen_range(self.tiles.len()..10) as f32;
-            num_rows = self.rng.gen_range(1..10) as f32;
-            self.tile_size = vec2(draw.width() / num_cols, draw.height() / num_rows);
-            self.refresh_tile_size = false;
-        } else {
-            num_cols = draw.width() / self.tile_size.x;
-            num_rows = draw.height() / self.tile_size.y;
-        }
-
-        for row in 0..num_rows as i32 {
-            for col in 0..num_cols as i32 {
-                let lucky_tile;
-                if self.tiles.len() > 1 {
-                    lucky_tile = self.rng.gen_range(0..self.tiles.len());
-                } else {
-                    lucky_tile = 0;
-                }
-                // let mut fill_color = tile.emocolor.hsv.clone();
-                let srgb = Srgb::from_color(self.tiles[lucky_tile].emocolor.hsv);
-                let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
-
-                draw.rect(
-                    (col as f32 * self.tile_size.x, row as f32 * self.tile_size.y),
-                    (self.tile_size.x, self.tile_size.y),
-                )
-                .fill_color(fill_color)
-                .fill()
-                .stroke_color(Color::BLACK)
-                .stroke(1.0);
-            }
-        }
-        // for (index, tile) in self.tiles.iter().enumerate() {
-        //     // let mut fill_color = tile.emocolor.hsv.clone();
-        //     let srgb = Srgb::from_color(tile.emocolor.hsv);
-        //     let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
-        //     draw.rect((100.0 * (index + 1) as f32, 100.0), (300.0, 200.0))
-        //         .fill_color(fill_color);
-        // }
+        self.draw_flurry(draw);
     }
 }
