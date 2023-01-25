@@ -171,6 +171,20 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
         .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
         .v_align_middle()
         .h_align_left();
+
+    // @TODO: Add shadow/highlight effect later, maybe once there is a DrawTextItems trait so that
+    // different visualizers can draw text differently (and maybe there is default implementation
+    // that draws the basic version)
+    //
+    // let text_bounds = draw.last_text_bounds();
+    // let offset_x = work_size.x * 0.0002;
+    // let offset_y = work_size.y * 0.0002;
+    // draw.text(&state.font, &state.emodoc.analyses[state.analysis - 1].text)
+    //     .alpha_mode(BlendMode::OVER)
+    //     .color(Color::WHITE)
+    //     .size(scale_font(32.0, work_size))
+    //     .max_width(textbox_width)
+    //     .position(text_bounds.x + offset_x, text_bounds.y - offset_x);
 }
 
 

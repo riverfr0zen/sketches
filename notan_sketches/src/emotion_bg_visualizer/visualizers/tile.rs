@@ -1,12 +1,15 @@
 use super::EmoVisualizer;
-use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, TopEmotionsModel};
+use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, Sentiment, TopEmotionsModel};
 use crate::utils::get_rng;
 use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use palette::{FromColor, LinSrgb, Mix, Srgb};
+use palette::{FromColor, LinSrgb, Mix, Shade, Srgb};
 use std::collections::HashMap;
+
+/// For modifies the sentiment score to be used as a value for HSV
+const VALUE_MODIFIER: f32 = 3.0;
 
 
 /// Represents different Tile "baselines/archetypes"
@@ -117,8 +120,19 @@ impl TileVisualizer {
                 } else {
                     lucky_tile = 0;
                 }
-                // let mut fill_color = tile.emocolor.hsv.clone();
-                let srgb = Srgb::from_color(self.tiles[lucky_tile].emocolor.hsv);
+                let mut hsv_color = self.tiles[lucky_tile].emocolor.hsv.clone();
+                hsv_color =
+                    match self.tiles[lucky_tile].emocolor.sentiment {
+                        Sentiment::POSITIVE => hsv_color.lighten(self.rng.gen_range(
+                            0.0..(self.model.as_ref().unwrap().positive * VALUE_MODIFIER),
+                        )),
+                        Sentiment::NEGATIVE => hsv_color.darken(self.rng.gen_range(
+                            0.0..(self.model.as_ref().unwrap().negative * VALUE_MODIFIER),
+                        )),
+                        _ => hsv_color,
+                    };
+                let srgb = Srgb::from_color(hsv_color);
+                // let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
                 let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
 
                 draw.rect(
@@ -128,10 +142,10 @@ impl TileVisualizer {
                     ),
                     (self.layout.tile_size.x, self.layout.tile_size.y),
                 )
+                // .alpha_mode(BlendMode::OVER)
+                // .alpha(0.8)
                 .fill_color(fill_color)
                 .fill();
-                //     .stroke_color(Color::BLACK)
-                //     .stroke(1.0);
             }
         }
     }
