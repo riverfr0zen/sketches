@@ -9,10 +9,10 @@ use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Shade, Srgb};
 use std::collections::HashMap;
 
-/// For modifies the sentiment score to be used as a value for HSV
+/// Slightly increases the sentiment score for use as a value to brighten/darken HSV
 const VALUE_MODIFIER: f32 = 3.0;
-// const TILE_ALPHA: f32 = 0.5;
-const TILE_ALPHA: f32 = 0.8;
+const TILE_ALPHA: f32 = 0.5;
+// const TILE_ALPHA: f32 = 0.8;
 const MAX_COLS: usize = 3;
 const MAX_ROWS: usize = 3;
 
