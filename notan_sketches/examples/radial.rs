@@ -2,8 +2,8 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
+use notan_sketches::colors::{AEGEAN, SAFFRON};
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
-
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
@@ -56,8 +56,8 @@ fn init(gfx: &mut Graphics) -> State {
     log::info!("Seed: {}", seed);
 
     // The texture radiuses are large because we want large textures that look nice when app is maximized
-    let parent_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, Color::NAVY);
-    let spawn_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, Color::ORANGE);
+    let parent_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, AEGEAN);
+    let spawn_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, SAFFRON);
 
     State {
         rng: rng,
@@ -74,10 +74,8 @@ fn init(gfx: &mut Graphics) -> State {
 
 fn update(app: &mut App, state: &mut State) {
     let curr_time = app.timer.time_since_init();
-    // if curr_time - state.last_update > 0.001 {
-    if curr_time - state.last_update > 1.0 {
-        log::debug!("=o=");
-
+    if curr_time - state.last_update > 0.001 {
+        // if curr_time - state.last_update > 1.0 {
         let min_distance = state.parent_radius * 1.5;
         // let distance = state.spawn_max_distance;
         let distance = state.rng.gen_range(min_distance..state.spawn_max_distance);
@@ -88,8 +86,7 @@ fn update(app: &mut App, state: &mut State) {
         if let Some(node) = state.get_active_node() {
             if node.last_angle < 360.0 {
                 node.last_angle += 30.0;
-                log::debug!("angle: {}", node.last_angle);
-
+                // log::debug!("angle: {}", node.last_angle);
                 let spawn_x =
                     node.pos.x + spawn_offset + node.last_angle.to_radians().cos() * distance;
                 let spawn_y =
@@ -114,8 +111,6 @@ fn update(app: &mut App, state: &mut State) {
                 is_parent: true,
             });
         }
-
-
         state.last_update = curr_time;
     }
 }
