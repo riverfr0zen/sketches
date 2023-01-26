@@ -4,16 +4,51 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors::{AEGEAN, SAFFRON};
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
+use uuid::Uuid;
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+// const UPDATE_STEP: f32 = 0.0;
+const UPDATE_STEP: f32 = 0.001;
+// const UPDATE_STEP: f32 = 0.5;
+// const UPDATE_STEP: f32 = 1.0;
+const SPAWN_ANGLE_STEP: f32 = 30.0;
+// const SPAWN_STRATEGY: &str = "random";
+// const SPAWN_STRATEGY: &str = "random any child";
+const SPAWN_STRATEGY: &str = "random child of node";
+// const RANDOMIZE_SPAWN_DISTANCE: bool = false;
+const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 
 
+#[derive(Clone)]
 pub struct Node {
+    pub id: Uuid,
+    pub parent_id: Uuid,
     pub pos: Vec2,
     pub last_angle: f32,
     pub active: bool,
     pub is_parent: bool,
+}
+
+
+impl Node {
+    fn is_within_view(&self) -> bool {
+        self.pos.x > 0.0 && self.pos.x < WORK_SIZE.x && self.pos.y > 0.0 && self.pos.y < WORK_SIZE.y
+    }
+}
+
+
+impl Default for Node {
+    fn default() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            parent_id: Uuid::nil(),
+            pos: vec2(0.0, 0.0),
+            last_angle: 0.0,
+            active: false,
+            is_parent: false,
+        }
+    }
 }
 
 
@@ -71,45 +106,103 @@ fn init(gfx: &mut Graphics) -> State {
     }
 }
 
+fn spawn_random(state: &mut State) {
+    state.nodes.push(Node {
+        pos: vec2(
+            state.rng.gen_range(0.0..WORK_SIZE.x),
+            state.rng.gen_range(0.0..WORK_SIZE.y),
+        ),
+        // last_angle: 0.0,
+        active: true,
+        is_parent: true,
+        ..Default::default()
+    });
+}
+
+
+/// Converts any available child node to an active parent
+fn spawn_random_any_child(state: &mut State) {
+    // get spawn candidates (angle == 0)
+    let mut candidates: Vec<&mut Node> = state
+        .nodes
+        .iter_mut()
+        .filter(|node| node.last_angle == 0.0 && node.is_within_view())
+        .collect();
+    if candidates.len() > 0 {
+        // select random candidate
+        let candidate_index = state.rng.gen_range(0..candidates.len());
+        let candidate = &mut candidates[candidate_index];
+        // set candidate to parent
+        candidate.is_parent = true;
+        // set candidate to active
+        candidate.active = true;
+    }
+}
+
+
+/// Converts only available child nodes of the provided parent to an active parent
+fn spawn_random_node_child(state: &mut State, parent: Node) {
+    let mut candidates: Vec<&mut Node> = state
+        .nodes
+        .iter_mut()
+        .filter(|node| {
+            parent.id == node.parent_id && node.last_angle == 0.0 && node.is_within_view()
+        })
+        .collect();
+    if candidates.len() > 0 {
+        // select random candidate
+        let candidate_index = state.rng.gen_range(0..candidates.len());
+        let candidate = &mut candidates[candidate_index];
+        // set candidate to parent
+        candidate.is_parent = true;
+        // set candidate to active
+        candidate.active = true;
+    }
+}
+
 
 fn update(app: &mut App, state: &mut State) {
     let curr_time = app.timer.time_since_init();
-    if curr_time - state.last_update > 0.001 {
-        // if curr_time - state.last_update > 1.0 {
+    if curr_time - state.last_update > UPDATE_STEP {
         let min_distance = state.parent_radius * 1.5;
-        // let distance = state.spawn_max_distance;
-        let distance = state.rng.gen_range(min_distance..state.spawn_max_distance);
+        let distance: f32;
+        if RANDOMIZE_SPAWN_DISTANCE {
+            distance = state.rng.gen_range(min_distance..state.spawn_max_distance);
+        } else {
+            distance = state.spawn_max_distance;
+        }
         // Need this offset so that spawn are positioned from the center of
         // parent node (because of how texture image positioning works)
         let spawn_offset = state.parent_radius * 0.5;
 
         if let Some(node) = state.get_active_node() {
             if node.last_angle < 360.0 {
-                node.last_angle += 30.0;
+                node.last_angle += SPAWN_ANGLE_STEP;
                 // log::debug!("angle: {}", node.last_angle);
                 let spawn_x =
                     node.pos.x + spawn_offset + node.last_angle.to_radians().cos() * distance;
                 let spawn_y =
                     node.pos.y + spawn_offset + node.last_angle.to_radians().sin() * distance;
+                let parent_id = node.id.clone();
                 state.nodes.push(Node {
+                    parent_id: parent_id,
                     pos: vec2(spawn_x, spawn_y),
-                    last_angle: 0.0,
-                    active: false,
-                    is_parent: false,
+                    // last_angle: 0.0,
+                    // active: false,
+                    // is_parent: false,
+                    ..Default::default()
                 });
             } else {
                 node.active = false;
+                if SPAWN_STRATEGY == "random any child" {
+                    spawn_random_any_child(state);
+                } else if SPAWN_STRATEGY == "random child of node" {
+                    let node_clone = node.clone();
+                    spawn_random_node_child(state, node_clone);
+                }
             }
         } else {
-            state.nodes.push(Node {
-                pos: vec2(
-                    state.rng.gen_range(0.0..WORK_SIZE.x),
-                    state.rng.gen_range(0.0..WORK_SIZE.y),
-                ),
-                last_angle: 0.0,
-                active: true,
-                is_parent: true,
-            });
+            spawn_random(state);
         }
         state.last_update = curr_time;
     }
@@ -134,6 +227,8 @@ fn draw(
             size = state.spawn_radius * 2.0;
         }
         draw.image(&texture)
+            // .alpha_mode(BlendMode::OVER)
+            .alpha(0.5)
             .position(node.pos.x, node.pos.y)
             .size(size, size);
     }
