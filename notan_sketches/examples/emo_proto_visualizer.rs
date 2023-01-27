@@ -32,8 +32,8 @@ const TITLE_COLOR: Color = Color::BLACK;
 const META_COLOR: Color = Color::GRAY;
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
-// const VISUALIZER: &str = "ColorTransitionVisualizer";
-const VISUALIZER: &str = "TileVisualizer";
+const VISUALIZER: &str = "ColorTransitionVisualizer";
+// const VISUALIZER: &str = "TileVisualizer";
 
 
 #[derive(AppState)]

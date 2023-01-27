@@ -2,6 +2,7 @@ use super::get_optimal_text_color;
 use super::EmoVisualizer;
 use crate::emotion::{EmocatTextAnalysis, TopEmotionsModel};
 use notan::draw::*;
+use notan::log;
 use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Srgb};
 use std::collections::HashMap;
@@ -28,12 +29,66 @@ fn round(val: f32, digits: f32) -> f32 {
 }
 
 
+pub struct ColorTransition {
+    target_color: Color,
+    color: Color,
+    mix_factor: f32,
+    transitioning: bool,
+}
+
+
+impl ColorTransition {
+    fn immediate(&mut self) {
+        self.color = self.target_color.clone();
+    }
+
+    fn step(&mut self) {
+        // The mix function used to blend colors below doesn't always end up with the
+        // exact floating point numbers of the end color, so comparing with rounded
+        // color values instead of comparing the colors directly.
+        let precision = COLOR_COMPARISON_PRECISION;
+        // log::debug!(
+        //     "{}::{}, {}::{}, {}::{}",
+        //     round(self.color.r, precision),
+        //     round(self.target_color.r, precision),
+        //     round(self.color.g, precision),
+        //     round(self.target_color.g, precision),
+        //     round(self.color.b, precision),
+        //     round(self.target_color.b, precision),
+        // );
+        if round(self.color.r, precision) != round(self.target_color.r, precision)
+            || round(self.color.g, precision) != round(self.target_color.g, precision)
+            || round(self.color.b, precision) != round(self.target_color.b, precision)
+        {
+            self.transitioning = true;
+            // log::debug!("Mix factor: {}", state.bg_color_mix_factor);
+            let bg_color = Srgb::new(self.color.r, self.color.g, self.color.b);
+            let target_color = Srgb::new(
+                self.target_color.r,
+                self.target_color.g,
+                self.target_color.b,
+            );
+            let mut bg_color = LinSrgb::from_color(bg_color);
+            let target_color = LinSrgb::from_color(target_color);
+            bg_color = bg_color.mix(&target_color, self.mix_factor);
+            let bg_color = Srgb::from_color(bg_color);
+            self.color = Color::from_rgb(bg_color.red, bg_color.green, bg_color.blue);
+            self.mix_factor += MIX_RATE;
+        } else {
+            self.mix_factor = STARTING_MIX_FACTOR;
+            self.transitioning = false;
+        }
+    }
+}
+
+
 pub struct ColorTransitionVisualizer {
     pub model: Option<TopEmotionsModel>,
     pub color_method: String,
-    target_color: Color,
-    bg_color: Color,
-    bg_color_mix_factor: f32,
+    pub transition: ColorTransition,
+    // target_color: Color,
+    // bg_color: Color,
+    // bg_color_mix_factor: f32,
     text_color: Color,
     dynamic_text_color: bool,
 }
@@ -43,9 +98,12 @@ impl ColorTransitionVisualizer {
         Self {
             model: None,
             color_method: "Simple Color".to_string(),
-            target_color: bg_color,
-            bg_color: bg_color,
-            bg_color_mix_factor: STARTING_MIX_FACTOR,
+            transition: ColorTransition {
+                target_color: bg_color,
+                color: bg_color,
+                mix_factor: STARTING_MIX_FACTOR,
+                transitioning: false,
+            },
             text_color: text_color,
             dynamic_text_color: enable_dynamic_text_color,
         }
@@ -67,52 +125,10 @@ impl ColorTransitionVisualizer {
 
     pub fn update_text_color(&mut self) {
         if self.dynamic_text_color {
-            self.text_color = get_optimal_text_color(&self.bg_color);
+            self.text_color = get_optimal_text_color(&self.transition.color);
         } else {
-            self.text_color = get_optimal_text_color(&self.target_color);
+            self.text_color = get_optimal_text_color(&self.transition.target_color);
         }
-    }
-
-    // pub fn update_bg_color(app: &App, state: &mut State) {
-    pub fn update_bg_color(&mut self) {
-        // The mix function used to blend colors below doesn't always end up with the
-        // exact floating point numbers of the end color, so comparing with rounded
-        // color values instead of comparing the colors directly.
-        let precision = COLOR_COMPARISON_PRECISION;
-        // log::debug!(
-        //     "{}::{}, {}::{}, {}::{}",
-        //     round(state.bg_color.r, precision),
-        //     round(state.target_color.r, precision),
-        //     round(state.bg_color.g, precision),
-        //     round(state.target_color.g, precision),
-        //     round(state.bg_color.b, precision),
-        //     round(state.target_color.b, precision),
-        // );
-        if round(self.bg_color.r, precision) != round(self.target_color.r, precision)
-            || round(self.bg_color.g, precision) != round(self.target_color.g, precision)
-            || round(self.bg_color.b, precision) != round(self.target_color.b, precision)
-        {
-            // log::debug!("Mix factor: {}", state.bg_color_mix_factor);
-            let bg_color = Srgb::new(self.bg_color.r, self.bg_color.g, self.bg_color.b);
-            let target_color = Srgb::new(
-                self.target_color.r,
-                self.target_color.g,
-                self.target_color.b,
-            );
-            let mut bg_color = LinSrgb::from_color(bg_color);
-            let target_color = LinSrgb::from_color(target_color);
-            bg_color = bg_color.mix(&target_color, self.bg_color_mix_factor);
-            let bg_color = Srgb::from_color(bg_color);
-            self.bg_color = Color::from_rgb(bg_color.red, bg_color.green, bg_color.blue);
-            self.bg_color_mix_factor += MIX_RATE;
-        } else {
-            self.bg_color_mix_factor = STARTING_MIX_FACTOR;
-        }
-    }
-
-
-    pub fn update_bg_color_simple(&mut self) {
-        self.bg_color = self.target_color.clone();
     }
 }
 
@@ -120,9 +136,10 @@ impl ColorTransitionVisualizer {
 impl EmoVisualizer for ColorTransitionVisualizer {
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
         self.model = None;
-        self.bg_color = bg_color;
-        self.target_color = bg_color;
-        self.bg_color_mix_factor = STARTING_MIX_FACTOR;
+        self.transition.color = bg_color;
+        self.transition.target_color = bg_color;
+        self.transition.mix_factor = STARTING_MIX_FACTOR;
+        self.transition.transitioning = false;
         self.text_color = text_color;
         self.dynamic_text_color = enable_dynamic_text_color;
     }
@@ -133,7 +150,7 @@ impl EmoVisualizer for ColorTransitionVisualizer {
         _text_color: Color,
         _enable_dynamic_text_color: bool,
     ) {
-        self.target_color = bg_color;
+        self.transition.target_color = bg_color;
     }
 
 
@@ -144,22 +161,22 @@ impl EmoVisualizer for ColorTransitionVisualizer {
 
     fn draw(&mut self, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.
-        draw.clear(self.bg_color);
+        draw.clear(self.transition.color);
     }
 
     fn update_model(&mut self, analysis: &EmocatTextAnalysis) {
         let model = TopEmotionsModel::from_analysis(&analysis);
         match self.color_method.as_str() {
-            "Simple Color" => self.target_color = model.get_simple_color(),
-            "Black, White, Gray" => self.target_color = model.get_black_or_white(),
-            "Grayscale" => self.target_color = model.get_grayscale(),
+            "Simple Color" => self.transition.target_color = model.get_simple_color(),
+            "Black, White, Gray" => self.transition.target_color = model.get_black_or_white(),
+            "Grayscale" => self.transition.target_color = model.get_grayscale(),
             _ => {}
         }
         self.model = Some(model);
     }
 
     fn update_visualization(&mut self) {
-        self.update_bg_color();
+        self.transition.step();
         self.update_text_color();
     }
 }
