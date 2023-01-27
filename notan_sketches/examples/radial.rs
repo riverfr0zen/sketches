@@ -4,6 +4,7 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors::{AEGEAN, SAFFRON};
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
+use std::mem::size_of_val;
 use uuid::Uuid;
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
@@ -16,8 +17,15 @@ const SPAWN_ANGLE_STEP: f32 = 30.0;
 // const SPAWN_STRATEGY: &str = "random";
 // const SPAWN_STRATEGY: &str = "random any child";
 const SPAWN_STRATEGY: &str = "random child of node";
-// const RANDOMIZE_SPAWN_DISTANCE: bool = false;
-const RANDOMIZE_SPAWN_DISTANCE: bool = true;
+const RANDOMIZE_SPAWN_DISTANCE: bool = false;
+// const RANDOMIZE_SPAWN_DISTANCE: bool = true;
+// How many nodes are cleared during node size management
+const NODES_ROTATED: usize = 1;
+// Max memory used for nodes
+// 10 KB: 10240
+// 1 MB: 1048576
+// 10 MB: 10485760
+const MAX_NODES_BYTES: u32 = 1048576;
 
 
 #[derive(Clone)]
@@ -67,6 +75,24 @@ pub struct State {
 impl State {
     fn get_active_node(&mut self) -> Option<&mut Node> {
         self.nodes.iter_mut().find(|node| node.active == true)
+    }
+
+    fn manage_node_size(&mut self) {
+        // How to get size in bytes of a slice: https://stackoverflow.com/a/62614320
+        let nodes_size = size_of_val(&*self.nodes);
+        if nodes_size > MAX_NODES_BYTES as usize {
+            log::debug!(
+                "nodes limit reached at {}: {} bytes",
+                self.last_update,
+                nodes_size
+            );
+            // Using `saturating_sub` to handle the case where NODES_ROTATED
+            // is greater than the number of elements in the vector
+            // See https://stackoverflow.com/a/28952552
+            let rotate_length = self.nodes.len().saturating_sub(NODES_ROTATED);
+            self.nodes.rotate_left(rotate_length);
+            self.nodes.truncate(rotate_length);
+        }
     }
 }
 
@@ -205,6 +231,7 @@ fn update(app: &mut App, state: &mut State) {
             spawn_random(state);
         }
         state.last_update = curr_time;
+        state.manage_node_size();
     }
 }
 
@@ -228,7 +255,7 @@ fn draw(
         }
         draw.image(&texture)
             // .alpha_mode(BlendMode::OVER)
-            .alpha(0.5)
+            // .alpha(0.5)
             .position(node.pos.x, node.pos.y)
             .size(size, size);
     }
