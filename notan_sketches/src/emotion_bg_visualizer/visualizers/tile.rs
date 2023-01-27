@@ -159,8 +159,8 @@ impl TileVisualizer {
                     ),
                     (self.layout.tile_size.x, self.layout.tile_size.y),
                 )
-                .alpha_mode(BlendMode::OVER)
-                .alpha(TILE_ALPHA)
+                // .alpha_mode(BlendMode::OVER)
+                // .alpha(TILE_ALPHA)
                 .fill_color(fill_color)
                 .fill();
             }

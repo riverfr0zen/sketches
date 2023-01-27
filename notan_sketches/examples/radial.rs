@@ -20,12 +20,12 @@ const SPAWN_STRATEGY: &str = "random child of node";
 const RANDOMIZE_SPAWN_DISTANCE: bool = false;
 // const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 // How many nodes are cleared during node size management
-const NODES_ROTATED: usize = 1;
+const NODES_ROTATED: usize = 100;
 // Max memory used for nodes
 // 10 KB: 10240
 // 1 MB: 1048576
 // 10 MB: 10485760
-const MAX_NODES_BYTES: u32 = 1048576;
+const MAX_NODES_BYTES: u32 = 10485760;
 
 
 #[derive(Clone)]
@@ -255,7 +255,7 @@ fn draw(
         }
         draw.image(&texture)
             // .alpha_mode(BlendMode::OVER)
-            // .alpha(0.5)
+            .alpha(0.5)
             .position(node.pos.x, node.pos.y)
             .size(size, size);
     }
