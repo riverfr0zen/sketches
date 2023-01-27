@@ -86,9 +86,6 @@ pub struct ColorTransitionVisualizer {
     pub model: Option<TopEmotionsModel>,
     pub color_method: String,
     pub transition: ColorTransition,
-    // target_color: Color,
-    // bg_color: Color,
-    // bg_color_mix_factor: f32,
     text_color: Color,
     dynamic_text_color: bool,
 }

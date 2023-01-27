@@ -71,6 +71,26 @@ pub struct TileVisualizer {
     refresh_layout: bool,
 }
 
+fn get_sentiment_enhanced_color(
+    emocolor: &EmoColor,
+    rng: &mut Random,
+    positive_sentiment: &f32,
+    negative_sentiment: &f32,
+) -> Color {
+    let mut hsv_color = emocolor.hsv.clone();
+    hsv_color = match emocolor.sentiment {
+        Sentiment::POSITIVE => {
+            hsv_color.lighten(rng.gen_range(0.0..(positive_sentiment * VALUE_MODIFIER)))
+        }
+        Sentiment::NEGATIVE => {
+            hsv_color.darken(rng.gen_range(0.0..(negative_sentiment * VALUE_MODIFIER)))
+        }
+        _ => hsv_color,
+    };
+    let srgb = Srgb::from_color(hsv_color);
+    Color::from_rgb(srgb.red, srgb.green, srgb.blue)
+}
+
 
 impl TileVisualizer {
     pub fn new(bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
@@ -108,11 +128,7 @@ impl TileVisualizer {
     }
 
 
-    fn draw_flurry(&mut self, draw: &mut Draw) {
-        if self.tiles.len() < 1 {
-            return;
-        }
-
+    fn prepare_layout(&mut self, draw: &mut Draw) {
         if self.refresh_layout {
             if self.tiles.len() > MAX_COLS {
                 self.layout.cols = self.tiles.len();
@@ -129,6 +145,13 @@ impl TileVisualizer {
             self.layout.cols = (draw.width() / self.layout.tile_size.x).ceil() as usize;
             self.layout.rows = (draw.height() / self.layout.tile_size.y).ceil() as usize;
         }
+    }
+
+    fn draw_flurry(&mut self, draw: &mut Draw) {
+        if self.tiles.len() < 1 {
+            return;
+        }
+        self.prepare_layout(draw);
 
         for row in 0..self.layout.rows as i32 {
             for col in 0..self.layout.cols as i32 {
@@ -138,19 +161,12 @@ impl TileVisualizer {
                 } else {
                     lucky_tile = 0;
                 }
-                let mut hsv_color = self.tiles[lucky_tile].emocolor.hsv.clone();
-                hsv_color =
-                    match self.tiles[lucky_tile].emocolor.sentiment {
-                        Sentiment::POSITIVE => hsv_color.lighten(self.rng.gen_range(
-                            0.0..(self.model.as_ref().unwrap().positive * VALUE_MODIFIER),
-                        )),
-                        Sentiment::NEGATIVE => hsv_color.darken(self.rng.gen_range(
-                            0.0..(self.model.as_ref().unwrap().negative * VALUE_MODIFIER),
-                        )),
-                        _ => hsv_color,
-                    };
-                let srgb = Srgb::from_color(hsv_color);
-                let fill_color = Color::from_rgb(srgb.red, srgb.green, srgb.blue);
+                let fill_color = get_sentiment_enhanced_color(
+                    &self.tiles[lucky_tile].emocolor,
+                    &mut self.rng,
+                    &self.model.as_ref().unwrap().positive,
+                    &self.model.as_ref().unwrap().negative,
+                );
 
                 draw.rect(
                     (
