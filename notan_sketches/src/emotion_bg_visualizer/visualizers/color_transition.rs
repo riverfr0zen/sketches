@@ -30,19 +30,31 @@ fn round(val: f32, digits: f32) -> f32 {
 
 
 pub struct ColorTransition {
-    target_color: Color,
-    color: Color,
-    mix_factor: f32,
-    transitioning: bool,
+    pub target_color: Color,
+    pub color: Color,
+    pub mix_factor: f32,
+    pub transitioning: bool,
+}
+
+impl Default for ColorTransition {
+    fn default() -> Self {
+        Self {
+            color: Color::WHITE,
+            target_color: Color::WHITE,
+            mix_factor: STARTING_MIX_FACTOR,
+            transitioning: false,
+        }
+    }
 }
 
 
 impl ColorTransition {
-    fn immediate(&mut self) {
+    pub fn immediate(&mut self) {
         self.color = self.target_color.clone();
+        self.transitioning = false;
     }
 
-    fn step(&mut self) {
+    pub fn step(&mut self) {
         // The mix function used to blend colors below doesn't always end up with the
         // exact floating point numbers of the end color, so comparing with rounded
         // color values instead of comparing the colors directly.

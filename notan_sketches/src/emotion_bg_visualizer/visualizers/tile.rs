@@ -1,3 +1,4 @@
+use super::color_transition::ColorTransition;
 use super::get_optimal_text_color;
 use super::EmoVisualizer;
 use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, Sentiment, TopEmotionsModel};
@@ -7,14 +8,15 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Shade, Srgb};
+use rapier2d::na::iter::RowIterMut;
 use std::collections::HashMap;
 
 /// Slightly increases the sentiment score for use as a value to brighten/darken HSV
 const VALUE_MODIFIER: f32 = 3.0;
-const TILE_ALPHA: f32 = 0.5;
+const TILE_ALPHA: f32 = 0.2;
 // const TILE_ALPHA: f32 = 0.8;
-const MAX_COLS: usize = 3;
-const MAX_ROWS: usize = 3;
+const MAX_COLS: usize = 10;
+const MAX_ROWS: usize = 10;
 
 
 /// Represents different Tile "baselines/archetypes"
@@ -42,6 +44,7 @@ pub struct TilesLayout {
     tile_size: Vec2,
     rows: usize,
     cols: usize,
+    reprs: Vec<Vec<ColorTransition>>,
 }
 
 impl TilesLayout {
@@ -50,6 +53,7 @@ impl TilesLayout {
             tile_size: vec2(0.0, 0.0),
             rows: 0,
             cols: 0,
+            reprs: vec![],
         }
     }
 }
@@ -74,16 +78,24 @@ pub struct TileVisualizer {
 fn get_sentiment_enhanced_color(
     emocolor: &EmoColor,
     rng: &mut Random,
-    positive_sentiment: &f32,
-    negative_sentiment: &f32,
+    positive_sentiment: f32,
+    negative_sentiment: f32,
 ) -> Color {
     let mut hsv_color = emocolor.hsv.clone();
     hsv_color = match emocolor.sentiment {
         Sentiment::POSITIVE => {
-            hsv_color.lighten(rng.gen_range(0.0..(positive_sentiment * VALUE_MODIFIER)))
+            if positive_sentiment > 0.0 {
+                hsv_color.lighten(rng.gen_range(0.0..(positive_sentiment * VALUE_MODIFIER)))
+            } else {
+                hsv_color
+            }
         }
         Sentiment::NEGATIVE => {
-            hsv_color.darken(rng.gen_range(0.0..(negative_sentiment * VALUE_MODIFIER)))
+            if negative_sentiment > 0.0 {
+                hsv_color.darken(rng.gen_range(0.0..(negative_sentiment * VALUE_MODIFIER)))
+            } else {
+                hsv_color
+            }
         }
         _ => hsv_color,
     };
@@ -140,6 +152,20 @@ impl TileVisualizer {
                 draw.width() / self.layout.cols as f32,
                 draw.height() / self.layout.rows as f32,
             );
+            log::debug!(
+                "refreshed: rows {}, cols {}",
+                self.layout.rows,
+                self.layout.cols
+            );
+            self.layout.reprs = vec![];
+            // Should look at this more closely, but unless I use inclusive ranges `..=`
+            // here I get index out of bounds errors.
+            for row in 0..=self.layout.rows {
+                self.layout.reprs.push(vec![]);
+                for _ in 0..=self.layout.cols {
+                    self.layout.reprs[row].push(ColorTransition::default());
+                }
+            }
             self.refresh_layout = false;
         } else {
             self.layout.cols = (draw.width() / self.layout.tile_size.x).ceil() as usize;
@@ -153,20 +179,42 @@ impl TileVisualizer {
         }
         self.prepare_layout(draw);
 
-        for row in 0..self.layout.rows as i32 {
-            for col in 0..self.layout.cols as i32 {
-                let lucky_tile;
-                if self.tiles.len() > 1 {
-                    lucky_tile = self.rng.gen_range(0..self.tiles.len());
-                } else {
-                    lucky_tile = 0;
-                }
-                let fill_color = get_sentiment_enhanced_color(
-                    &self.tiles[lucky_tile].emocolor,
-                    &mut self.rng,
-                    &self.model.as_ref().unwrap().positive,
-                    &self.model.as_ref().unwrap().negative,
+        for row in 0..self.layout.rows {
+            for col in 0..self.layout.cols {
+                // log::debug!(
+                //     "lens: row: {}, col: {}, rs: {} cs: {}",
+                //     row,
+                //     col,
+                //     self.layout.reprs.len(),
+                //     self.layout.reprs[row].len()
+                // );
+                log::debug!(
+                    "lens: row: {}, col: {}, layout.rows: {}",
+                    row,
+                    col,
+                    self.layout.rows,
                 );
+                if self.layout.reprs[row][col].transitioning {
+                    log::debug!("do step");
+                    // self.layout.reprs[row][col].immediate();
+                    self.layout.reprs[row][col].step();
+                } else {
+                    let lucky_tile;
+                    if self.tiles.len() > 1 {
+                        lucky_tile = self.rng.gen_range(0..self.tiles.len());
+                    } else {
+                        lucky_tile = 0;
+                    }
+                    let fill_color = get_sentiment_enhanced_color(
+                        &self.tiles[lucky_tile].emocolor,
+                        &mut self.rng,
+                        self.model.as_ref().unwrap().positive,
+                        self.model.as_ref().unwrap().negative,
+                    );
+                    log::debug!("changed target");
+                    self.layout.reprs[row][col].target_color = fill_color;
+                    self.layout.reprs[row][col].transitioning = true;
+                }
 
                 draw.rect(
                     (
@@ -175,9 +223,9 @@ impl TileVisualizer {
                     ),
                     (self.layout.tile_size.x, self.layout.tile_size.y),
                 )
-                // .alpha_mode(BlendMode::OVER)
-                // .alpha(TILE_ALPHA)
-                .fill_color(fill_color)
+                .alpha_mode(BlendMode::OVER)
+                .alpha(TILE_ALPHA)
+                .fill_color(self.layout.reprs[row][col].color)
                 .fill();
             }
         }
