@@ -17,8 +17,8 @@ const SPAWN_ANGLE_STEP: f32 = 30.0;
 // const SPAWN_STRATEGY: &str = "random";
 // const SPAWN_STRATEGY: &str = "random any child";
 const SPAWN_STRATEGY: &str = "random child of node";
-const RANDOMIZE_SPAWN_DISTANCE: bool = false;
-// const RANDOMIZE_SPAWN_DISTANCE: bool = true;
+// const RANDOMIZE_SPAWN_DISTANCE: bool = false;
+const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 // How many nodes are cleared during node size management
 const NODES_ROTATED: usize = 100;
 // Max memory used for nodes

@@ -160,9 +160,9 @@ impl TileVisualizer {
             self.layout.reprs = vec![];
             // Should look at this more closely, but unless I use inclusive ranges `..=`
             // here I get index out of bounds errors.
-            for row in 0..=self.layout.rows {
+            for row in 0..self.layout.rows {
                 self.layout.reprs.push(vec![]);
-                for _ in 0..=self.layout.cols {
+                for _ in 0..self.layout.cols {
                     self.layout.reprs[row].push(ColorTransition::default());
                 }
             }
@@ -179,25 +179,12 @@ impl TileVisualizer {
         }
         self.prepare_layout(draw);
 
-        for row in 0..self.layout.rows {
-            for col in 0..self.layout.cols {
-                // log::debug!(
-                //     "lens: row: {}, col: {}, rs: {} cs: {}",
-                //     row,
-                //     col,
-                //     self.layout.reprs.len(),
-                //     self.layout.reprs[row].len()
-                // );
-                log::debug!(
-                    "lens: row: {}, col: {}, layout.rows: {}",
-                    row,
-                    col,
-                    self.layout.rows,
-                );
-                if self.layout.reprs[row][col].transitioning {
+        for (row_index, row) in self.layout.reprs.iter_mut().enumerate() {
+            for (col_index, col) in row.iter_mut().enumerate() {
+                if col.transitioning {
                     log::debug!("do step");
                     // self.layout.reprs[row][col].immediate();
-                    self.layout.reprs[row][col].step();
+                    col.step();
                 } else {
                     let lucky_tile;
                     if self.tiles.len() > 1 {
@@ -212,20 +199,20 @@ impl TileVisualizer {
                         self.model.as_ref().unwrap().negative,
                     );
                     log::debug!("changed target");
-                    self.layout.reprs[row][col].target_color = fill_color;
-                    self.layout.reprs[row][col].transitioning = true;
+                    col.target_color = fill_color;
+                    col.transitioning = true;
                 }
 
                 draw.rect(
                     (
-                        col as f32 * self.layout.tile_size.x,
-                        row as f32 * self.layout.tile_size.y,
+                        col_index as f32 * self.layout.tile_size.x,
+                        row_index as f32 * self.layout.tile_size.y,
                     ),
                     (self.layout.tile_size.x, self.layout.tile_size.y),
                 )
                 .alpha_mode(BlendMode::OVER)
                 .alpha(TILE_ALPHA)
-                .fill_color(self.layout.reprs[row][col].color)
+                .fill_color(col.color)
                 .fill();
             }
         }
