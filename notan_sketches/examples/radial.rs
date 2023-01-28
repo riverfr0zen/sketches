@@ -15,8 +15,8 @@ const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 1.0;
 const SPAWN_ANGLE_STEP: f32 = 30.0;
 // const SPAWN_STRATEGY: &str = "random";
-// const SPAWN_STRATEGY: &str = "random any child";
-const SPAWN_STRATEGY: &str = "random child of node";
+const SPAWN_STRATEGY: &str = "random any child";
+// const SPAWN_STRATEGY: &str = "random child of node";
 // const RANDOMIZE_SPAWN_DISTANCE: bool = false;
 const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 // How many nodes are cleared during node size management

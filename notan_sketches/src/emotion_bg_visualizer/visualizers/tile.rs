@@ -182,8 +182,7 @@ impl TileVisualizer {
         for (row_index, row) in self.layout.reprs.iter_mut().enumerate() {
             for (col_index, col) in row.iter_mut().enumerate() {
                 if col.transitioning {
-                    log::debug!("do step");
-                    // self.layout.reprs[row][col].immediate();
+                    // col.immediate();
                     col.step();
                 } else {
                     let lucky_tile;
@@ -198,7 +197,6 @@ impl TileVisualizer {
                         self.model.as_ref().unwrap().positive,
                         self.model.as_ref().unwrap().negative,
                     );
-                    log::debug!("changed target");
                     col.target_color = fill_color;
                     col.transitioning = true;
                 }
