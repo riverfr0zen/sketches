@@ -15,8 +15,8 @@ const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 1.0;
 const SPAWN_ANGLE_STEP: f32 = 30.0;
 // const SPAWN_STRATEGY: &str = "random";
-const SPAWN_STRATEGY: &str = "random any child";
-// const SPAWN_STRATEGY: &str = "random child of node";
+// const SPAWN_STRATEGY: &str = "random any child";
+const SPAWN_STRATEGY: &str = "random child of node";
 // const RANDOMIZE_SPAWN_DISTANCE: bool = false;
 const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 // How many nodes are cleared during node size management
@@ -80,6 +80,7 @@ pub struct State {
     pub rng: Random,
     pub last_update: f32,
     pub circle_texture: Texture,
+    pub draw_alpha: f32,
     pub nodes: Vec<Node>,
     pub parent_radius: f32,
     pub spawn_radius: f32,
@@ -139,6 +140,7 @@ fn init(gfx: &mut Graphics) -> State {
         rng: rng,
         last_update: 0.0,
         circle_texture: circle_texture,
+        draw_alpha: 0.0,
         nodes: vec![],
         parent_radius: WORK_SIZE.x * 0.02,
         spawn_radius: WORK_SIZE.x * 0.01,
@@ -149,6 +151,7 @@ fn init(gfx: &mut Graphics) -> State {
 fn spawn_random(state: &mut State) {
     state.nodes.push(Node {
         class: NodeClass::PARENT,
+        alpha: state.draw_alpha,
         pos: vec2(
             state.rng.gen_range(0.0..WORK_SIZE.x),
             state.rng.gen_range(0.0..WORK_SIZE.y),
@@ -203,6 +206,9 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
 
 fn update(app: &mut App, state: &mut State) {
     let curr_time = app.timer.time_since_init();
+
+    state.draw_alpha = curr_time.sin().abs();
+
     if curr_time - state.last_update > UPDATE_STEP {
         let min_distance = state.parent_radius * 1.5;
         let distance: f32;
@@ -227,9 +233,7 @@ fn update(app: &mut App, state: &mut State) {
                 state.nodes.push(Node {
                     parent_id: parent_id,
                     pos: vec2(spawn_x, spawn_y),
-                    // last_angle: 0.0,
-                    // active: false,
-                    // is_parent: false,
+                    alpha: state.draw_alpha,
                     ..Default::default()
                 });
             } else {
