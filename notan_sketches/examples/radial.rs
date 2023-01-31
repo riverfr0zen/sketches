@@ -28,20 +28,32 @@ const NODES_ROTATED: usize = 100;
 const MAX_NODES_BYTES: u32 = 10485760;
 
 
+#[derive(Clone, PartialEq)]
+pub enum NodeClass {
+    PARENT,
+    SPAWN,
+    SPAWN2,
+}
+
+
 #[derive(Clone)]
 pub struct Node {
     pub id: Uuid,
+    pub class: NodeClass,
     pub parent_id: Uuid,
     pub pos: Vec2,
     pub last_angle: f32,
     pub active: bool,
-    pub is_parent: bool,
 }
 
 
 impl Node {
     fn is_within_view(&self) -> bool {
         self.pos.x > 0.0 && self.pos.x < WORK_SIZE.x && self.pos.y > 0.0 && self.pos.y < WORK_SIZE.y
+    }
+
+    fn is_parent(&self) -> bool {
+        return self.class == NodeClass::PARENT;
     }
 }
 
@@ -50,11 +62,11 @@ impl Default for Node {
     fn default() -> Self {
         Self {
             id: Uuid::new_v4(),
+            class: NodeClass::SPAWN,
             parent_id: Uuid::nil(),
             pos: vec2(0.0, 0.0),
             last_angle: 0.0,
             active: false,
-            is_parent: false,
         }
     }
 }
@@ -134,13 +146,13 @@ fn init(gfx: &mut Graphics) -> State {
 
 fn spawn_random(state: &mut State) {
     state.nodes.push(Node {
+        class: NodeClass::PARENT,
         pos: vec2(
             state.rng.gen_range(0.0..WORK_SIZE.x),
             state.rng.gen_range(0.0..WORK_SIZE.y),
         ),
         // last_angle: 0.0,
         active: true,
-        is_parent: true,
         ..Default::default()
     });
 }
@@ -159,7 +171,7 @@ fn spawn_random_any_child(state: &mut State) {
         let candidate_index = state.rng.gen_range(0..candidates.len());
         let candidate = &mut candidates[candidate_index];
         // set candidate to parent
-        candidate.is_parent = true;
+        candidate.class = NodeClass::PARENT;
         // set candidate to active
         candidate.active = true;
     }
@@ -180,7 +192,7 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
         let candidate_index = state.rng.gen_range(0..candidates.len());
         let candidate = &mut candidates[candidate_index];
         // set candidate to parent
-        candidate.is_parent = true;
+        candidate.class = NodeClass::PARENT;
         // set candidate to active
         candidate.active = true;
     }
@@ -246,7 +258,7 @@ fn draw(
     for node in state.nodes.iter() {
         let texture: &Texture;
         let size: f32;
-        if node.is_parent {
+        if node.is_parent() {
             texture = &state.parent_texture;
             size = state.parent_radius * 2.0;
         } else {
