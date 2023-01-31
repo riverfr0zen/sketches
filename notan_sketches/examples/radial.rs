@@ -27,6 +27,7 @@ const NODES_ROTATED: usize = 100;
 // 10 MB: 10485760
 const MAX_NODES_BYTES: u32 = 10485760;
 const DEFAULT_ALPHA: f32 = 0.5;
+const ALPHA_FREQ: f32 = 0.25;
 
 
 #[derive(Clone, PartialEq)]
@@ -207,7 +208,7 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
 fn update(app: &mut App, state: &mut State) {
     let curr_time = app.timer.time_since_init();
 
-    state.draw_alpha = curr_time.sin().abs();
+    state.draw_alpha = (curr_time * ALPHA_FREQ).sin().abs();
 
     if curr_time - state.last_update > UPDATE_STEP {
         let min_distance = state.parent_radius * 1.5;
