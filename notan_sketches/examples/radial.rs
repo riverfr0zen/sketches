@@ -26,6 +26,7 @@ const NODES_ROTATED: usize = 100;
 // 1 MB: 1048576
 // 10 MB: 10485760
 const MAX_NODES_BYTES: u32 = 10485760;
+const DEFAULT_ALPHA: f32 = 0.5;
 
 
 #[derive(Clone, PartialEq)]
@@ -44,6 +45,7 @@ pub struct Node {
     pub pos: Vec2,
     pub last_angle: f32,
     pub active: bool,
+    pub alpha: f32,
 }
 
 
@@ -67,6 +69,7 @@ impl Default for Node {
             pos: vec2(0.0, 0.0),
             last_angle: 0.0,
             active: false,
+            alpha: DEFAULT_ALPHA,
         }
     }
 }
@@ -247,11 +250,7 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 
-fn draw(
-    gfx: &mut Graphics,
-    state: &mut State,
-    // app: &mut App,
-) {
+fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
 
     for node in state.nodes.iter() {
@@ -269,7 +268,8 @@ fn draw(
         }
         draw.image(&texture)
             // .alpha_mode(BlendMode::OVER)
-            .alpha(0.5)
+            .alpha(node.alpha)
+            // .alpha(alpha_mod)
             .color(color)
             .position(node.pos.x, node.pos.y)
             .size(size, size);
