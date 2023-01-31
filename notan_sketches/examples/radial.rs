@@ -76,8 +76,7 @@ impl Default for Node {
 pub struct State {
     pub rng: Random,
     pub last_update: f32,
-    pub parent_texture: Texture,
-    pub spawn_texture: Texture,
+    pub circle_texture: Texture,
     pub nodes: Vec<Node>,
     pub parent_radius: f32,
     pub spawn_radius: f32,
@@ -128,15 +127,15 @@ fn init(gfx: &mut Graphics) -> State {
     let (rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
-    // The texture radiuses are large because we want large textures that look nice when app is maximized
-    let parent_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, AEGEAN);
-    let spawn_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, SAFFRON);
+    // The texture radius is large because we want large textures that look nice when app is maximized
+    // let circle_texture =
+    //     create_circle_texture(gfx, WORK_SIZE.x * 0.5, Color::from_rgb(0.5, 0.5, 0.5));
+    let circle_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, Color::WHITE);
 
     State {
         rng: rng,
         last_update: 0.0,
-        parent_texture: parent_texture,
-        spawn_texture: spawn_texture,
+        circle_texture: circle_texture,
         nodes: vec![],
         parent_radius: WORK_SIZE.x * 0.02,
         spawn_radius: WORK_SIZE.x * 0.01,
@@ -258,16 +257,20 @@ fn draw(
     for node in state.nodes.iter() {
         let texture: &Texture;
         let size: f32;
+        let color: Color;
         if node.is_parent() {
-            texture = &state.parent_texture;
+            texture = &state.circle_texture;
             size = state.parent_radius * 2.0;
+            color = AEGEAN;
         } else {
-            texture = &state.spawn_texture;
+            texture = &state.circle_texture;
             size = state.spawn_radius * 2.0;
+            color = SAFFRON;
         }
         draw.image(&texture)
             // .alpha_mode(BlendMode::OVER)
             .alpha(0.5)
+            .color(color)
             .position(node.pos.x, node.pos.y)
             .size(size, size);
     }
