@@ -9,8 +9,8 @@ use uuid::Uuid;
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
-// const UPDATE_STEP: f32 = 0.0;
-const UPDATE_STEP: f32 = 0.001;
+const UPDATE_STEP: f32 = 0.0;
+// const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
 const SPAWN_ANGLE_STEP: f32 = 30.0;
@@ -26,6 +26,8 @@ const NODES_ROTATED: usize = 100;
 // 1 MB: 1048576
 // 10 MB: 10485760
 const MAX_NODES_BYTES: u32 = 10485760;
+const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
+// const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
 const ALPHA_FREQ: f32 = 0.25;
 
@@ -133,9 +135,7 @@ fn init(gfx: &mut Graphics) -> State {
     log::info!("Seed: {}", seed);
 
     // The texture radius is large because we want large textures that look nice when app is maximized
-    // let circle_texture =
-    //     create_circle_texture(gfx, WORK_SIZE.x * 0.5, Color::from_rgb(0.5, 0.5, 0.5));
-    let circle_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, Color::WHITE);
+    let circle_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, CIRCLE_TEXTURE_COLOR);
 
     State {
         rng: rng,
