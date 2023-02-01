@@ -13,8 +13,9 @@ use std::collections::HashMap;
 
 /// Slightly increases the sentiment score for use as a value to brighten/darken HSV
 const VALUE_MODIFIER: f32 = 3.0;
-const TILE_ALPHA: f32 = 0.2;
+// const TILE_ALPHA: f32 = 0.2;
 // const TILE_ALPHA: f32 = 0.8;
+const TILE_ALPHA: f32 = 1.0;
 const MAX_COLS: usize = 10;
 const MAX_ROWS: usize = 10;
 
@@ -97,7 +98,15 @@ fn get_sentiment_enhanced_color(
                 hsv_color
             }
         }
-        _ => hsv_color,
+        _ => {
+            if positive_sentiment > negative_sentiment {
+                hsv_color.lighten(rng.gen_range(0.0..(positive_sentiment * VALUE_MODIFIER)))
+            } else if negative_sentiment > positive_sentiment {
+                hsv_color.darken(rng.gen_range(0.0..(negative_sentiment * VALUE_MODIFIER)))
+            } else {
+                hsv_color
+            }
+        }
     };
     let srgb = Srgb::from_color(hsv_color);
     Color::from_rgb(srgb.red, srgb.green, srgb.blue)
@@ -157,6 +166,7 @@ impl TileVisualizer {
                 self.layout.rows,
                 self.layout.cols
             );
+
             self.layout.reprs = vec![];
             // Should look at this more closely, but unless I use inclusive ranges `..=`
             // here I get index out of bounds errors.
@@ -166,6 +176,8 @@ impl TileVisualizer {
                     self.layout.reprs[row].push(ColorTransition::default());
                 }
             }
+
+
             self.refresh_layout = false;
         } else {
             self.layout.cols = (draw.width() / self.layout.tile_size.x).ceil() as usize;
