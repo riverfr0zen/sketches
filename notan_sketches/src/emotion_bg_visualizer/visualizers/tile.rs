@@ -169,6 +169,23 @@ impl TileVisualizer {
         }
     }
 
+    fn grow_or_shrink_layout(&mut self) {
+        let reprs_rows = self.layout.reprs.len();
+        if self.layout.rows > reprs_rows {
+            for row in 0..self.layout.rows {
+                if row >= reprs_rows {
+                    self.layout.reprs.push(vec![]);
+                }
+                self.manage_cols_in_row(row);
+            }
+        } else if self.layout.rows < reprs_rows {
+            self.layout.reprs.truncate(self.layout.rows);
+            for row in 0..self.layout.rows {
+                self.manage_cols_in_row(row);
+            }
+        }
+    }
+
     fn prepare_layout(&mut self, draw: &mut Draw) {
         if self.refresh_layout {
             if self.tiles.len() > MAX_COLS {
@@ -187,20 +204,7 @@ impl TileVisualizer {
                 self.layout.cols
             );
 
-            let reprs_rows = self.layout.reprs.len();
-            if self.layout.rows > reprs_rows {
-                for row in 0..self.layout.rows {
-                    if row >= reprs_rows {
-                        self.layout.reprs.push(vec![]);
-                    }
-                    self.manage_cols_in_row(row);
-                }
-            } else if self.layout.rows < reprs_rows {
-                self.layout.reprs.truncate(self.layout.rows);
-                for row in 0..self.layout.rows {
-                    self.manage_cols_in_row(row);
-                }
-            }
+            self.grow_or_shrink_layout();
             self.refresh_layout = false;
         } else {
             self.layout.cols = (draw.width() / self.layout.tile_size.x).ceil() as usize;
