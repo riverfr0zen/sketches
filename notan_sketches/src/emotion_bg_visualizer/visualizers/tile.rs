@@ -13,6 +13,7 @@ use std::collections::HashMap;
 
 /// Slightly increases the sentiment score for use as a value to brighten/darken HSV
 const VALUE_MODIFIER: f32 = 3.0;
+const MINIMAL_ENHANCEMENT: f32 = 0.01;
 // const TILE_ALPHA: f32 = 0.2;
 // const TILE_ALPHA: f32 = 0.8;
 const TILE_ALPHA: f32 = 1.0;
@@ -88,14 +89,19 @@ fn get_sentiment_enhanced_color(
             if positive_sentiment > 0.0 {
                 hsv_color.lighten(rng.gen_range(0.0..(positive_sentiment * VALUE_MODIFIER)))
             } else {
-                hsv_color
+                // In some cases, with nrclex, it seems the sentiment score can be zero even if the
+                // emotion is associated to a sentiment. In such cases, use a very minimal range.
+                //
+                // @TODO: Investigate whether there is a bug/error in the emocat nrclex adapter
+                hsv_color.lighten(rng.gen_range(0.0..(MINIMAL_ENHANCEMENT * VALUE_MODIFIER)))
             }
         }
         Sentiment::NEGATIVE => {
             if negative_sentiment > 0.0 {
                 hsv_color.darken(rng.gen_range(0.0..(negative_sentiment * VALUE_MODIFIER)))
             } else {
-                hsv_color
+                // See comment in positive sentiment arm above
+                hsv_color.darken(rng.gen_range(0.0..(MINIMAL_ENHANCEMENT * VALUE_MODIFIER)))
             }
         }
         _ => {
