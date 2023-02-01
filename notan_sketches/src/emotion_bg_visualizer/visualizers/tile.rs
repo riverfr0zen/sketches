@@ -180,34 +180,19 @@ impl TileVisualizer {
                     if row >= reprs_rows {
                         self.layout.reprs.push(vec![]);
                     }
-                    let reprs_cols = self.layout.reprs[row].len();
-                    if self.layout.cols > reprs_cols {
-                        for col in 0..self.layout.cols {
-                            if col >= reprs_cols {
-                                self.layout.reprs[row].push(ColorTransition::default());
-                            }
-                        }
-                    } else if self.layout.cols < reprs_cols {
-                        self.layout.reprs[row].truncate(self.layout.cols);
-                    }
                 }
             } else if self.layout.rows < reprs_rows {
                 self.layout.reprs.truncate(self.layout.rows);
-                log::debug!(
-                    "truncated from {} rows to {} rows, new rows len: {}",
-                    reprs_rows,
-                    self.layout.rows,
-                    self.layout.reprs.len()
-                );
-                for row in 0..self.layout.rows {
-                    let reprs_cols = self.layout.reprs[row].len();
-                    if self.layout.cols < reprs_cols {
-                        self.layout.reprs[row].truncate(self.layout.cols);
-                    } else if self.layout.cols > reprs_cols {
-                        for col in 0..self.layout.cols {
-                            if col >= reprs_cols {
-                                self.layout.reprs[row].push(ColorTransition::default());
-                            }
+            }
+
+            for row in 0..self.layout.rows {
+                let reprs_cols = self.layout.reprs[row].len();
+                if self.layout.cols < reprs_cols {
+                    self.layout.reprs[row].truncate(self.layout.cols);
+                } else if self.layout.cols > reprs_cols {
+                    for col in 0..self.layout.cols {
+                        if col >= reprs_cols {
+                            self.layout.reprs[row].push(ColorTransition::default());
                         }
                     }
                 }
