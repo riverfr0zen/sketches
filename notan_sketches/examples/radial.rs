@@ -2,7 +2,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan_sketches::colors::{AEGEAN, SAFFRON};
+use notan_sketches::colors::{AEGEAN, EMERALD, LIME, PICKLE, SAFFRON, SEAWEED};
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
 use std::mem::size_of_val;
 use uuid::Uuid;
@@ -14,6 +14,10 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
 const SPAWN_ANGLE_STEP: f32 = 30.0;
+const SPAWN2_ANGLE_STEP: f32 = 5.0;
+// The frequency of the wave that determines the distance of the Spawn2's position
+// from its parent
+const SPAWN2_WAVE_FREQ: f32 = 20.0;
 // const SPAWN_STRATEGY: &str = "random";
 // const SPAWN_STRATEGY: &str = "random any child";
 const SPAWN_STRATEGY: &str = "random child of node";
@@ -26,11 +30,11 @@ const NODES_ROTATED: usize = 100;
 // 1 MB: 1048576
 // 10 MB: 10485760
 const MAX_NODES_BYTES: u32 = 10485760;
-const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
-// const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
+// const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
+// const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
+const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
-const ALPHA_FREQ: f32 = 0.25;
-
+const ALPHA_FREQ: f32 = 0.5;
 
 #[derive(Clone, PartialEq)]
 pub enum NodeClass {
@@ -46,7 +50,8 @@ pub struct Node {
     pub class: NodeClass,
     pub parent_id: Uuid,
     pub pos: Vec2,
-    pub last_angle: f32,
+    pub spawn_last_angle: f32,
+    pub spawn2_last_angle: f32,
     pub active: bool,
     pub alpha: f32,
 }
@@ -70,7 +75,8 @@ impl Default for Node {
             class: NodeClass::SPAWN,
             parent_id: Uuid::nil(),
             pos: vec2(0.0, 0.0),
-            last_angle: 0.0,
+            spawn_last_angle: 0.0,
+            spawn2_last_angle: 0.0,
             active: false,
             alpha: DEFAULT_ALPHA,
         }
@@ -91,8 +97,8 @@ pub struct State {
 }
 
 impl State {
-    fn get_active_node(&mut self) -> Option<&mut Node> {
-        self.nodes.iter_mut().find(|node| node.active == true)
+    fn get_active_node(&self) -> Option<usize> {
+        self.nodes.iter().position(|node| node.active == true)
     }
 
     fn manage_node_size(&mut self) {
@@ -170,7 +176,7 @@ fn spawn_random_any_child(state: &mut State) {
     let mut candidates: Vec<&mut Node> = state
         .nodes
         .iter_mut()
-        .filter(|node| node.last_angle == 0.0 && node.is_within_view())
+        .filter(|node| node.spawn_last_angle == 0.0 && node.is_within_view())
         .collect();
     if candidates.len() > 0 {
         // select random candidate
@@ -190,7 +196,7 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
         .nodes
         .iter_mut()
         .filter(|node| {
-            parent.id == node.parent_id && node.last_angle == 0.0 && node.is_within_view()
+            parent.id == node.parent_id && node.spawn_last_angle == 0.0 && node.is_within_view()
         })
         .collect();
     if candidates.len() > 0 {
@@ -211,38 +217,67 @@ fn update(app: &mut App, state: &mut State) {
     state.draw_alpha = (curr_time * ALPHA_FREQ).sin().abs();
 
     if curr_time - state.last_update > UPDATE_STEP {
-        let min_distance = state.parent_radius * 1.5;
-        let distance: f32;
-        if RANDOMIZE_SPAWN_DISTANCE {
-            distance = state.rng.gen_range(min_distance..state.spawn_max_distance);
-        } else {
-            distance = state.spawn_max_distance;
-        }
-        // Need this offset so that spawn are positioned from the center of
-        // parent node (because of how texture image positioning works)
-        let spawn_offset = state.parent_radius * 0.5;
+        if let Some(active_node) = state.get_active_node() {
+            let nodes = &mut state.nodes;
 
-        if let Some(node) = state.get_active_node() {
-            if node.last_angle < 360.0 {
-                node.last_angle += SPAWN_ANGLE_STEP;
-                // log::debug!("angle: {}", node.last_angle);
-                let spawn_x =
-                    node.pos.x + spawn_offset + node.last_angle.to_radians().cos() * distance;
-                let spawn_y =
-                    node.pos.y + spawn_offset + node.last_angle.to_radians().sin() * distance;
-                let parent_id = node.id.clone();
-                state.nodes.push(Node {
-                    parent_id: parent_id,
-                    pos: vec2(spawn_x, spawn_y),
-                    alpha: state.draw_alpha,
-                    ..Default::default()
-                });
+            let min_distance = state.parent_radius * 1.5;
+            let distance: f32;
+            if RANDOMIZE_SPAWN_DISTANCE {
+                distance = state.rng.gen_range(min_distance..state.spawn_max_distance);
             } else {
-                node.active = false;
+                distance = state.spawn_max_distance;
+            }
+            // Need this offset so that spawn are positioned from the center of
+            // parent node (because of how texture image positioning works)
+            let spawn_offset = state.parent_radius * 0.5;
+            let parent_id = nodes[active_node].id.clone();
+
+            if nodes[active_node].spawn_last_angle < 360.0
+                || nodes[active_node].spawn2_last_angle < 360.0
+            {
+                if nodes[active_node].spawn_last_angle < 360.0 {
+                    nodes[active_node].spawn_last_angle += SPAWN_ANGLE_STEP;
+                    // log::debug!("angle: {}", node.last_angle);
+                    let spawn_x = nodes[active_node].pos.x
+                        + spawn_offset
+                        + nodes[active_node].spawn_last_angle.to_radians().cos() * distance;
+                    let spawn_y = nodes[active_node].pos.y
+                        + spawn_offset
+                        + nodes[active_node].spawn_last_angle.to_radians().sin() * distance;
+                    nodes.push(Node {
+                        parent_id: parent_id,
+                        pos: vec2(spawn_x, spawn_y),
+                        alpha: state.draw_alpha,
+                        ..Default::default()
+                    });
+                }
+
+                if nodes[active_node].spawn2_last_angle < 360.0 {
+                    nodes[active_node].spawn2_last_angle += SPAWN2_ANGLE_STEP;
+                    // Spawn2 distance changes as a wave
+                    let spawn2_distance = min_distance
+                        + ((curr_time * SPAWN2_WAVE_FREQ).sin().abs() * state.spawn_max_distance);
+                    let spawn2_x = nodes[active_node].pos.x
+                        + spawn_offset
+                        + nodes[active_node].spawn2_last_angle.to_radians().cos() * spawn2_distance;
+                    let spawn2_y = nodes[active_node].pos.y
+                        + spawn_offset
+                        + nodes[active_node].spawn2_last_angle.to_radians().sin() * spawn2_distance;
+
+                    nodes.push(Node {
+                        class: NodeClass::SPAWN2,
+                        parent_id: parent_id,
+                        pos: vec2(spawn2_x, spawn2_y),
+                        alpha: state.draw_alpha,
+                        ..Default::default()
+                    });
+                }
+            } else {
+                nodes[active_node].active = false;
                 if SPAWN_STRATEGY == "random any child" {
                     spawn_random_any_child(state);
                 } else if SPAWN_STRATEGY == "random child of node" {
-                    let node_clone = node.clone();
+                    let node_clone = nodes[active_node].clone();
                     spawn_random_node_child(state, node_clone);
                 }
             }
@@ -262,14 +297,25 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         let texture: &Texture;
         let size: f32;
         let color: Color;
+        match node.class {
+            NodeClass::PARENT => {
+                texture = &state.circle_texture;
+                size = state.parent_radius * 2.0;
+                color = AEGEAN;
+            }
+            NodeClass::SPAWN => {
+                texture = &state.circle_texture;
+                size = state.spawn_radius * 2.0;
+                color = SAFFRON;
+            }
+            NodeClass::SPAWN2 => {
+                texture = &state.circle_texture;
+                size = state.spawn_radius * 0.75;
+                color = PICKLE;
+            }
+        }
         if node.is_parent() {
-            texture = &state.circle_texture;
-            size = state.parent_radius * 2.0;
-            color = AEGEAN;
         } else {
-            texture = &state.circle_texture;
-            size = state.spawn_radius * 2.0;
-            color = SAFFRON;
         }
         draw.image(&texture)
             // .alpha_mode(BlendMode::OVER)

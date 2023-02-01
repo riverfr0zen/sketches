@@ -13,3 +13,8 @@ pub const SALMON: Color = Color::new(0.98, 0.5, 0.45, 1.0);
 pub const OLIVE: Color = Color::new(0.5, 0.5, 0.0, 1.0);
 pub const SAFFRON: Color = Color::new(0.98, 0.54, 0.09, 1.0);
 pub const BANANA: Color = Color::new(1.0, 0.88, 0.21, 1.0);
+// Greens
+pub const SEAWEED: Color = Color::new(0.21, 0.29, 0.13, 1.0);
+pub const PICKLE: Color = Color::new(0.35, 0.49, 0.21, 1.0);
+pub const LIME: Color = Color::new(0.78, 0.92, 0.27, 1.0);
+pub const EMERALD: Color = Color::new(0.31, 0.79, 0.47, 1.0);
