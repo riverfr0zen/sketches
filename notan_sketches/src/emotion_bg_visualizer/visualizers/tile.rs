@@ -156,6 +156,19 @@ impl TileVisualizer {
     }
 
 
+    fn manage_cols_in_row(&mut self, row: usize) {
+        let reprs_cols = self.layout.reprs[row].len();
+        if self.layout.cols < reprs_cols {
+            self.layout.reprs[row].truncate(self.layout.cols);
+        } else if self.layout.cols > reprs_cols {
+            for col in 0..self.layout.cols {
+                if col >= reprs_cols {
+                    self.layout.reprs[row].push(ColorTransition::default());
+                }
+            }
+        }
+    }
+
     fn prepare_layout(&mut self, draw: &mut Draw) {
         if self.refresh_layout {
             if self.tiles.len() > MAX_COLS {
@@ -180,33 +193,14 @@ impl TileVisualizer {
                     if row >= reprs_rows {
                         self.layout.reprs.push(vec![]);
                     }
+                    self.manage_cols_in_row(row);
                 }
             } else if self.layout.rows < reprs_rows {
                 self.layout.reprs.truncate(self.layout.rows);
-            }
-
-            for row in 0..self.layout.rows {
-                let reprs_cols = self.layout.reprs[row].len();
-                if self.layout.cols < reprs_cols {
-                    self.layout.reprs[row].truncate(self.layout.cols);
-                } else if self.layout.cols > reprs_cols {
-                    for col in 0..self.layout.cols {
-                        if col >= reprs_cols {
-                            self.layout.reprs[row].push(ColorTransition::default());
-                        }
-                    }
+                for row in 0..self.layout.rows {
+                    self.manage_cols_in_row(row);
                 }
             }
-
-            // self.layout.reprs = vec![];
-            // for row in 0..self.layout.rows {
-            //     self.layout.reprs.push(vec![]);
-            //     for _ in 0..self.layout.cols {
-            //         self.layout.reprs[row].push(ColorTransition::default());
-            //     }
-            // }
-
-
             self.refresh_layout = false;
         } else {
             self.layout.cols = (draw.width() / self.layout.tile_size.x).ceil() as usize;
