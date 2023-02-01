@@ -2,7 +2,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan_sketches::colors::{AEGEAN, EMERALD, LIME, PICKLE, SAFFRON, SEAWEED};
+use notan_sketches::colors;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
 use std::mem::size_of_val;
 use uuid::Uuid;
@@ -14,22 +14,23 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
 const SPAWN_ANGLE_STEP: f32 = 30.0;
-const SPAWN2_ANGLE_STEP: f32 = 5.0;
+const SPAWN2_ANGLE_STEP: f32 = 1.0;
 // The frequency of the wave that determines the distance of the Spawn2's position
 // from its parent
 const SPAWN2_WAVE_FREQ: f32 = 20.0;
 // const SPAWN_STRATEGY: &str = "random";
-// const SPAWN_STRATEGY: &str = "random any child";
-const SPAWN_STRATEGY: &str = "random child of node";
+const SPAWN_STRATEGY: &str = "random any child";
+// const SPAWN_STRATEGY: &str = "random child of node";
 // const RANDOMIZE_SPAWN_DISTANCE: bool = false;
 const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 // How many nodes are cleared during node size management
-const NODES_ROTATED: usize = 100;
+// const NODES_ROTATED: usize = 100;
+const NODES_ROTATED: usize = 1024;
 // Max memory used for nodes
 // 10 KB: 10240
 // 1 MB: 1048576
 // 10 MB: 10485760
-const MAX_NODES_BYTES: u32 = 10485760;
+const MAX_NODES_BYTES: u32 = 1048576;
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
@@ -301,17 +302,22 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
             NodeClass::PARENT => {
                 texture = &state.circle_texture;
                 size = state.parent_radius * 2.0;
-                color = AEGEAN;
+                color = colors::AEGEAN;
+                // color = colors::CERULEAN;
             }
             NodeClass::SPAWN => {
                 texture = &state.circle_texture;
                 size = state.spawn_radius * 2.0;
-                color = SAFFRON;
+                color = colors::SAFFRON;
+                // color = colors::SALMON;
             }
             NodeClass::SPAWN2 => {
                 texture = &state.circle_texture;
                 size = state.spawn_radius * 0.75;
-                color = PICKLE;
+                color = colors::SEAWEED;
+                // color = colors::PICKLE;
+                // color = colors::SALMON;
+                // color = colors::AEGEAN;
             }
         }
         if node.is_parent() {
