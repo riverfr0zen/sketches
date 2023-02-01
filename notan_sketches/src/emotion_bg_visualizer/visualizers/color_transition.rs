@@ -29,6 +29,7 @@ fn round(val: f32, digits: f32) -> f32 {
 }
 
 
+#[derive(Clone)]
 pub struct ColorTransition {
     pub target_color: Color,
     pub color: Color,

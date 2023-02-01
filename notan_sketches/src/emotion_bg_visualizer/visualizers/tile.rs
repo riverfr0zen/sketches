@@ -13,11 +13,11 @@ use std::collections::HashMap;
 
 /// Slightly increases the sentiment score for use as a value to brighten/darken HSV
 const VALUE_MODIFIER: f32 = 3.0;
-// const MINIMAL_ENHANCEMENT: f32 = 0.01;
-const MINIMAL_ENHANCEMENT: f32 = 0.1;
-// const TILE_ALPHA: f32 = 0.2;
+const MINIMAL_ENHANCEMENT: f32 = 0.05;
+// const MINIMAL_ENHANCEMENT: f32 = 0.1;
+const TILE_ALPHA: f32 = 0.5;
 // const TILE_ALPHA: f32 = 0.8;
-const TILE_ALPHA: f32 = 1.0;
+// const TILE_ALPHA: f32 = 1.0;
 const MAX_COLS: usize = 10;
 const MAX_ROWS: usize = 10;
 
@@ -64,7 +64,7 @@ impl TilesLayout {
 pub struct TileVisualizer {
     rng: Random,
     pub model: Option<TopEmotionsModel>,
-    bg_color: Color,
+    pub transition: ColorTransition,
     /// As I experiment, I want a separate property to base the optimal text color on,
     /// because `bgcolor` above may not change per analysis (i.e. it might just remain
     /// white or whatever color the visualizer was initialized with).
@@ -126,7 +126,11 @@ impl TileVisualizer {
         Self {
             rng: rng,
             model: None,
-            bg_color: bg_color,
+            transition: ColorTransition {
+                target_color: bg_color,
+                color: bg_color,
+                ..Default::default()
+            },
             bg_color_for_text: bg_color,
             text_color: text_color,
             dynamic_text_color: enable_dynamic_text_color,
@@ -163,7 +167,14 @@ impl TileVisualizer {
         } else if self.layout.cols > reprs_cols {
             for col in 0..self.layout.cols {
                 if col >= reprs_cols {
-                    self.layout.reprs[row].push(ColorTransition::default());
+                    // if self.layout.reprs.len() > 0 && self.layout.reprs[0].len() > 0 {
+                    if self.layout.reprs[0].len() > 0 {
+                        let mut transition_clone = self.layout.reprs[0][0].clone();
+                        transition_clone.transitioning = false;
+                        self.layout.reprs[row].push(transition_clone);
+                    } else {
+                        self.layout.reprs[row].push(ColorTransition::default());
+                    }
                 }
             }
         }
@@ -203,7 +214,6 @@ impl TileVisualizer {
                 self.layout.rows,
                 self.layout.cols
             );
-
             self.grow_or_shrink_layout();
             self.refresh_layout = false;
         } else {
@@ -260,7 +270,10 @@ impl TileVisualizer {
 impl EmoVisualizer for TileVisualizer {
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
         self.model = None;
-        self.bg_color = bg_color;
+        self.transition.color = bg_color;
+        self.transition.target_color = bg_color;
+        self.transition.mix_factor = 0.0;
+        self.transition.transitioning = false;
         self.bg_color_for_text = bg_color;
         self.text_color = text_color;
         self.dynamic_text_color = enable_dynamic_text_color;
@@ -275,7 +288,7 @@ impl EmoVisualizer for TileVisualizer {
         text_color: Color,
         enable_dynamic_text_color: bool,
     ) {
-        self.bg_color = bg_color;
+        self.transition.target_color = bg_color;
         self.text_color = text_color;
         self.dynamic_text_color = enable_dynamic_text_color;
         self.tiles = vec![];
@@ -295,22 +308,21 @@ impl EmoVisualizer for TileVisualizer {
             .iter()
             .map(|emocolor| Tile::new(emocolor))
             .collect();
-        self.bg_color = model.get_simple_color();
-        self.bg_color_for_text = self.bg_color;
-        // self.bg_color_for_text = model.get_simple_color();
+        self.transition.target_color = model.get_simple_color();
+        self.bg_color_for_text = self.transition.target_color;
         self.refresh_layout = true;
         self.model = Some(model);
     }
 
     fn update_visualization(&mut self) {
-        // self.update_bg_color();
+        self.transition.step();
         self.update_text_color();
     }
 
 
     fn draw(&mut self, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.
-        draw.clear(self.bg_color);
+        draw.clear(self.transition.color);
         self.draw_flurry(draw);
     }
 }
