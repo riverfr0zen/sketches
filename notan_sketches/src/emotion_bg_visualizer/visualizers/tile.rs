@@ -13,7 +13,8 @@ use std::collections::HashMap;
 
 /// Slightly increases the sentiment score for use as a value to brighten/darken HSV
 const VALUE_MODIFIER: f32 = 3.0;
-const MINIMAL_ENHANCEMENT: f32 = 0.01;
+// const MINIMAL_ENHANCEMENT: f32 = 0.01;
+const MINIMAL_ENHANCEMENT: f32 = 0.1;
 // const TILE_ALPHA: f32 = 0.2;
 // const TILE_ALPHA: f32 = 0.8;
 const TILE_ALPHA: f32 = 1.0;
@@ -173,15 +174,51 @@ impl TileVisualizer {
                 self.layout.cols
             );
 
-            self.layout.reprs = vec![];
-            // Should look at this more closely, but unless I use inclusive ranges `..=`
-            // here I get index out of bounds errors.
-            for row in 0..self.layout.rows {
-                self.layout.reprs.push(vec![]);
-                for _ in 0..self.layout.cols {
-                    self.layout.reprs[row].push(ColorTransition::default());
+            let reprs_rows = self.layout.reprs.len();
+            if self.layout.rows > reprs_rows {
+                for row in 0..self.layout.rows {
+                    if row >= reprs_rows {
+                        self.layout.reprs.push(vec![]);
+                    }
+                    let reprs_cols = self.layout.reprs[row].len();
+                    if self.layout.cols > reprs_cols {
+                        for col in 0..self.layout.cols {
+                            if col >= reprs_cols {
+                                self.layout.reprs[row].push(ColorTransition::default());
+                            }
+                        }
+                    } else if self.layout.cols < reprs_cols {
+                        self.layout.reprs[row].truncate(self.layout.cols);
+                    }
+                }
+            } else if self.layout.rows < reprs_rows {
+                self.layout.reprs.truncate(self.layout.rows);
+                log::debug!(
+                    "truncating {}, new len {}",
+                    reprs_rows - self.layout.rows,
+                    self.layout.reprs.len()
+                );
+                for row in 0..self.layout.rows {
+                    let reprs_cols = self.layout.reprs[row].len();
+                    if self.layout.cols < reprs_cols {
+                        self.layout.reprs[row].truncate(self.layout.cols);
+                    } else if self.layout.cols > reprs_cols {
+                        for col in 0..self.layout.cols {
+                            if col >= reprs_cols {
+                                self.layout.reprs[row].push(ColorTransition::default());
+                            }
+                        }
+                    }
                 }
             }
+
+            // self.layout.reprs = vec![];
+            // for row in 0..self.layout.rows {
+            //     self.layout.reprs.push(vec![]);
+            //     for _ in 0..self.layout.cols {
+            //         self.layout.reprs[row].push(ColorTransition::default());
+            //     }
+            // }
 
 
             self.refresh_layout = false;

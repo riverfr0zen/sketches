@@ -213,11 +213,11 @@ impl TopEmotionsModel {
         let positive_sentiment = scores.remove(positive_pos);
         let negative_pos = scores.iter().position(|s| s.marker == "negative").unwrap();
         let negative_sentiment = scores.remove(negative_pos);
-        log::debug!(
-            "positive: {}, negative: {}",
-            positive_sentiment.score,
-            negative_sentiment.score
-        );
+        // log::debug!(
+        //     "positive: {}, negative: {}",
+        //     positive_sentiment.score,
+        //     negative_sentiment.score
+        // );
 
         scores.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
         // log::debug!("Score after {:?}", scores);
@@ -271,7 +271,7 @@ impl TopEmotionsModel {
     pub fn get_simple_color(&self) -> Color {
         let top_emotions = &self.top_emotions;
         if top_emotions[0].score > 0.0 {
-            log::debug!("Top emotions: {:?}:", top_emotions);
+            // log::debug!("Top emotions: {:?}:", top_emotions);
 
             let color_mapping = ColorMapping::PLUTCHIK;
             let emocolors: Vec<EmoColor> = self.get_top_emocolors(&color_mapping);
@@ -288,12 +288,12 @@ impl TopEmotionsModel {
                     // The sentiment values don't often seem to go beyond 0.5, so I'm modifying the
                     // mix factor a little. Must test later with more examples of text.
                     let mix_factor = sentiment_value * 2.0;
-                    log::debug!(
-                        "Emotion: {}, Sentiment value: {}, Mix_factor: {}",
-                        emocolor.emotion,
-                        sentiment_value,
-                        mix_factor
-                    );
+                    // log::debug!(
+                    //     "Emotion: {}, Sentiment value: {}, Mix_factor: {}",
+                    //     emocolor.emotion,
+                    //     sentiment_value,
+                    //     mix_factor
+                    // );
                     // final_color = final_color.mix(&emocolor.hsv, 0.5);
                     final_color = final_color.mix(&emocolor.hsv, mix_factor);
                     log::debug!("After mix: {:?}", final_color);
