@@ -194,8 +194,9 @@ impl TileVisualizer {
             } else if self.layout.rows < reprs_rows {
                 self.layout.reprs.truncate(self.layout.rows);
                 log::debug!(
-                    "truncating {}, new len {}",
-                    reprs_rows - self.layout.rows,
+                    "truncated from {} rows to {} rows, new rows len: {}",
+                    reprs_rows,
+                    self.layout.rows,
                     self.layout.reprs.len()
                 );
                 for row in 0..self.layout.rows {
