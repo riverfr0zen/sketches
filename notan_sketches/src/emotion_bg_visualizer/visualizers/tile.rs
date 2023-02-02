@@ -168,19 +168,19 @@ impl TileVisualizer {
             for col in 0..self.layout.cols {
                 if col >= reprs_cols {
                     let first_row_len = self.layout.reprs[0].len();
-                    if first_row_len > 0 {
-                        if first_row_len > 1 {
-                            let selection = self.rng.gen_range(0..first_row_len);
-                            let mut transition_clone = self.layout.reprs[0][selection].clone();
-                            // transition_clone.transitioning = false;
-                            self.layout.reprs[row].push(transition_clone);
-                        } else {
-                            let mut transition_clone = self.layout.reprs[0][0].clone();
-                            // transition_clone.transitioning = false;
-                            self.layout.reprs[row].push(transition_clone);
-                        }
-                    } else {
+                    if first_row_len == 0 {
                         self.layout.reprs[row].push(ColorTransition::default());
+                    } else {
+                        // let mut transition_clone: ColorTransition;
+                        let transition_clone: ColorTransition;
+                        if first_row_len == 1 {
+                            transition_clone = self.layout.reprs[0][0].clone();
+                        } else {
+                            let selection = self.rng.gen_range(0..first_row_len);
+                            transition_clone = self.layout.reprs[0][selection].clone();
+                        }
+                        // transition_clone.transitioning = false;
+                        self.layout.reprs[row].push(transition_clone);
                     }
                 }
             }
@@ -198,6 +198,10 @@ impl TileVisualizer {
             }
         } else if self.layout.rows < reprs_rows {
             self.layout.reprs.truncate(self.layout.rows);
+            for row in 0..self.layout.rows {
+                self.manage_cols_in_row(row);
+            }
+        } else {
             for row in 0..self.layout.rows {
                 self.manage_cols_in_row(row);
             }
