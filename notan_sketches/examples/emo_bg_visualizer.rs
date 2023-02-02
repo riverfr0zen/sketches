@@ -9,8 +9,11 @@ use notan_sketches::emotion::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 // use serde_json::{Result as JsonResult, Value};
 use notan_sketches::emotion_bg_visualizer::get_work_size;
-use notan_sketches::emotion_bg_visualizer::ui::{scale_font, DisplayMetrics, SettingsUi};
+use notan_sketches::emotion_bg_visualizer::ui::{
+    scale_font, DisplayMetrics, EmoVizCommon, SettingsUi,
+};
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::tile::TileVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
 use FontFamily::{Monospace, Proportional};
 
@@ -34,6 +37,8 @@ const READ_VIEW_GUI_COLOR: egui::Color32 =
     egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
+// const DEFAULT_VISUALIZER: &str = "ColorTransitionVisualizer";
+const DEFAULT_VISUALIZER: &str = "TileVisualizer";
 
 
 #[derive(PartialEq)]
@@ -69,7 +74,8 @@ struct State {
     font: Font,
     title_font: Font,
     egui_fonts: FontDefinitions,
-    visualizer: ColorTransitionVisualizer,
+    // visualizer: ColorTransitionVisualizer,
+    visualizer: Box<dyn EmoVizCommon>,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
 }
@@ -134,7 +140,19 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         font: font,
         title_font: title_font,
         egui_fonts: egui_fonts,
-        visualizer: ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR),
+        // visualizer: ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR),
+        visualizer: match DEFAULT_VISUALIZER {
+            "TileVisualizer" => Box::new(TileVisualizer::new(
+                CLEAR_COLOR,
+                TITLE_COLOR,
+                DYNAMIC_TEXT_COLOR,
+            )),
+            _ => Box::new(ColorTransitionVisualizer::new(
+                CLEAR_COLOR,
+                TITLE_COLOR,
+                DYNAMIC_TEXT_COLOR,
+            )),
+        },
         needs_handle_resize: true,
         needs_egui_font_setup: true,
     };

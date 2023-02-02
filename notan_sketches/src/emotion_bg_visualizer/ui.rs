@@ -1,5 +1,7 @@
 use super::visualizers::color_transition::ColorTransitionVisualizer;
+use super::visualizers::tile::TileVisualizer;
 use super::visualizers::EmoVisualizer;
+use crate::emotion::TopEmotionsModel;
 use crate::utils::ScreenDimensions;
 use notan::egui::{self, RichText, TextStyle, Ui};
 use notan::math::Vec2;
@@ -36,6 +38,32 @@ pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
 }
 
 
+fn top_emotions_egui_metrics_ui(
+    model: &TopEmotionsModel,
+    ui: &mut Ui,
+    title_style: &dyn Fn() -> TextStyle,
+) {
+    ui.label("");
+    let header = RichText::new("Sentiment scores:")
+        .color(egui::Color32::BLACK)
+        .text_style(title_style());
+    ui.label(header);
+    ui.small(format!("positive: {}", model.positive));
+    ui.small(format!("negative: {}", model.negative));
+    ui.label("");
+    let header = RichText::new("Top emotions:")
+        .color(egui::Color32::BLACK)
+        .text_style(title_style());
+    ui.label(header);
+    if model.top_emotions.len() > 0 && model.top_emotions[0].score > 0.0 {
+        for top_emo in model.top_emotions.iter() {
+            ui.small(format!("{}: {}", top_emo.marker, top_emo.score));
+        }
+    } else {
+        ui.small("None");
+    }
+}
+
 pub trait DisplayMetrics {
     fn egui_metrics(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle);
 }
@@ -44,25 +72,18 @@ pub trait DisplayMetrics {
 impl DisplayMetrics for ColorTransitionVisualizer {
     fn egui_metrics(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle) {
         if let Some(model) = &self.model {
-            ui.label("");
-            let header = RichText::new("Sentiment scores:")
-                .color(egui::Color32::BLACK)
-                .text_style(title_style());
-            ui.label(header);
-            ui.small(format!("positive: {}", model.positive));
-            ui.small(format!("negative: {}", model.negative));
-            ui.label("");
-            let header = RichText::new("Top emotions:")
-                .color(egui::Color32::BLACK)
-                .text_style(title_style());
-            ui.label(header);
-            if model.top_emotions.len() > 0 && model.top_emotions[0].score > 0.0 {
-                for top_emo in model.top_emotions.iter() {
-                    ui.small(format!("{}: {}", top_emo.marker, top_emo.score));
-                }
-            } else {
-                ui.small("None");
-            }
+            top_emotions_egui_metrics_ui(model, ui, title_style);
+        } else {
+            ui.small("The emotion analysis metrics will appear here when you start reading.");
+        }
+    }
+}
+
+
+impl DisplayMetrics for TileVisualizer {
+    fn egui_metrics(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle) {
+        if let Some(model) = &self.model {
+            top_emotions_egui_metrics_ui(model, ui, title_style);
         } else {
             ui.small("The emotion analysis metrics will appear here when you start reading.");
         }
@@ -100,3 +121,20 @@ impl SettingsUi for ColorTransitionVisualizer {
         // });
     }
 }
+
+
+impl SettingsUi for TileVisualizer {
+    fn egui_settings(&mut self, ui: &mut Ui, option_style: &dyn Fn() -> TextStyle) {
+        ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+            ui.label("TODO: TileVisualizer SettingsUi");
+            // ui.label(&self.options["Color Method"]);
+        });
+    }
+}
+
+
+pub trait EmoVizCommon: EmoVisualizer + DisplayMetrics + SettingsUi {}
+
+// impl EmoVizCommon for ColorTransitionVisualizer {}
+// impl EmoVizCommon for TileVisualizer {}
+impl<T: EmoVisualizer + DisplayMetrics + SettingsUi> EmoVizCommon for T {}
