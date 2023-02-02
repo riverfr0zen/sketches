@@ -8,14 +8,12 @@ use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 // use serde_json::{Result as JsonResult, Value};
-use notan_sketches::emotion_bg_visualizer::get_work_size;
-use notan_sketches::emotion_bg_visualizer::ui::{
-    scale_font, DisplayMetrics, EmoVizCommon, SettingsUi,
-};
+use notan_sketches::emotion_bg_visualizer::ui::scale_font;
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::tile::TileVisualizer;
-use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
+use notan_sketches::emotion_bg_visualizer::{get_work_size, EmoVisualizerFull};
 use FontFamily::{Monospace, Proportional};
+
 
 // See details at https://stackoverflow.com/a/42764117
 const EMOCAT_DOCS: [&'static str; 8] = [
@@ -75,7 +73,7 @@ struct State {
     title_font: Font,
     egui_fonts: FontDefinitions,
     // visualizer: ColorTransitionVisualizer,
-    visualizer: Box<dyn EmoVizCommon>,
+    visualizer: Box<dyn EmoVisualizerFull>,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
 }

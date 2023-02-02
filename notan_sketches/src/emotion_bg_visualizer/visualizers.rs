@@ -1,11 +1,10 @@
+pub mod color_transition;
+pub mod tile;
+
 use crate::emotion::EmocatTextAnalysis;
 use notan::draw::*;
 use notan::prelude::*;
-use std::collections::HashMap;
 
-
-pub mod color_transition;
-pub mod tile;
 
 pub trait EmoVisualizer {
     /// Similar to new(), but does not reset user-configurable properties

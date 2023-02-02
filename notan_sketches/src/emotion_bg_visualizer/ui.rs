@@ -1,6 +1,5 @@
 use super::visualizers::color_transition::ColorTransitionVisualizer;
 use super::visualizers::tile::TileVisualizer;
-use super::visualizers::EmoVisualizer;
 use crate::emotion::TopEmotionsModel;
 use crate::utils::ScreenDimensions;
 use notan::egui::{self, RichText, TextStyle, Ui};
@@ -131,10 +130,3 @@ impl SettingsUi for TileVisualizer {
         });
     }
 }
-
-
-pub trait EmoVizCommon: EmoVisualizer + DisplayMetrics + SettingsUi {}
-
-// impl EmoVizCommon for ColorTransitionVisualizer {}
-// impl EmoVizCommon for TileVisualizer {}
-impl<T: EmoVisualizer + DisplayMetrics + SettingsUi> EmoVizCommon for T {}

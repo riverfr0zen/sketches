@@ -1,8 +1,18 @@
 pub mod ui;
 pub mod visualizers;
+
 use crate::utils::ScreenDimensions;
 use notan::app::Graphics;
 use notan::math::{vec2, Vec2};
+use ui::{DisplayMetrics, SettingsUi};
+use visualizers::EmoVisualizer;
+
+
+pub trait EmoVisualizerFull: EmoVisualizer + DisplayMetrics + SettingsUi {}
+
+// impl EmoVizCommon for ColorTransitionVisualizer {}
+// impl EmoVizCommon for TileVisualizer {}
+impl<T: EmoVisualizer + DisplayMetrics + SettingsUi> EmoVisualizerFull for T {}
 
 
 /// In this app, where font scaling is involved, a work size that matches
