@@ -171,7 +171,6 @@ impl TileVisualizer {
                     if first_row_len == 0 {
                         self.layout.reprs[row].push(ColorTransition::default());
                     } else {
-                        // let mut transition_clone: ColorTransition;
                         let transition_clone: ColorTransition;
                         if first_row_len == 1 {
                             transition_clone = self.layout.reprs[0][0].clone();
@@ -179,7 +178,6 @@ impl TileVisualizer {
                             let selection = self.rng.gen_range(0..first_row_len);
                             transition_clone = self.layout.reprs[0][selection].clone();
                         }
-                        // transition_clone.transitioning = false;
                         self.layout.reprs[row].push(transition_clone);
                     }
                 }
@@ -189,22 +187,15 @@ impl TileVisualizer {
 
     fn grow_or_shrink_layout(&mut self) {
         let reprs_rows = self.layout.reprs.len();
-        if self.layout.rows > reprs_rows {
-            for row in 0..self.layout.rows {
-                if row >= reprs_rows {
-                    self.layout.reprs.push(vec![]);
-                }
-                self.manage_cols_in_row(row);
-            }
-        } else if self.layout.rows < reprs_rows {
+
+        if self.layout.rows < reprs_rows {
             self.layout.reprs.truncate(self.layout.rows);
-            for row in 0..self.layout.rows {
-                self.manage_cols_in_row(row);
+        }
+        for row in 0..self.layout.rows {
+            if row >= reprs_rows {
+                self.layout.reprs.push(vec![]);
             }
-        } else {
-            for row in 0..self.layout.rows {
-                self.manage_cols_in_row(row);
-            }
+            self.manage_cols_in_row(row);
         }
     }
 
