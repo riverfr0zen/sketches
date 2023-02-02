@@ -21,8 +21,8 @@ macro_rules! EMOCAT_OUTPUT_FILE {
         // "assets/lb_hughes01.json"
         // "assets/lb_teasdale01.json"
         // "assets/wilde01.json"
-        // "assets/lb_whitman01.json"
-        "assets/the_stagger.json"
+        "assets/lb_whitman01.json"
+        // "assets/the_stagger.json"
     };
 }
 

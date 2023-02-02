@@ -13,14 +13,15 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
-const SPAWN_ANGLE_STEP: f32 = 30.0;
+// const SPAWN_ANGLE_STEP: f32 = 30.0;
+const SPAWN_ANGLE_STEP: f32 = 10.0;
 const SPAWN2_ANGLE_STEP: f32 = 1.0;
 // The frequency of the wave that determines the distance of the Spawn2's position
 // from its parent
 const SPAWN2_WAVE_FREQ: f32 = 20.0;
 // const SPAWN_STRATEGY: &str = "random";
-const SPAWN_STRATEGY: &str = "random any child";
-// const SPAWN_STRATEGY: &str = "random child of node";
+// const SPAWN_STRATEGY: &str = "random any child";
+const SPAWN_STRATEGY: &str = "random child of node";
 // const RANDOMIZE_SPAWN_DISTANCE: bool = false;
 const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 // How many nodes are cleared during node size management
@@ -30,7 +31,7 @@ const NODES_ROTATED: usize = 1024;
 // 10 KB: 10240
 // 1 MB: 1048576
 // 10 MB: 10485760
-const MAX_NODES_BYTES: u32 = 1048576;
+const MAX_NODES_BYTES: u32 = 10485760;
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
@@ -308,15 +309,16 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
             NodeClass::SPAWN => {
                 texture = &state.circle_texture;
                 size = state.spawn_radius * 2.0;
-                color = colors::SAFFRON;
+                // color = colors::SAFFRON;
                 // color = colors::SALMON;
+                color = colors::SEAWEED;
             }
             NodeClass::SPAWN2 => {
                 texture = &state.circle_texture;
                 size = state.spawn_radius * 0.75;
-                color = colors::SEAWEED;
+                // color = colors::SEAWEED;
                 // color = colors::PICKLE;
-                // color = colors::SALMON;
+                color = colors::SALMON;
                 // color = colors::AEGEAN;
             }
         }

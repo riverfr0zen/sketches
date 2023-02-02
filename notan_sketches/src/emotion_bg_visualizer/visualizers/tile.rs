@@ -8,18 +8,18 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Shade, Srgb};
-use rapier2d::na::iter::RowIterMut;
 use std::collections::HashMap;
+
 
 /// Slightly increases the sentiment score for use as a value to brighten/darken HSV
 const VALUE_MODIFIER: f32 = 3.0;
 const MINIMAL_ENHANCEMENT: f32 = 0.05;
 // const MINIMAL_ENHANCEMENT: f32 = 0.1;
-// const TILE_ALPHA: f32 = 0.2;
-// const TILE_ALPHA: f32 = 0.8;
-const TILE_ALPHA: f32 = 1.0;
-const MAX_COLS: usize = 10;
-const MAX_ROWS: usize = 10;
+const TILE_ALPHA: f32 = 0.3;
+// const TILE_ALPHA: f32 = 0.5;
+// const TILE_ALPHA: f32 = 1.0;
+const MAX_COLS: usize = 5;
+const MAX_ROWS: usize = 5;
 
 
 /// Represents different Tile "baselines/archetypes"
