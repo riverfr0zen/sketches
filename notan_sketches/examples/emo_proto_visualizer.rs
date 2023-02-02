@@ -14,7 +14,7 @@ use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensi
 
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
-        "assets/lb_bronte01.json"
+        // "assets/lb_bronte01.json"
         // "assets/lb_dickinson01.json"
         // "assets/lb_dickinson02.json"
         // "assets/lb_howe01.json"
@@ -22,7 +22,7 @@ macro_rules! EMOCAT_OUTPUT_FILE {
         // "assets/lb_teasdale01.json"
         // "assets/wilde01.json"
         // "assets/lb_whitman01.json"
-        // "assets/the_stagger.json"
+        "assets/the_stagger.json"
     };
 }
 

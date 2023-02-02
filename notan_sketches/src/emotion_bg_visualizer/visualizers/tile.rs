@@ -15,9 +15,9 @@ use std::collections::HashMap;
 const VALUE_MODIFIER: f32 = 3.0;
 const MINIMAL_ENHANCEMENT: f32 = 0.05;
 // const MINIMAL_ENHANCEMENT: f32 = 0.1;
-const TILE_ALPHA: f32 = 0.5;
+// const TILE_ALPHA: f32 = 0.2;
 // const TILE_ALPHA: f32 = 0.8;
-// const TILE_ALPHA: f32 = 1.0;
+const TILE_ALPHA: f32 = 1.0;
 const MAX_COLS: usize = 10;
 const MAX_ROWS: usize = 10;
 
@@ -167,11 +167,18 @@ impl TileVisualizer {
         } else if self.layout.cols > reprs_cols {
             for col in 0..self.layout.cols {
                 if col >= reprs_cols {
-                    // if self.layout.reprs.len() > 0 && self.layout.reprs[0].len() > 0 {
-                    if self.layout.reprs[0].len() > 0 {
-                        let mut transition_clone = self.layout.reprs[0][0].clone();
-                        transition_clone.transitioning = false;
-                        self.layout.reprs[row].push(transition_clone);
+                    let first_row_len = self.layout.reprs[0].len();
+                    if first_row_len > 0 {
+                        if first_row_len > 1 {
+                            let selection = self.rng.gen_range(0..first_row_len);
+                            let mut transition_clone = self.layout.reprs[0][selection].clone();
+                            // transition_clone.transitioning = false;
+                            self.layout.reprs[row].push(transition_clone);
+                        } else {
+                            let mut transition_clone = self.layout.reprs[0][0].clone();
+                            // transition_clone.transitioning = false;
+                            self.layout.reprs[row].push(transition_clone);
+                        }
                     } else {
                         self.layout.reprs[row].push(ColorTransition::default());
                     }
