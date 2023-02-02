@@ -262,10 +262,13 @@ impl TopEmotionsModel {
 
     pub fn get_top_emocolors(&self, color_mapping: &ColorMapping) -> Vec<EmoColor> {
         let top_emotions = &self.top_emotions;
-        top_emotions
-            .iter()
-            .map(|s| get_mapped_emocolor(&s.marker, &color_mapping))
-            .collect()
+        if top_emotions[0].score > 0.0 {
+            return top_emotions
+                .iter()
+                .map(|s| get_mapped_emocolor(&s.marker, &color_mapping))
+                .collect();
+        }
+        vec![get_mapped_emocolor("", &color_mapping)]
     }
 
     pub fn get_simple_color(&self) -> Color {
