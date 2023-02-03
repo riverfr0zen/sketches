@@ -119,7 +119,7 @@ impl SettingsUi for ColorTransitionVisualizer {
 
 
 impl SettingsUi for TilesVisualizer {
-    fn egui_settings(&mut self, ui: &mut Ui, option_style: &dyn Fn() -> TextStyle) {
+    fn egui_settings(&mut self, ui: &mut Ui, _option_style: &dyn Fn() -> TextStyle) {
         ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
             ui.label("There are no options for the Tiles visualizer.");
             // ui.label(&self.options["Color Method"]);

@@ -313,6 +313,8 @@ fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     let output = plugins.egui(|ctx| {
         draw_analysis_panel(ctx, state, work_size);
     });
+    // Not checking if output needs repaint because then the analysis panel
+    // is erased by the draw above
     gfx.render(&output);
 }
 
@@ -349,7 +351,7 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
     style.text_styles = [
         (
             TextStyle::Heading,
-            FontId::new(scale_font(16.0, work_size), Monospace),
+            FontId::new(scale_font(12.0, work_size), Monospace),
         ),
         (logo(), FontId::new(scale_font(25.0, work_size), Monospace)),
         (
@@ -358,7 +360,7 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
         ),
         (
             TextStyle::Body,
-            FontId::new(scale_font(12.0, work_size), Monospace),
+            FontId::new(scale_font(10.0, work_size), Monospace),
         ),
         (
             author_menu_text(),
@@ -370,7 +372,7 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
         ),
         (
             title_button(),
-            FontId::new(scale_font(16.0, work_size), Proportional),
+            FontId::new(scale_font(12.0, work_size), Proportional),
         ),
         (
             small_button(),
@@ -707,7 +709,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                     .show(ui, |ui| {
                         ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
                             let mut style = (*ctx.style()).clone();
-                            let button_top_margin = work_size.y * 0.01;
+                            let button_top_margin = work_size.y * 0.0075;
                             let title_frame = egui::Frame::none()
                                 // .fill(egui::Color32::RED)
                                 .inner_margin(egui::style::Margin {
@@ -783,10 +785,10 @@ fn main() -> Result<(), String> {
     let win_config = get_common_win_config().high_dpi(true).size(
         // ScreenDimensions::RES_HDPLUS.x as i32,
         // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
-        // ScreenDimensions::DEFAULT.x as i32,
-        // ScreenDimensions::DEFAULT.y as i32,
+        // ScreenDimensions::RES_1080P.x as i32,
+        // ScreenDimensions::RES_1080P.y as i32,
+        ScreenDimensions::DEFAULT.x as i32,
+        ScreenDimensions::DEFAULT.y as i32,
     );
 
     #[cfg(target_arch = "wasm32")]
