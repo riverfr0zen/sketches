@@ -14,14 +14,13 @@ use notan::math::Vec2;
 ///
 /// @TODO: What about portrait dimensions?
 pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_HDPLUS.x
-    {
-        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 2.2;
-    }
-    if work_size.x >= ScreenDimensions::RES_HDPLUS.x && work_size.x < ScreenDimensions::RES_1440P.x
+    if work_size.x >= ScreenDimensions::RES_HDPLUS.x && work_size.x < ScreenDimensions::RES_1080P.x
     {
         // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 2.2;
+    }
+    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x {
+        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 2.5;
     }
     if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {

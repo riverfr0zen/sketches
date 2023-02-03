@@ -251,6 +251,7 @@ fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
     draw.text(&state.title_font, &emodoc.title)
         .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
         .color(TITLE_COLOR)
+        // NOTE: These draw.text fonts size differently than font sizes in egui
         .size(scale_font(60.0, work_size))
         .max_width(textbox_width)
         .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.4)
@@ -284,6 +285,7 @@ fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
     )
     .alpha_mode(BlendMode::OVER)
     .color(state.visualizer.get_text_color())
+    // NOTE: These draw.text fonts size differently than font sizes in egui
     .size(scale_font(32.0, work_size))
     .max_width(textbox_width)
     .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
