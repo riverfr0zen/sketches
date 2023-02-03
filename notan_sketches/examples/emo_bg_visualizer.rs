@@ -348,6 +348,8 @@ fn author_menu_text() -> TextStyle {
 
 
 // Based on: https://github.com/emilk/egui/blob/master/examples/custom_font_style/src/main.rs
+// NOTE: These font sizes and styles only affect egui UI items -- they don't apply to
+// the draw.text() items used in the reading view.
 fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
     let mut style = (*ctx.style()).clone();
     style.text_styles = [
