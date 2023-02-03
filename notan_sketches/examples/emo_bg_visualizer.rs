@@ -348,43 +348,56 @@ fn author_menu_text() -> TextStyle {
 
 
 // Based on: https://github.com/emilk/egui/blob/master/examples/custom_font_style/src/main.rs
+//
 // NOTE: These font sizes and styles only affect egui UI items -- they don't apply to
 // the draw.text() items used in the reading view.
 fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
+    let portrait = work_size.x < work_size.y;
+    // log::debug!("{} < {} = {}", work_size.x, work_size.y, portrait);
+    let small_button_size: f32;
+    let small_text_size: f32;
+    if portrait {
+        small_button_size = 12.0;
+        small_text_size = 10.0;
+    } else {
+        small_button_size = 8.0;
+        small_text_size = 8.0;
+    }
+
     let mut style = (*ctx.style()).clone();
     style.text_styles = [
         (
             TextStyle::Heading,
-            FontId::new(scale_font(12.0, work_size), Monospace),
+            FontId::new(scale_font(14.0, work_size), Monospace),
         ),
-        (logo(), FontId::new(scale_font(25.0, work_size), Monospace)),
+        (logo(), FontId::new(scale_font(26.0, work_size), Monospace)),
         (
             analysis_panel_title(),
             FontId::new(scale_font(10.0, work_size), Monospace),
         ),
         (
             TextStyle::Body,
-            FontId::new(scale_font(10.0, work_size), Monospace),
-        ),
-        (
-            author_menu_text(),
-            FontId::new(scale_font(9.0, work_size), Proportional),
-        ),
-        (
-            TextStyle::Button,
             FontId::new(scale_font(12.0, work_size), Monospace),
         ),
         (
+            author_menu_text(),
+            FontId::new(scale_font(10.0, work_size), Proportional),
+        ),
+        (
+            TextStyle::Button,
+            FontId::new(scale_font(10.0, work_size), Monospace),
+        ),
+        (
             title_button(),
-            FontId::new(scale_font(12.0, work_size), Proportional),
+            FontId::new(scale_font(15.0, work_size), Proportional),
         ),
         (
             small_button(),
-            FontId::new(scale_font(8.0, work_size), Monospace),
+            FontId::new(scale_font(small_button_size, work_size), Monospace),
         ),
         (
             TextStyle::Small,
-            FontId::new(scale_font(8.0, work_size), Monospace),
+            FontId::new(scale_font(small_text_size, work_size), Monospace),
         ),
     ]
     .into();
@@ -462,7 +475,7 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
 
     ui.horizontal(|ui| {
         if state.view != View::HOME {
-            let about_button = make_small_button("Home");
+            let about_button = make_small_button("Main Menu");
             if ui.add(about_button).clicked() {
                 state.view = View::HOME;
             }
@@ -476,7 +489,7 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
         }
 
         if state.view != View::SETTINGS {
-            let settings_button = make_small_button("Visualizer Options");
+            let settings_button = make_small_button("Options");
             if ui.add(settings_button).clicked() {
                 log::debug!("clicked settings");
                 state.view = View::SETTINGS;
@@ -647,20 +660,19 @@ fn draw_settings_view(
                         VisualizerSelection::Tiles => "Tiles           ",
                         _ => "Color Transition",
                     };
-                    let option_text = RichText::new(visualizer_name).text_style(small_button());
                     egui::ComboBox::from_id_source("selected-visualizer")
-                        .selected_text(option_text)
+                        .selected_text(visualizer_name)
                         .wrap(false)
                         .show_ui(ui, |ui| {
                             ui.selectable_value(
                                 &mut state.selected_visualizer,
                                 VisualizerSelection::ColorTransition,
-                                RichText::new("Color Transition").text_style(small_button()),
+                                "Color Transition",
                             );
                             ui.selectable_value(
                                 &mut state.selected_visualizer,
                                 VisualizerSelection::Tiles,
-                                RichText::new("Tiles").text_style(small_button()),
+                                "Tiles",
                             );
                         });
                 });
@@ -669,7 +681,7 @@ fn draw_settings_view(
                 heading_frame.show(ui, |ui| {
                     ui.heading("Visualizer Specific");
                 });
-                state.visualizer.egui_settings(ui, &small_button);
+                state.visualizer.egui_settings(ui);
             },
         );
     });
@@ -713,7 +725,8 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                     .show(ui, |ui| {
                         ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
                             let mut style = (*ctx.style()).clone();
-                            let button_top_margin = work_size.y * 0.0075;
+                            // let button_top_margin = work_size.y * 0.0075;
+                            let button_top_margin = work_size.y * 0.01;
                             let title_frame = egui::Frame::none()
                                 // .fill(egui::Color32::RED)
                                 .inner_margin(egui::style::Margin {
@@ -789,10 +802,10 @@ fn main() -> Result<(), String> {
     let win_config = get_common_win_config().high_dpi(true).size(
         // ScreenDimensions::RES_HDPLUS.x as i32,
         // ScreenDimensions::RES_HDPLUS.y as i32,
-        // ScreenDimensions::RES_1080P.x as i32,
-        // ScreenDimensions::RES_1080P.y as i32,
-        ScreenDimensions::DEFAULT.x as i32,
-        ScreenDimensions::DEFAULT.y as i32,
+        ScreenDimensions::RES_1080P.x as i32,
+        ScreenDimensions::RES_1080P.y as i32,
+        // ScreenDimensions::DEFAULT.x as i32,
+        // ScreenDimensions::DEFAULT.y as i32,
     );
 
     #[cfg(target_arch = "wasm32")]

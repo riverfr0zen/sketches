@@ -15,7 +15,7 @@ use notan::math::Vec2;
 /// @TODO: What about portrait dimensions?
 pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
     if work_size.x >= ScreenDimensions::RES_QHD.x && work_size.x < ScreenDimensions::RES_720p.x {
-        // log::debug!("720p, x:{} y:{}", work_size.x, work_size.y);
+        // log::debug!("QHD, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 1.5;
     }
     if work_size.x >= ScreenDimensions::RES_720p.x && work_size.x < ScreenDimensions::RES_HDPLUS.x {
@@ -98,26 +98,20 @@ impl DisplayMetrics for TilesVisualizer {
 
 
 pub trait SettingsUi {
-    fn egui_settings(&mut self, ui: &mut Ui, option_style: &dyn Fn() -> TextStyle);
+    fn egui_settings(&mut self, ui: &mut Ui);
 }
 
 impl SettingsUi for ColorTransitionVisualizer {
-    fn egui_settings(&mut self, ui: &mut Ui, option_style: &dyn Fn() -> TextStyle) {
+    fn egui_settings(&mut self, ui: &mut Ui) {
         ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
             let viz_options = &mut Self::get_options();
 
             ui.label("Color Method");
-            let option_text = RichText::new(&self.color_method).text_style(option_style());
             egui::ComboBox::from_id_source("color-method")
-                .selected_text(option_text)
+                .selected_text(&self.color_method)
                 .show_ui(ui, |ui| {
                     for option in viz_options.get_mut("Color Method").unwrap().iter() {
-                        let option_text = RichText::new(option).text_style(option_style());
-                        ui.selectable_value(
-                            &mut self.color_method,
-                            option.to_string(),
-                            option_text,
-                        );
+                        ui.selectable_value(&mut self.color_method, option.to_string(), option);
                     }
                 });
         });
@@ -126,7 +120,7 @@ impl SettingsUi for ColorTransitionVisualizer {
 
 
 impl SettingsUi for TilesVisualizer {
-    fn egui_settings(&mut self, ui: &mut Ui, _option_style: &dyn Fn() -> TextStyle) {
+    fn egui_settings(&mut self, ui: &mut Ui) {
         ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
             ui.label("There are no options for the Tiles visualizer.");
             // ui.label(&self.options["Color Method"]);
