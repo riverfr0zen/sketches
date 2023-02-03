@@ -1,5 +1,5 @@
 use super::visualizers::color_transition::ColorTransitionVisualizer;
-use super::visualizers::tile::TileVisualizer;
+use super::visualizers::tile::TilesVisualizer;
 use crate::emotion::TopEmotionsModel;
 use crate::utils::ScreenDimensions;
 use notan::egui::{self, RichText, TextStyle, Ui};
@@ -79,7 +79,7 @@ impl DisplayMetrics for ColorTransitionVisualizer {
 }
 
 
-impl DisplayMetrics for TileVisualizer {
+impl DisplayMetrics for TilesVisualizer {
     fn egui_metrics(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle) {
         if let Some(model) = &self.model {
             top_emotions_egui_metrics_ui(model, ui, title_style);
@@ -114,18 +114,14 @@ impl SettingsUi for ColorTransitionVisualizer {
                     }
                 });
         });
-        // ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-        //     ui.label("Something Else:");
-        //     ui.label(&self.options["Color Method"]);
-        // });
     }
 }
 
 
-impl SettingsUi for TileVisualizer {
+impl SettingsUi for TilesVisualizer {
     fn egui_settings(&mut self, ui: &mut Ui, option_style: &dyn Fn() -> TextStyle) {
         ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-            ui.label("TODO: TileVisualizer SettingsUi");
+            ui.label("There are no options for the Tiles visualizer.");
             // ui.label(&self.options["Color Method"]);
         });
     }

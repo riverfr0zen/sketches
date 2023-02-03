@@ -1,5 +1,6 @@
 use super::get_optimal_text_color;
 use super::EmoVisualizer;
+use super::VisualizerSelection;
 use crate::emotion::{EmocatTextAnalysis, TopEmotionsModel};
 use notan::draw::*;
 use notan::log;
@@ -144,6 +145,11 @@ impl ColorTransitionVisualizer {
 
 
 impl EmoVisualizer for ColorTransitionVisualizer {
+    fn get_enum(&self) -> VisualizerSelection {
+        VisualizerSelection::ColorTransition
+    }
+
+
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
         self.model = None;
         self.transition.color = bg_color;

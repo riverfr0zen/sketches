@@ -7,7 +7,7 @@ use notan_sketches::emotion::*;
 use notan_sketches::emotion_bg_visualizer::get_work_size;
 use notan_sketches::emotion_bg_visualizer::ui::scale_font;
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
-use notan_sketches::emotion_bg_visualizer::visualizers::tile::TileVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 
@@ -33,7 +33,7 @@ const META_COLOR: Color = Color::GRAY;
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
 // const VISUALIZER: &str = "ColorTransitionVisualizer";
-const VISUALIZER: &str = "TileVisualizer";
+const VISUALIZER: &str = "TilesVisualizer";
 
 
 #[derive(AppState)]
@@ -71,7 +71,7 @@ fn init(gfx: &mut Graphics) -> State {
         title_font: title_font,
         analysis: 0,
         visualizer: match VISUALIZER {
-            "TileVisualizer" => Box::new(TileVisualizer::new(
+            "TilesVisualizer" => Box::new(TilesVisualizer::new(
                 CLEAR_COLOR,
                 TITLE_COLOR,
                 DYNAMIC_TEXT_COLOR,

@@ -10,7 +10,8 @@ use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensi
 // use serde_json::{Result as JsonResult, Value};
 use notan_sketches::emotion_bg_visualizer::ui::scale_font;
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
-use notan_sketches::emotion_bg_visualizer::visualizers::tile::TileVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::VisualizerSelection;
 use notan_sketches::emotion_bg_visualizer::{get_work_size, EmoVisualizerFull};
 use FontFamily::{Monospace, Proportional};
 
@@ -35,8 +36,8 @@ const READ_VIEW_GUI_COLOR: egui::Color32 =
     egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
-// const DEFAULT_VISUALIZER: &str = "ColorTransitionVisualizer";
-const DEFAULT_VISUALIZER: &str = "TileVisualizer";
+// const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::ColorTransition;
+const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::Tiles;
 
 
 #[derive(PartialEq)]
@@ -73,6 +74,7 @@ struct State {
     title_font: Font,
     egui_fonts: FontDefinitions,
     // visualizer: ColorTransitionVisualizer,
+    selected_visualizer: VisualizerSelection,
     visualizer: Box<dyn EmoVisualizerFull>,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
@@ -138,9 +140,9 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         font: font,
         title_font: title_font,
         egui_fonts: egui_fonts,
-        // visualizer: ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR),
+        selected_visualizer: DEFAULT_VISUALIZER,
         visualizer: match DEFAULT_VISUALIZER {
-            "TileVisualizer" => Box::new(TileVisualizer::new(
+            VisualizerSelection::Tiles => Box::new(TilesVisualizer::new(
                 CLEAR_COLOR,
                 TITLE_COLOR,
                 DYNAMIC_TEXT_COLOR,
@@ -211,6 +213,27 @@ fn update(app: &mut App, state: &mut State) {
         state
             .visualizer
             .reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+    }
+
+    if state.selected_visualizer != state.visualizer.get_enum() {
+        match state.selected_visualizer {
+            VisualizerSelection::Tiles => {
+                log::debug!("swap to TilesVisualizer");
+                state.visualizer = Box::new(TilesVisualizer::new(
+                    CLEAR_COLOR,
+                    TITLE_COLOR,
+                    DYNAMIC_TEXT_COLOR,
+                ));
+            }
+            _ => {
+                log::debug!("swap to ColorTransitionVisualizer");
+                state.visualizer = Box::new(ColorTransitionVisualizer::new(
+                    CLEAR_COLOR,
+                    TITLE_COLOR,
+                    DYNAMIC_TEXT_COLOR,
+                ));
+            }
+        }
     }
 
 
@@ -596,7 +619,7 @@ fn draw_settings_view(
             // |ctx, ui, state, work_size| {
             |_, ui, state, _| {
                 let margin = work_size.y * 0.02;
-                let heading_frame =
+                let mut heading_frame =
                     egui::Frame::none()
                         .fill(ui_fill)
                         .inner_margin(egui::style::Margin {
@@ -605,11 +628,40 @@ fn draw_settings_view(
                             top: 0.0,
                             bottom: margin,
                         });
+
                 heading_frame.show(ui, |ui| {
-                    ui.heading("Misc Options");
+                    ui.heading("General Options");
                 });
+
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.label("Select Visualizer");
+                    let visualizer_name = match state.selected_visualizer {
+                        // Annoying that padding is necessary here, or else it wraps the longer
+                        // options uglily
+                        VisualizerSelection::Tiles => "Tiles           ",
+                        _ => "Color Transition",
+                    };
+                    let option_text = RichText::new(visualizer_name).text_style(small_button());
+                    egui::ComboBox::from_id_source("selected-visualizer")
+                        .selected_text(option_text)
+                        .wrap(false)
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(
+                                &mut state.selected_visualizer,
+                                VisualizerSelection::ColorTransition,
+                                RichText::new("Color Transition").text_style(small_button()),
+                            );
+                            ui.selectable_value(
+                                &mut state.selected_visualizer,
+                                VisualizerSelection::Tiles,
+                                RichText::new("Tiles").text_style(small_button()),
+                            );
+                        });
+                });
+
+                heading_frame.inner_margin.top = margin * 2.0;
                 heading_frame.show(ui, |ui| {
-                    ui.heading("Visualizer Options");
+                    ui.heading("Visualizer Specific");
                 });
                 state.visualizer.egui_settings(ui, &small_button);
             },

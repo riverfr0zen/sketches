@@ -1,6 +1,7 @@
 use super::color_transition::ColorTransition;
 use super::get_optimal_text_color;
 use super::EmoVisualizer;
+use super::VisualizerSelection;
 use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, Sentiment, TopEmotionsModel};
 use crate::utils::get_rng;
 use notan::draw::*;
@@ -61,7 +62,7 @@ impl TilesLayout {
     }
 }
 
-pub struct TileVisualizer {
+pub struct TilesVisualizer {
     rng: Random,
     pub model: Option<TopEmotionsModel>,
     pub transition: ColorTransition,
@@ -120,7 +121,7 @@ fn get_sentiment_enhanced_color(
 }
 
 
-impl TileVisualizer {
+impl TilesVisualizer {
     pub fn new(bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
         let (rng, _) = get_rng(None);
         Self {
@@ -224,7 +225,7 @@ impl TileVisualizer {
         }
     }
 
-    fn draw_flurry(&mut self, draw: &mut Draw) {
+    fn draw_tiles_grid(&mut self, draw: &mut Draw) {
         if self.tiles.len() < 1 {
             return;
         }
@@ -269,7 +270,12 @@ impl TileVisualizer {
 }
 
 
-impl EmoVisualizer for TileVisualizer {
+impl EmoVisualizer for TilesVisualizer {
+    fn get_enum(&self) -> VisualizerSelection {
+        VisualizerSelection::Tiles
+    }
+
+
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
         self.model = None;
         self.transition.color = bg_color;
@@ -325,6 +331,6 @@ impl EmoVisualizer for TileVisualizer {
     fn draw(&mut self, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.transition.color);
-        self.draw_flurry(draw);
+        self.draw_tiles_grid(draw);
     }
 }

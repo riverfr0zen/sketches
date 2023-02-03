@@ -6,7 +6,15 @@ use notan::draw::*;
 use notan::prelude::*;
 
 
+#[derive(PartialEq)]
+pub enum VisualizerSelection {
+    Tiles,
+    ColorTransition,
+}
+
 pub trait EmoVisualizer {
+    fn get_enum(&self) -> VisualizerSelection;
+
     /// Similar to new(), but does not reset user-configurable properties
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool);
 
