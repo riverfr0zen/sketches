@@ -169,17 +169,6 @@ impl EmoVisualizer for ColorTransitionVisualizer {
         self.transition.target_color = bg_color;
     }
 
-
-    fn get_text_color(&self) -> Color {
-        self.text_color
-    }
-
-
-    fn draw(&mut self, draw: &mut Draw) {
-        // The following call to clear() is important when rendering draw & egui output together.
-        draw.clear(self.transition.color);
-    }
-
     fn update_model(&mut self, analysis: &EmocatTextAnalysis) {
         let model = TopEmotionsModel::from_analysis(&analysis);
         match self.color_method.as_str() {
@@ -194,5 +183,15 @@ impl EmoVisualizer for ColorTransitionVisualizer {
     fn update_visualization(&mut self) {
         self.transition.step();
         self.update_text_color();
+    }
+
+
+    fn get_text_color(&self) -> Color {
+        self.text_color
+    }
+
+    fn draw(&mut self, draw: &mut Draw) {
+        // The following call to clear() is important when rendering draw & egui output together.
+        draw.clear(self.transition.color);
     }
 }

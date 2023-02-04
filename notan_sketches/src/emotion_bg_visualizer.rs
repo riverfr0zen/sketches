@@ -1,7 +1,7 @@
 pub mod ui;
 pub mod visualizers;
 
-use crate::utils::ScreenDimensions;
+// use crate::utils::ScreenDimensions;
 use notan::app::Graphics;
 use notan::math::{vec2, Vec2};
 use ui::{DisplayMetrics, SettingsUi};

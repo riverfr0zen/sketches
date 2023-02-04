@@ -5,8 +5,8 @@ use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::emotion_bg_visualizer::get_work_size;
-use notan_sketches::emotion_bg_visualizer::ui::scale_font;
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::scale_font;
 use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
@@ -14,7 +14,7 @@ use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensi
 
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
-        "assets/lb_bronte01.json"
+        // "assets/lb_bronte01.json"
         // "assets/lb_dickinson01.json"
         // "assets/lb_dickinson02.json"
         // "assets/lb_howe01.json"
@@ -22,7 +22,7 @@ macro_rules! EMOCAT_OUTPUT_FILE {
         // "assets/lb_teasdale01.json"
         // "assets/wilde01.json"
         // "assets/lb_whitman01.json"
-        // "assets/the_stagger.json"
+        "assets/the_stagger.json"
     };
 }
 
@@ -130,61 +130,24 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 
-fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
-    let mut textbox_width = work_size.x * 0.75;
-
-
-    draw.text(&state.title_font, &state.emodoc.title)
-        .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
-        .color(TITLE_COLOR)
-        .size(scale_font(60.0, work_size))
-        .max_width(textbox_width)
-        .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.4)
-        .h_align_left()
-        .v_align_middle();
-
-
-    let title_bounds = draw.last_text_bounds();
-
-    textbox_width = textbox_width * 0.9;
-    draw.text(&state.title_font, &format!("by {}", state.emodoc.author))
-        .alpha_mode(BlendMode::OVER)
-        .color(META_COLOR)
-        .size(scale_font(30.0, work_size))
-        .max_width(textbox_width)
-        .position(
-            work_size.x * 0.5 - textbox_width * 0.5,
-            title_bounds.y + title_bounds.height + work_size.y * 0.1,
-        )
-        .h_align_left()
-        .v_align_middle();
+fn draw_title(draw: &mut Draw, state: &mut State, work_size: Vec2) {
+    state.visualizer.draw_title(
+        draw,
+        &state.title_font,
+        &state.emodoc.title,
+        &state.emodoc.author,
+        work_size,
+    );
 }
 
 
-fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
-    let textbox_width = work_size.x * 0.75;
-    draw.text(&state.font, &state.emodoc.analyses[state.analysis - 1].text)
-        .alpha_mode(BlendMode::OVER)
-        .color(state.visualizer.get_text_color())
-        .size(scale_font(32.0, work_size))
-        .max_width(textbox_width)
-        .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
-        .v_align_middle()
-        .h_align_left();
-
-    // @TODO: Add shadow/highlight effect later, maybe once there is a DrawTextItems trait so that
-    // different visualizers can draw text differently (and maybe there is default implementation
-    // that draws the basic version)
-    //
-    // let text_bounds = draw.last_text_bounds();
-    // let offset_x = work_size.x * 0.0002;
-    // let offset_y = work_size.y * 0.0002;
-    // draw.text(&state.font, &state.emodoc.analyses[state.analysis - 1].text)
-    //     .alpha_mode(BlendMode::OVER)
-    //     .color(Color::WHITE)
-    //     .size(scale_font(32.0, work_size))
-    //     .max_width(textbox_width)
-    //     .position(text_bounds.x + offset_x, text_bounds.y - offset_x);
+fn draw_paragraph(draw: &mut Draw, state: &mut State, work_size: Vec2) {
+    state.visualizer.draw_paragraph(
+        draw,
+        &state.font,
+        &state.emodoc.analyses[state.analysis - 1].text,
+        work_size,
+    );
 }
 
 

@@ -1,47 +1,11 @@
 use super::visualizers::color_transition::ColorTransitionVisualizer;
+use super::visualizers::scale_font;
 use super::visualizers::tile::TilesVisualizer;
 use crate::emotion::TopEmotionsModel;
-use crate::utils::ScreenDimensions;
+use notan::draw::*;
 use notan::egui::{self, RichText, TextStyle, Ui};
 use notan::math::Vec2;
-
-
-/// Scale the font according to the current work size. Quite simple right now,
-/// probably lots of room for improving this.
-///
-/// These return values were decided by comparing sizes on my own setup. Needs testing
-/// across devices.
-///
-/// @TODO: What about portrait dimensions?
-pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    if work_size.x >= ScreenDimensions::RES_QHD.x && work_size.x < ScreenDimensions::RES_720p.x {
-        // log::debug!("QHD, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 1.5;
-    }
-    if work_size.x >= ScreenDimensions::RES_720p.x && work_size.x < ScreenDimensions::RES_HDPLUS.x {
-        // log::debug!("720p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 1.75;
-    }
-    if work_size.x >= ScreenDimensions::RES_HDPLUS.x && work_size.x < ScreenDimensions::RES_1080P.x
-    {
-        // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 2.2;
-    }
-    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x {
-        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 2.5;
-    }
-    if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
-        // log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 3.0;
-    }
-    if work_size.x >= ScreenDimensions::RES_4K.x {
-        // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 4.5;
-    }
-    // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
-    return default_size;
-}
+use notan::prelude::*;
 
 
 fn top_emotions_egui_metrics_ui(
@@ -110,6 +74,7 @@ impl SettingsUi for ColorTransitionVisualizer {
             egui::ComboBox::from_id_source("color-method")
                 .selected_text(&self.color_method)
                 .show_ui(ui, |ui| {
+                    ui.style_mut().wrap = Some(false);
                     for option in viz_options.get_mut("Color Method").unwrap().iter() {
                         ui.selectable_value(&mut self.color_method, option.to_string(), option);
                     }
@@ -122,8 +87,24 @@ impl SettingsUi for ColorTransitionVisualizer {
 impl SettingsUi for TilesVisualizer {
     fn egui_settings(&mut self, ui: &mut Ui) {
         ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
-            ui.label("There are no options for the Tiles visualizer.");
+            // ui.label("There are no options for the Tiles visualizer.");
             // ui.label(&self.options["Color Method"]);
+
+            let viz_options = &mut Self::get_options();
+
+            ui.label("Text Shadow");
+            egui::ComboBox::from_id_source("shadow-style")
+                .selected_text(&self.text_shadow_style)
+                .show_ui(ui, |ui| {
+                    ui.style_mut().wrap = Some(false);
+                    for option in viz_options.get_mut("Shadow Style").unwrap().iter() {
+                        ui.selectable_value(
+                            &mut self.text_shadow_style,
+                            option.to_string(),
+                            option,
+                        );
+                    }
+                });
         });
     }
 }

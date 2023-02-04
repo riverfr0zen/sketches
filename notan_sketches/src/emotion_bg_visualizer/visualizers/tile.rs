@@ -1,7 +1,5 @@
 use super::color_transition::ColorTransition;
-use super::get_optimal_text_color;
-use super::EmoVisualizer;
-use super::VisualizerSelection;
+use super::{get_optimal_text_color, scale_font, EmoVisualizer, VisualizerSelection};
 use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, Sentiment, TopEmotionsModel};
 use crate::utils::get_rng;
 use notan::draw::*;
@@ -62,6 +60,7 @@ impl TilesLayout {
     }
 }
 
+
 pub struct TilesVisualizer {
     rng: Random,
     pub model: Option<TopEmotionsModel>,
@@ -73,6 +72,7 @@ pub struct TilesVisualizer {
     /// See `update_model()` in impl for EmoVisualizer
     bg_color_for_text: Color,
     text_color: Color,
+    pub text_shadow_style: String,
     dynamic_text_color: bool,
     tiles: Vec<Tile>,
     layout: TilesLayout,
@@ -134,6 +134,7 @@ impl TilesVisualizer {
             },
             bg_color_for_text: bg_color,
             text_color: text_color,
+            text_shadow_style: "None".to_string(),
             dynamic_text_color: enable_dynamic_text_color,
             tiles: vec![],
             layout: TilesLayout::none(),
@@ -141,18 +142,18 @@ impl TilesVisualizer {
         }
     }
 
-    // pub fn get_options() -> HashMap<String, Vec<String>> {
-    //     let mut options = HashMap::new();
-    //     options.insert(
-    //         "Color Method".to_string(),
-    //         vec![
-    //             "Simple Color".to_string(),
-    //             "Black, White, Gray".to_string(),
-    //             "Grayscale".to_string(),
-    //         ],
-    //     );
-    //     options
-    // }
+    pub fn get_options() -> HashMap<String, Vec<String>> {
+        let mut options = HashMap::new();
+        options.insert(
+            "Shadow Style".to_string(),
+            vec![
+                "None".to_string(),
+                "Moderate".to_string(),
+                "Full".to_string(),
+            ],
+        );
+        options
+    }
 
 
     pub fn update_text_color(&mut self) {
@@ -305,10 +306,6 @@ impl EmoVisualizer for TilesVisualizer {
     }
 
 
-    fn get_text_color(&self) -> Color {
-        self.text_color
-    }
-
     fn update_model(&mut self, analysis: &EmocatTextAnalysis) {
         let model = TopEmotionsModel::from_analysis(&analysis);
         let top_emocolors = model.get_top_emocolors(&ColorMapping::PLUTCHIK);
@@ -332,5 +329,79 @@ impl EmoVisualizer for TilesVisualizer {
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.transition.color);
         self.draw_tiles_grid(draw);
+    }
+
+    fn get_text_color(&self) -> Color {
+        self.text_color
+    }
+
+
+    fn draw_paragraph(&mut self, draw: &mut Draw, font: &Font, text: &str, work_size: Vec2) {
+        let textbox_width = work_size.x * 0.75;
+        let text_pos_x = work_size.x * 0.5 - textbox_width * 0.5;
+        let text_pos_y = work_size.y * 0.5;
+        let text_color = self.get_text_color();
+
+        if self.text_shadow_style != "None" {
+            let offset = work_size.x * 0.0005;
+            if text_color == Color::WHITE {
+                if self.text_shadow_style == "Full" {
+                    draw.text(&font, &text)
+                        .alpha_mode(BlendMode::OVER)
+                        .alpha(0.25)
+                        .color(Color::BLACK)
+                        // NOTE: These draw.text fonts size differently than font sizes in egui
+                        .size(scale_font(32.0, work_size))
+                        .max_width(textbox_width)
+                        .position(text_pos_x - offset * 3.0, text_pos_y + offset * 3.0)
+                        .v_align_middle()
+                        .h_align_left();
+                }
+                if self.text_shadow_style == "Moderate" || self.text_shadow_style == "Full" {
+                    draw.text(&font, &text)
+                        .alpha_mode(BlendMode::OVER)
+                        .color(Color::BLACK)
+                        // NOTE: These draw.text fonts size differently than font sizes in egui
+                        .size(scale_font(32.0, work_size))
+                        .max_width(textbox_width)
+                        .position(text_pos_x - offset, text_pos_y + offset)
+                        .v_align_middle()
+                        .h_align_left();
+                }
+            } else {
+                if self.text_shadow_style == "Full" {
+                    draw.text(&font, &text)
+                        .alpha_mode(BlendMode::OVER)
+                        .alpha(0.3)
+                        .color(Color::WHITE)
+                        // NOTE: These draw.text fonts size differently than font sizes in egui
+                        .size(scale_font(32.0, work_size))
+                        .max_width(textbox_width)
+                        .position(text_pos_x + offset * 3.0, text_pos_y - offset * 3.0)
+                        .v_align_middle()
+                        .h_align_left();
+                }
+                if self.text_shadow_style == "Moderate" || self.text_shadow_style == "Full" {
+                    draw.text(&font, &text)
+                        .alpha_mode(BlendMode::OVER)
+                        .color(Color::WHITE)
+                        // NOTE: These draw.text fonts size differently than font sizes in egui
+                        .size(scale_font(32.0, work_size))
+                        .max_width(textbox_width)
+                        .position(text_pos_x + offset, text_pos_y - offset)
+                        .v_align_middle()
+                        .h_align_left();
+                }
+            }
+        }
+        draw.text(&font, &text)
+            .alpha_mode(BlendMode::OVER)
+            .color(self.get_text_color())
+            // NOTE: These draw.text fonts size differently than font sizes in egui
+            .size(scale_font(32.0, work_size))
+            .max_width(textbox_width)
+            .position(text_pos_x, text_pos_y)
+            .v_align_middle()
+            .h_align_left();
     }
 }
