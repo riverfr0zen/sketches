@@ -67,6 +67,7 @@ pub struct EmoColor {
 }
 
 
+#[derive(Clone)]
 pub enum Sentiment {
     POSITIVE,
     NEGATIVE,
@@ -135,9 +136,18 @@ pub fn get_mapped_color_therapy(emotion: &str) -> Hsv {
     }
 }
 
+pub enum ColorMapping {
+    PLUTCHIK,
+    THERAPY,
+}
+
 
 /// Returns colors & sentiment mapped to the emotion provided
-pub fn get_mapped_emocolor(emotion: &str, mapping_func: &dyn Fn(&str) -> Hsv) -> EmoColor {
+pub fn get_mapped_emocolor(emotion: &str, color_mapping: &ColorMapping) -> EmoColor {
+    let mapping_func = match color_mapping {
+        ColorMapping::THERAPY => get_mapped_color_therapy,
+        _ => get_mapped_color_plutchik,
+    };
     match emotion {
         "fear" => EmoColor {
             emotion: emotion.to_string(),
@@ -203,11 +213,11 @@ impl TopEmotionsModel {
         let positive_sentiment = scores.remove(positive_pos);
         let negative_pos = scores.iter().position(|s| s.marker == "negative").unwrap();
         let negative_sentiment = scores.remove(negative_pos);
-        log::debug!(
-            "positive: {}, negative: {}",
-            positive_sentiment.score,
-            negative_sentiment.score
-        );
+        // log::debug!(
+        //     "positive: {}, negative: {}",
+        //     positive_sentiment.score,
+        //     negative_sentiment.score
+        // );
 
         scores.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap());
         // log::debug!("Score after {:?}", scores);
@@ -228,10 +238,10 @@ impl TopEmotionsModel {
 
 
     pub fn get_black_or_white(&self) -> Color {
-        if (self.positive > self.negative) {
+        if self.positive > self.negative {
             return Color::WHITE;
         }
-        if (self.negative > self.positive) {
+        if self.negative > self.positive {
             return Color::BLACK;
         }
         Color::GRAY
@@ -239,29 +249,38 @@ impl TopEmotionsModel {
 
     pub fn get_grayscale(&self) -> Color {
         let base_val = 0.5;
-        if (self.positive > self.negative) {
+        if self.positive > self.negative {
             let color_val = base_val + self.positive;
             return Color::from_rgb(color_val, color_val, color_val);
         }
-        if (self.negative > self.positive) {
+        if self.negative > self.positive {
             let color_val = base_val - self.negative;
             return Color::from_rgb(color_val, color_val, color_val);
         }
         return Color::from_rgb(base_val, base_val, base_val);
     }
 
+    pub fn get_top_emocolors(&self, color_mapping: &ColorMapping) -> Vec<EmoColor> {
+        let top_emotions = &self.top_emotions;
+        if top_emotions[0].score > 0.0 {
+            return top_emotions
+                .iter()
+                .map(|s| get_mapped_emocolor(&s.marker, &color_mapping))
+                .collect();
+        }
+        vec![get_mapped_emocolor("", &color_mapping)]
+    }
+
     pub fn get_simple_color(&self) -> Color {
         let top_emotions = &self.top_emotions;
         if top_emotions[0].score > 0.0 {
-            log::debug!("Top emotions: {:?}:", top_emotions);
-            let mapping_func = get_mapped_color_plutchik;
-            let emocolors: Vec<EmoColor> = top_emotions
-                .iter()
-                .map(|s| get_mapped_emocolor(&s.marker, &mapping_func))
-                .collect();
+            // log::debug!("Top emotions: {:?}:", top_emotions);
+
+            let color_mapping = ColorMapping::PLUTCHIK;
+            let emocolors: Vec<EmoColor> = self.get_top_emocolors(&color_mapping);
             // Start with a neutral gray
             if emocolors.len() > 1 {
-                let mut final_color = get_mapped_emocolor("", &mapping_func).hsv;
+                let mut final_color = get_mapped_emocolor("", &color_mapping).hsv;
                 for emocolor in emocolors.iter() {
                     log::debug!("Before mix: {:?}", final_color);
                     let sentiment_value: f32 = match &emocolor.sentiment {
@@ -272,12 +291,12 @@ impl TopEmotionsModel {
                     // The sentiment values don't often seem to go beyond 0.5, so I'm modifying the
                     // mix factor a little. Must test later with more examples of text.
                     let mix_factor = sentiment_value * 2.0;
-                    log::debug!(
-                        "Emotion: {}, Sentiment value: {}, Mix_factor: {}",
-                        emocolor.emotion,
-                        sentiment_value,
-                        mix_factor
-                    );
+                    // log::debug!(
+                    //     "Emotion: {}, Sentiment value: {}, Mix_factor: {}",
+                    //     emocolor.emotion,
+                    //     sentiment_value,
+                    //     mix_factor
+                    // );
                     // final_color = final_color.mix(&emocolor.hsv, 0.5);
                     final_color = final_color.mix(&emocolor.hsv, mix_factor);
                     log::debug!("After mix: {:?}", final_color);

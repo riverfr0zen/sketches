@@ -8,10 +8,13 @@ use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 // use serde_json::{Result as JsonResult, Value};
-use notan_sketches::emotion_bg_visualizer::ui::{DisplayMetrics, SettingsUi};
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
-use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::scale_font;
+use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::VisualizerSelection;
+use notan_sketches::emotion_bg_visualizer::{get_work_size, EmoVisualizerFull};
 use FontFamily::{Monospace, Proportional};
+
 
 // See details at https://stackoverflow.com/a/42764117
 const EMOCAT_DOCS: [&'static str; 8] = [
@@ -33,6 +36,8 @@ const READ_VIEW_GUI_COLOR: egui::Color32 =
     egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
+// const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::ColorTransition;
+const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::Tiles;
 
 
 #[derive(PartialEq)]
@@ -68,7 +73,9 @@ struct State {
     font: Font,
     title_font: Font,
     egui_fonts: FontDefinitions,
-    visualizer: ColorTransitionVisualizer,
+    // visualizer: ColorTransitionVisualizer,
+    selected_visualizer: VisualizerSelection,
+    visualizer: Box<dyn EmoVisualizerFull>,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
 }
@@ -133,57 +140,23 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         font: font,
         title_font: title_font,
         egui_fonts: egui_fonts,
-        visualizer: ColorTransitionVisualizer::new(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR),
+        selected_visualizer: DEFAULT_VISUALIZER,
+        visualizer: match DEFAULT_VISUALIZER {
+            VisualizerSelection::Tiles => Box::new(TilesVisualizer::new(
+                CLEAR_COLOR,
+                TITLE_COLOR,
+                DYNAMIC_TEXT_COLOR,
+            )),
+            _ => Box::new(ColorTransitionVisualizer::new(
+                CLEAR_COLOR,
+                TITLE_COLOR,
+                DYNAMIC_TEXT_COLOR,
+            )),
+        },
         needs_handle_resize: true,
         needs_egui_font_setup: true,
     };
     state
-}
-
-
-/// Scale the font according to the current work size. Quite simple right now,
-/// probably lots of room for improving this.
-///
-/// These return values were decided by comparing sizes on my own setup. Needs testing
-/// across devices.
-///
-/// @TODO: What about portrait dimensions?
-fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_HDPLUS.x
-    {
-        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 2.2;
-    }
-    if work_size.x >= ScreenDimensions::RES_HDPLUS.x && work_size.x < ScreenDimensions::RES_1440P.x
-    {
-        // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 2.5;
-    }
-    if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
-        // log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 3.0;
-    }
-    if work_size.x >= ScreenDimensions::RES_4K.x {
-        // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 4.5;
-    }
-    // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
-    return default_size;
-}
-
-
-/// In this application, where font scaling is involved, a work size that matches
-/// the window size results in nicer looking fonts. This comes at the expense of
-/// not being able to use literal values for sizing shapes and such (not being able
-/// to work against a known scale). Instead, one can use fractions of the work size
-/// values.
-fn get_work_size(gfx: &Graphics) -> Vec2 {
-    // If we don't guard against a minimum like this, the app crashes if the window
-    // is shrunk to a small size.
-    if gfx.device.size().0 as f32 > ScreenDimensions::MINIMUM.x {
-        return vec2(gfx.device.size().0 as f32, gfx.device.size().1 as f32);
-    }
-    ScreenDimensions::MINIMUM
 }
 
 
@@ -242,6 +215,27 @@ fn update(app: &mut App, state: &mut State) {
             .reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
     }
 
+    if state.selected_visualizer != state.visualizer.get_enum() {
+        match state.selected_visualizer {
+            VisualizerSelection::Tiles => {
+                log::debug!("swap to TilesVisualizer");
+                state.visualizer = Box::new(TilesVisualizer::new(
+                    CLEAR_COLOR,
+                    TITLE_COLOR,
+                    DYNAMIC_TEXT_COLOR,
+                ));
+            }
+            _ => {
+                log::debug!("swap to ColorTransitionVisualizer");
+                state.visualizer = Box::new(ColorTransitionVisualizer::new(
+                    CLEAR_COLOR,
+                    TITLE_COLOR,
+                    DYNAMIC_TEXT_COLOR,
+                ));
+            }
+        }
+    }
+
 
     match state.view {
         View::READ => update_read_view(app, state),
@@ -250,75 +244,50 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 
-fn draw_title(draw: &mut Draw, state: &State, work_size: Vec2) {
+fn draw_title(draw: &mut Draw, state: &mut State, work_size: Vec2) {
     let emodoc = &state.emodocs[state.reading.doc_index];
-    let mut textbox_width = work_size.x * 0.75;
-
-    draw.text(&state.title_font, &emodoc.title)
-        .alpha_mode(BlendMode::OVER) // Fixes some artifacting -- gonna be default in future Notan
-        .color(TITLE_COLOR)
-        .size(scale_font(60.0, work_size))
-        .max_width(textbox_width)
-        .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.4)
-        .h_align_left()
-        .v_align_middle();
-
-    let title_bounds = draw.last_text_bounds();
-
-    textbox_width = textbox_width * 0.9;
-    draw.text(&state.title_font, &format!("by {}", emodoc.author))
-        .alpha_mode(BlendMode::OVER)
-        .color(META_COLOR)
-        .size(scale_font(30.0, work_size))
-        .max_width(textbox_width)
-        .position(
-            work_size.x * 0.5 - textbox_width * 0.5,
-            title_bounds.y + title_bounds.height + work_size.y * 0.1,
-        )
-        .h_align_left()
-        .v_align_middle();
+    state.visualizer.draw_title(
+        draw,
+        &state.title_font,
+        &emodoc.title,
+        &emodoc.author,
+        work_size,
+    );
 }
 
 
-fn draw_paragraph(draw: &mut Draw, state: &State, work_size: Vec2) {
+fn draw_paragraph(draw: &mut Draw, state: &mut State, work_size: Vec2) {
     let emodoc = &state.emodocs[state.reading.doc_index];
-    let textbox_width = work_size.x * 0.75;
-
-    draw.text(
+    state.visualizer.draw_paragraph(
+        draw,
         &state.font,
         &emodoc.analyses[state.reading.analysis - 1].text,
-    )
-    .alpha_mode(BlendMode::OVER)
-    .color(state.visualizer.text_color)
-    .size(scale_font(32.0, work_size))
-    .max_width(textbox_width)
-    .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
-    .v_align_middle()
-    .h_align_left();
-
-    // let title_bounds = draw.last_text_bounds();
+        work_size,
+    );
 }
 
 
 // fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
 fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
-    let mut draw = get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
+    let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
 
     // NOTE: If the egui ui seems to be "blocking" the draw, it may be because the visualizer
     // draw() method is not calling `draw.clear()`. If this isn't done, the egui background
     // will block the draw. For an example, see impl method of ColorTransitionVisualizer::draw().
-    state.visualizer.draw(&mut draw);
+    state.visualizer.draw(draw);
 
     if state.reading.analysis == 0 {
-        draw_title(&mut draw, state, work_size);
+        draw_title(draw, state, work_size);
     } else {
-        draw_paragraph(&mut draw, state, work_size);
+        draw_paragraph(draw, state, work_size);
     }
-    gfx.render(&draw);
+    gfx.render(draw);
 
     let output = plugins.egui(|ctx| {
         draw_analysis_panel(ctx, state, work_size);
     });
+    // Not checking if output needs repaint because then the analysis panel
+    // is erased by the draw above
     gfx.render(&output);
 }
 
@@ -350,14 +319,29 @@ fn author_menu_text() -> TextStyle {
 
 
 // Based on: https://github.com/emilk/egui/blob/master/examples/custom_font_style/src/main.rs
+//
+// NOTE: These font sizes and styles only affect egui UI items -- they don't apply to
+// the draw.text() items used in the reading view.
 fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
+    let portrait = work_size.x < work_size.y;
+    // log::debug!("{} < {} = {}", work_size.x, work_size.y, portrait);
+    let small_button_size: f32;
+    let small_text_size: f32;
+    if portrait {
+        small_button_size = 12.0;
+        small_text_size = 10.0;
+    } else {
+        small_button_size = 8.0;
+        small_text_size = 8.0;
+    }
+
     let mut style = (*ctx.style()).clone();
     style.text_styles = [
         (
             TextStyle::Heading,
-            FontId::new(scale_font(16.0, work_size), Monospace),
+            FontId::new(scale_font(14.0, work_size), Monospace),
         ),
-        (logo(), FontId::new(scale_font(25.0, work_size), Monospace)),
+        (logo(), FontId::new(scale_font(26.0, work_size), Monospace)),
         (
             analysis_panel_title(),
             FontId::new(scale_font(10.0, work_size), Monospace),
@@ -368,23 +352,23 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
         ),
         (
             author_menu_text(),
-            FontId::new(scale_font(9.0, work_size), Proportional),
+            FontId::new(scale_font(10.0, work_size), Proportional),
         ),
         (
             TextStyle::Button,
-            FontId::new(scale_font(12.0, work_size), Monospace),
+            FontId::new(scale_font(10.0, work_size), Monospace),
         ),
         (
             title_button(),
-            FontId::new(scale_font(16.0, work_size), Proportional),
+            FontId::new(scale_font(15.0, work_size), Proportional),
         ),
         (
             small_button(),
-            FontId::new(scale_font(8.0, work_size), Monospace),
+            FontId::new(scale_font(small_button_size, work_size), Monospace),
         ),
         (
             TextStyle::Small,
-            FontId::new(scale_font(8.0, work_size), Monospace),
+            FontId::new(scale_font(small_text_size, work_size), Monospace),
         ),
     ]
     .into();
@@ -462,7 +446,7 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
 
     ui.horizontal(|ui| {
         if state.view != View::HOME {
-            let about_button = make_small_button("Home");
+            let about_button = make_small_button("Main Menu");
             if ui.add(about_button).clicked() {
                 state.view = View::HOME;
             }
@@ -476,7 +460,7 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
         }
 
         if state.view != View::SETTINGS {
-            let settings_button = make_small_button("Visualizer Options");
+            let settings_button = make_small_button("Options");
             if ui.add(settings_button).clicked() {
                 log::debug!("clicked settings");
                 state.view = View::SETTINGS;
@@ -625,7 +609,7 @@ fn draw_settings_view(
             // |ctx, ui, state, work_size| {
             |_, ui, state, _| {
                 let margin = work_size.y * 0.02;
-                let heading_frame =
+                let mut heading_frame =
                     egui::Frame::none()
                         .fill(ui_fill)
                         .inner_margin(egui::style::Margin {
@@ -634,13 +618,42 @@ fn draw_settings_view(
                             top: 0.0,
                             bottom: margin,
                         });
+
                 heading_frame.show(ui, |ui| {
-                    ui.heading("Misc Options");
+                    ui.heading("General Options");
                 });
+
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                    ui.label("Select Visualizer");
+                    let visualizer_name = match state.selected_visualizer {
+                        // Annoying that padding is necessary here, or else it wraps the longer
+                        // options uglily
+                        VisualizerSelection::Tiles => "Tiles",
+                        _ => "Color Transition",
+                    };
+                    egui::ComboBox::from_id_source("selected-visualizer")
+                        .selected_text(visualizer_name)
+                        .wrap(false)
+                        .show_ui(ui, |ui| {
+                            ui.style_mut().wrap = Some(false);
+                            ui.selectable_value(
+                                &mut state.selected_visualizer,
+                                VisualizerSelection::ColorTransition,
+                                "Color Transition",
+                            );
+                            ui.selectable_value(
+                                &mut state.selected_visualizer,
+                                VisualizerSelection::Tiles,
+                                "Tiles",
+                            );
+                        });
+                });
+
+                heading_frame.inner_margin.top = margin * 2.0;
                 heading_frame.show(ui, |ui| {
-                    ui.heading("Visualizer Options");
+                    ui.heading("Visualizer Specific");
                 });
-                state.visualizer.egui_settings(ui, &small_button);
+                state.visualizer.egui_settings(ui);
             },
         );
     });
@@ -684,6 +697,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                     .show(ui, |ui| {
                         ui.with_layout(egui::Layout::top_down(egui::Align::LEFT), |ui| {
                             let mut style = (*ctx.style()).clone();
+                            // let button_top_margin = work_size.y * 0.0075;
                             let button_top_margin = work_size.y * 0.01;
                             let title_frame = egui::Frame::none()
                                 // .fill(egui::Color32::RED)
