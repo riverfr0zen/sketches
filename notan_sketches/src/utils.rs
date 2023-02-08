@@ -79,15 +79,18 @@ pub fn get_common_win_config() -> WindowConfig {
 pub struct ScreenDimensions;
 
 impl ScreenDimensions {
+    // Many based on https://en.wikipedia.org/wiki/Graphics_display_resolution
     pub const MINIMUM: Vec2 = vec2(500.0, 500.0);
     pub const DEFAULT: Vec2 = vec2(800.0, 600.0);
     pub const RES_QHD: Vec2 = vec2(960.0, 540.0);
-    pub const RES_720p: Vec2 = vec2(1280.0, 720.0);
+    pub const RES_720P: Vec2 = vec2(1280.0, 720.0);
     pub const RES_HDPLUS: Vec2 = vec2(1600.0, 900.0);
     pub const RES_1080P: Vec2 = vec2(1920.0, 1080.0);
     pub const RES_1440P: Vec2 = vec2(2560.0, 1440.0);
     pub const RES_4K: Vec2 = vec2(3840.0, 2160.0);
     pub const RES_4KISH: Vec2 = vec2(3500.0, 1800.0);
+    pub const RES_5K: Vec2 = vec2(5120.0, 2880.0);
+    pub const RES_8K: Vec2 = vec2(7680.0, 4320.0);
 }
 
 

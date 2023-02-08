@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 // const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
-const WORK_SIZE: Vec2 = ScreenDimensions::RES_4K;
+const WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
