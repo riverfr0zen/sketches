@@ -107,6 +107,8 @@ impl State {
         return gfx
             .create_render_texture(WORK_SIZE.x as _, WORK_SIZE.y as _)
             .with_filter(TextureFilter::Linear, TextureFilter::Linear)
+            // .with_filter(TextureFilter::Nearest, TextureFilter::Linear)
+            // .with_depth()
             .build()
             .unwrap();
     }
@@ -334,7 +336,7 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
             }
         }
         draw.image(&texture)
-            // .alpha_mode(BlendMode::OVER)
+            .alpha_mode(BlendMode::OVER)
             .alpha(node.alpha)
             // .alpha(alpha_mod)
             .color(color)
