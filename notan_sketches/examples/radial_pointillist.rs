@@ -8,7 +8,8 @@ use std::mem::size_of_val;
 use uuid::Uuid;
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
-const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+// const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+const WORK_SIZE: Vec2 = ScreenDimensions::RES_4K;
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
@@ -29,9 +30,11 @@ const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 const NODES_ROTATED: usize = 1024;
 // Max memory used for nodes
 // 10 KB: 10240
+// 100 KB: 102400
+// 500KB: 512000
 // 1 MB: 1048576
 // 10 MB: 10485760
-const MAX_NODES_BYTES: u32 = 10485760;
+const MAX_NODES_BYTES: u32 = 102400;
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
@@ -90,6 +93,7 @@ impl Default for Node {
 pub struct State {
     pub rng: Random,
     pub last_update: f32,
+    pub rt: RenderTexture,
     pub circle_texture: Texture,
     pub draw_alpha: f32,
     pub nodes: Vec<Node>,
@@ -99,6 +103,14 @@ pub struct State {
 }
 
 impl State {
+    fn create_render_texture(gfx: &mut Graphics) -> RenderTexture {
+        return gfx
+            .create_render_texture(WORK_SIZE.x as _, WORK_SIZE.y as _)
+            .with_filter(TextureFilter::Linear, TextureFilter::Linear)
+            .build()
+            .unwrap();
+    }
+
     fn get_active_node(&self) -> Option<usize> {
         self.nodes.iter().position(|node| node.active == true)
     }
@@ -148,6 +160,7 @@ fn init(gfx: &mut Graphics) -> State {
     State {
         rng: rng,
         last_update: 0.0,
+        rt: State::create_render_texture(gfx),
         circle_texture: circle_texture,
         draw_alpha: 0.0,
         nodes: vec![],
@@ -292,9 +305,7 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 
-fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
-    let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
-
+fn draw_nodes(draw: &mut Draw, state: &mut State) {
     for node in state.nodes.iter() {
         let texture: &Texture;
         let size: f32;
@@ -322,9 +333,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 // color = colors::AEGEAN;
             }
         }
-        if node.is_parent() {
-        } else {
-        }
         draw.image(&texture)
             // .alpha_mode(BlendMode::OVER)
             .alpha(node.alpha)
@@ -333,9 +341,22 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
             .position(node.pos.x, node.pos.y)
             .size(size, size);
     }
+}
 
 
-    gfx.render(draw);
+fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    // let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
+    // draw_nodes(draw, state);
+
+    let draw = &mut state.rt.create_draw();
+    // draw.clear(Color::WHITE);
+    draw_nodes(draw, state);
+    gfx.render_to(&state.rt, draw);
+
+    let rdraw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
+    rdraw.image(&state.rt);
+
+    gfx.render(rdraw);
     // log::debug!("fps: {}", app.timer.fps().round());
 }
 
