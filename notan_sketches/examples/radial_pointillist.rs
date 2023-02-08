@@ -57,8 +57,9 @@ pub struct Node {
     pub pos: Vec2,
     pub spawn_last_angle: f32,
     pub spawn2_last_angle: f32,
-    pub active: bool,
     pub alpha: f32,
+    pub active: bool,
+    pub rendered: bool,
 }
 
 
@@ -82,8 +83,9 @@ impl Default for Node {
             pos: vec2(0.0, 0.0),
             spawn_last_angle: 0.0,
             spawn2_last_angle: 0.0,
-            active: false,
             alpha: DEFAULT_ALPHA,
+            active: false,
+            rendered: false,
         }
     }
 }
@@ -203,6 +205,7 @@ fn spawn_random_any_child(state: &mut State) {
         candidate.class = NodeClass::PARENT;
         // set candidate to active
         candidate.active = true;
+        candidate.rendered = false;
     }
 }
 
@@ -224,6 +227,7 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
         candidate.class = NodeClass::PARENT;
         // set candidate to active
         candidate.active = true;
+        candidate.rendered = false;
     }
 }
 
@@ -308,7 +312,7 @@ fn update(app: &mut App, state: &mut State) {
 
 
 fn draw_nodes(draw: &mut Draw, state: &mut State) {
-    for node in state.nodes.iter() {
+    for node in state.nodes.iter_mut().filter(|node| !node.rendered) {
         let texture: &Texture;
         let size: f32;
         let color: Color;
@@ -342,6 +346,7 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
             .color(color)
             .position(node.pos.x, node.pos.y)
             .size(size, size);
+        node.rendered = true;
     }
 }
 
