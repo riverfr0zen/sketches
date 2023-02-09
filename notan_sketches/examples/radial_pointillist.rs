@@ -3,7 +3,9 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
-use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
+use notan_sketches::utils::{
+    get_common_win_config, get_draw_setup, get_rng, CapturingTexture, ScreenDimensions,
+};
 use std::mem::size_of_val;
 use uuid::Uuid;
 
@@ -40,7 +42,8 @@ const MAX_NODES_BYTES: u32 = 102400;
 const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
 const ALPHA_FREQ: f32 = 0.5;
-const CAPTURE_INTERVAL: f32 = 60.0;
+// Capture intervals
+const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
 
 
 #[derive(Clone, PartialEq)]
@@ -88,69 +91,6 @@ impl Default for Node {
             alpha: DEFAULT_ALPHA,
             active: false,
             rendered: false,
-        }
-    }
-}
-
-
-pub struct CapturingTexture {
-    pub render_texture: RenderTexture,
-    pub capture_to: String,
-    /// Capture interval in seconds. 0.0 for no capture.
-    pub capture_interval: f32,
-    pub last_capture: f32,
-    pub capture_lock: bool,
-}
-
-impl CapturingTexture {
-    fn create_render_texture(
-        gfx: &mut Graphics,
-        work_size: &Vec2,
-        bgcolor: Color,
-    ) -> RenderTexture {
-        let render_texture = gfx
-            .create_render_texture(work_size.x as _, work_size.y as _)
-            // .create_render_texture(width, height)
-            // .with_filter(TextureFilter::Linear, TextureFilter::Linear)
-            // .with_depth()
-            .build()
-            .unwrap();
-        let mut draw = render_texture.create_draw();
-        draw.clear(bgcolor);
-        gfx.render_to(&render_texture, &draw);
-        render_texture
-    }
-
-    fn new(
-        gfx: &mut Graphics,
-        work_size: &Vec2,
-        bgcolor: Color,
-        capture_to: String,
-        capture_interval: f32,
-    ) -> Self {
-        Self {
-            render_texture: Self::create_render_texture(gfx, work_size, bgcolor),
-            capture_to: capture_to,
-            capture_interval: capture_interval,
-            last_capture: 0.0,
-            capture_lock: false,
-        }
-    }
-
-    fn capture(&mut self, app: &mut App, gfx: &mut Graphics) {
-        if self.capture_lock {
-            self.last_capture = app.timer.time_since_init();
-            log::debug!("Last capture completed at {} seconds", self.last_capture);
-            self.capture_lock = false;
-        } else {
-            if self.capture_interval > 0.0
-                && ((app.timer.time_since_init() - self.last_capture) > self.capture_interval)
-            {
-                log::debug!("Beginning capture at {}", app.timer.time_since_init());
-                let filepath = format!("{}_{}.png", self.capture_to, app.timer.time_since_init());
-                self.render_texture.to_file(gfx, &filepath).unwrap();
-                self.capture_lock = true;
-            }
         }
     }
 }
