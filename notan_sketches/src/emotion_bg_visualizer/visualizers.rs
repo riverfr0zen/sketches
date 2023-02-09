@@ -121,11 +121,11 @@ pub fn get_optimal_text_color(bgcolor: &Color) -> Color {
 ///
 /// @TODO: What about portrait dimensions?
 pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    if work_size.x >= ScreenDimensions::RES_QHD.x && work_size.x < ScreenDimensions::RES_720p.x {
+    if work_size.x >= ScreenDimensions::RES_QHD.x && work_size.x < ScreenDimensions::RES_720P.x {
         // log::debug!("QHD, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 1.5;
     }
-    if work_size.x >= ScreenDimensions::RES_720p.x && work_size.x < ScreenDimensions::RES_HDPLUS.x {
+    if work_size.x >= ScreenDimensions::RES_720P.x && work_size.x < ScreenDimensions::RES_HDPLUS.x {
         // log::debug!("720p, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 1.75;
     }

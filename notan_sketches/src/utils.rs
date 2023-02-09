@@ -79,15 +79,18 @@ pub fn get_common_win_config() -> WindowConfig {
 pub struct ScreenDimensions;
 
 impl ScreenDimensions {
+    // Many based on https://en.wikipedia.org/wiki/Graphics_display_resolution
     pub const MINIMUM: Vec2 = vec2(500.0, 500.0);
     pub const DEFAULT: Vec2 = vec2(800.0, 600.0);
     pub const RES_QHD: Vec2 = vec2(960.0, 540.0);
-    pub const RES_720p: Vec2 = vec2(1280.0, 720.0);
+    pub const RES_720P: Vec2 = vec2(1280.0, 720.0);
     pub const RES_HDPLUS: Vec2 = vec2(1600.0, 900.0);
     pub const RES_1080P: Vec2 = vec2(1920.0, 1080.0);
     pub const RES_1440P: Vec2 = vec2(2560.0, 1440.0);
     pub const RES_4K: Vec2 = vec2(3840.0, 2160.0);
     pub const RES_4KISH: Vec2 = vec2(3500.0, 1800.0);
+    pub const RES_5K: Vec2 = vec2(5120.0, 2880.0);
+    pub const RES_8K: Vec2 = vec2(7680.0, 4320.0);
 }
 
 
@@ -102,4 +105,67 @@ pub fn get_rng(seed: Option<u64>) -> (Random, u64) {
     // log::debug!("seed: {}", _seed);
     rng.reseed(_seed);
     (rng, _seed)
+}
+
+
+pub struct CapturingTexture {
+    pub render_texture: RenderTexture,
+    pub capture_to: String,
+    /// Capture interval in seconds. 0.0 for no capture.
+    pub capture_interval: f32,
+    pub last_capture: f32,
+    pub capture_lock: bool,
+}
+
+impl CapturingTexture {
+    fn create_render_texture(
+        gfx: &mut Graphics,
+        work_size: &Vec2,
+        bgcolor: Color,
+    ) -> RenderTexture {
+        let render_texture = gfx
+            .create_render_texture(work_size.x as _, work_size.y as _)
+            // .create_render_texture(width, height)
+            // .with_filter(TextureFilter::Linear, TextureFilter::Linear)
+            // .with_depth()
+            .build()
+            .unwrap();
+        let mut draw = render_texture.create_draw();
+        draw.clear(bgcolor);
+        gfx.render_to(&render_texture, &draw);
+        render_texture
+    }
+
+    pub fn new(
+        gfx: &mut Graphics,
+        work_size: &Vec2,
+        bgcolor: Color,
+        capture_to: String,
+        capture_interval: f32,
+    ) -> Self {
+        Self {
+            render_texture: Self::create_render_texture(gfx, work_size, bgcolor),
+            capture_to: capture_to,
+            capture_interval: capture_interval,
+            last_capture: 0.0,
+            capture_lock: false,
+        }
+    }
+
+    pub fn capture(&mut self, app: &mut App, gfx: &mut Graphics) {
+        if self.capture_lock {
+            self.last_capture = app.timer.time_since_init();
+            log::debug!("Last capture completed at {} seconds", self.last_capture);
+            self.capture_lock = false;
+        } else {
+            if self.capture_interval > 0.0
+                && ((app.timer.time_since_init() - self.last_capture) > self.capture_interval)
+            {
+                log::debug!("Beginning capture at {}", app.timer.time_since_init());
+                let filepath = format!("{}_{}.png", self.capture_to, app.timer.time_since_init());
+                self.render_texture.to_file(gfx, &filepath).unwrap();
+                self.capture_lock = true;
+            }
+        }
+    }
 }

@@ -3,12 +3,15 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
-use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
+use notan_sketches::utils::{
+    get_common_win_config, get_draw_setup, get_rng, CapturingTexture, ScreenDimensions,
+};
 use std::mem::size_of_val;
 use uuid::Uuid;
 
-// const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
-const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
+// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
@@ -29,14 +32,19 @@ const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 const NODES_ROTATED: usize = 1024;
 // Max memory used for nodes
 // 10 KB: 10240
+// 100 KB: 102400
+// 500KB: 512000
 // 1 MB: 1048576
 // 10 MB: 10485760
-const MAX_NODES_BYTES: u32 = 10485760;
+const MAX_NODES_BYTES: u32 = 102400;
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
 const ALPHA_FREQ: f32 = 0.5;
+// Capture intervals
+const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
+
 
 #[derive(Clone, PartialEq)]
 pub enum NodeClass {
@@ -54,14 +62,15 @@ pub struct Node {
     pub pos: Vec2,
     pub spawn_last_angle: f32,
     pub spawn2_last_angle: f32,
-    pub active: bool,
     pub alpha: f32,
+    pub active: bool,
+    pub rendered: bool,
 }
 
 
 impl Node {
-    fn is_within_view(&self) -> bool {
-        self.pos.x > 0.0 && self.pos.x < WORK_SIZE.x && self.pos.y > 0.0 && self.pos.y < WORK_SIZE.y
+    fn is_within_view(&self, work_size: &Vec2) -> bool {
+        self.pos.x > 0.0 && self.pos.x < work_size.x && self.pos.y > 0.0 && self.pos.y < work_size.y
     }
 
     fn is_parent(&self) -> bool {
@@ -79,8 +88,9 @@ impl Default for Node {
             pos: vec2(0.0, 0.0),
             spawn_last_angle: 0.0,
             spawn2_last_angle: 0.0,
-            active: false,
             alpha: DEFAULT_ALPHA,
+            active: false,
+            rendered: false,
         }
     }
 }
@@ -88,8 +98,11 @@ impl Default for Node {
 
 #[derive(AppState)]
 pub struct State {
+    /// The work_size attr is meant to be set at init() and not changed thereafter.
+    pub work_size: Vec2,
     pub rng: Random,
     pub last_update: f32,
+    pub capture: CapturingTexture,
     pub circle_texture: Texture,
     pub draw_alpha: f32,
     pub nodes: Vec<Node>,
@@ -97,6 +110,7 @@ pub struct State {
     pub spawn_radius: f32,
     pub spawn_max_distance: f32,
 }
+
 
 impl State {
     fn get_active_node(&self) -> Option<usize> {
@@ -138,22 +152,36 @@ fn create_circle_texture(gfx: &mut Graphics, radius: f32, color: Color) -> Textu
     rt.take_inner()
 }
 
-fn init(gfx: &mut Graphics) -> State {
+fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
+    let window = app.window();
+    log::debug!("win id {:?}", window.id());
+    let work_size = DEFAULT_WORK_SIZE;
+
+    let capture = CapturingTexture::new(
+        gfx,
+        &work_size,
+        Color::WHITE,
+        format!("tmp/{}", seed),
+        CAPTURE_INTERVAL,
+    );
+
     // The texture radius is large because we want large textures that look nice when app is maximized
-    let circle_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, CIRCLE_TEXTURE_COLOR);
+    let circle_texture = create_circle_texture(gfx, work_size.x * 0.5, CIRCLE_TEXTURE_COLOR);
 
     State {
+        work_size: DEFAULT_WORK_SIZE,
         rng: rng,
         last_update: 0.0,
+        capture,
         circle_texture: circle_texture,
         draw_alpha: 0.0,
         nodes: vec![],
-        parent_radius: WORK_SIZE.x * 0.02,
-        spawn_radius: WORK_SIZE.x * 0.01,
-        spawn_max_distance: WORK_SIZE.x * 0.1,
+        parent_radius: work_size.x * 0.02,
+        spawn_radius: work_size.x * 0.01,
+        spawn_max_distance: work_size.x * 0.1,
     }
 }
 
@@ -162,10 +190,9 @@ fn spawn_random(state: &mut State) {
         class: NodeClass::PARENT,
         alpha: state.draw_alpha,
         pos: vec2(
-            state.rng.gen_range(0.0..WORK_SIZE.x),
-            state.rng.gen_range(0.0..WORK_SIZE.y),
+            state.rng.gen_range(0.0..state.work_size.x),
+            state.rng.gen_range(0.0..state.work_size.y),
         ),
-        // last_angle: 0.0,
         active: true,
         ..Default::default()
     });
@@ -178,7 +205,7 @@ fn spawn_random_any_child(state: &mut State) {
     let mut candidates: Vec<&mut Node> = state
         .nodes
         .iter_mut()
-        .filter(|node| node.spawn_last_angle == 0.0 && node.is_within_view())
+        .filter(|node| node.spawn_last_angle == 0.0 && node.is_within_view(&state.work_size))
         .collect();
     if candidates.len() > 0 {
         // select random candidate
@@ -188,6 +215,7 @@ fn spawn_random_any_child(state: &mut State) {
         candidate.class = NodeClass::PARENT;
         // set candidate to active
         candidate.active = true;
+        candidate.rendered = false;
     }
 }
 
@@ -198,7 +226,9 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
         .nodes
         .iter_mut()
         .filter(|node| {
-            parent.id == node.parent_id && node.spawn_last_angle == 0.0 && node.is_within_view()
+            parent.id == node.parent_id
+                && node.spawn_last_angle == 0.0
+                && node.is_within_view(&state.work_size)
         })
         .collect();
     if candidates.len() > 0 {
@@ -209,6 +239,7 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
         candidate.class = NodeClass::PARENT;
         // set candidate to active
         candidate.active = true;
+        candidate.rendered = false;
     }
 }
 
@@ -292,10 +323,8 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 
-fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
-    let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
-
-    for node in state.nodes.iter() {
+fn draw_nodes(draw: &mut Draw, state: &mut State) {
+    for node in state.nodes.iter_mut().filter(|node| !node.rendered) {
         let texture: &Texture;
         let size: f32;
         let color: Color;
@@ -322,20 +351,33 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 // color = colors::AEGEAN;
             }
         }
-        if node.is_parent() {
-        } else {
-        }
         draw.image(&texture)
-            // .alpha_mode(BlendMode::OVER)
+            .alpha_mode(BlendMode::OVER)
             .alpha(node.alpha)
             // .alpha(alpha_mod)
             .color(color)
             .position(node.pos.x, node.pos.y)
             .size(size, size);
+        node.rendered = true;
     }
+}
 
 
-    gfx.render(draw);
+fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    // let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
+    // draw_nodes(draw, state);
+
+
+    let draw = &mut state.capture.render_texture.create_draw();
+    draw_nodes(draw, state);
+    gfx.render_to(&state.capture.render_texture, draw);
+    state.capture.capture(app, gfx);
+
+
+    let rdraw = &mut get_draw_setup(gfx, state.work_size, false, Color::WHITE);
+    rdraw.image(&state.capture.render_texture);
+
+    gfx.render(rdraw);
     // log::debug!("fps: {}", app.timer.fps().round());
 }
 
@@ -345,6 +387,8 @@ fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
         // let win_config = get_common_win_config().high_dpi(true).size(
+        // ScreenDimensions::RES_4KISH.x as i32,
+        // ScreenDimensions::RES_4KISH.y as i32,
         // ScreenDimensions::RES_HDPLUS.x as i32,
         // ScreenDimensions::RES_HDPLUS.y as i32,
         ScreenDimensions::RES_1080P.x as i32,
