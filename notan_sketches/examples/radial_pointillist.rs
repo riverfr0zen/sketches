@@ -3,13 +3,15 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
-use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, ScreenDimensions};
+use notan_sketches::utils::{
+    get_common_win_config, get_draw_setup, get_rng, get_scaling_projection, ScreenDimensions,
+};
 use std::mem::size_of_val;
 use uuid::Uuid;
 
-// const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
-// const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
-const WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
+// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
+// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
@@ -64,8 +66,8 @@ pub struct Node {
 
 
 impl Node {
-    fn is_within_view(&self) -> bool {
-        self.pos.x > 0.0 && self.pos.x < WORK_SIZE.x && self.pos.y > 0.0 && self.pos.y < WORK_SIZE.y
+    fn is_within_view(&self, work_size: &Vec2) -> bool {
+        self.pos.x > 0.0 && self.pos.x < work_size.x && self.pos.y > 0.0 && self.pos.y < work_size.y
     }
 
     fn is_parent(&self) -> bool {
@@ -93,6 +95,8 @@ impl Default for Node {
 
 #[derive(AppState)]
 pub struct State {
+    /// The work_size attr is meant to be set at init() and not changed thereafter.
+    pub work_size: Vec2,
     pub rng: Random,
     pub last_update: f32,
     pub rt: RenderTexture,
@@ -105,11 +109,11 @@ pub struct State {
 }
 
 impl State {
-    fn create_render_texture(gfx: &mut Graphics) -> RenderTexture {
+    fn create_render_texture(gfx: &mut Graphics, work_size: Vec2) -> RenderTexture {
         return gfx
-            .create_render_texture(WORK_SIZE.x as _, WORK_SIZE.y as _)
-            .with_filter(TextureFilter::Linear, TextureFilter::Linear)
-            // .with_filter(TextureFilter::Nearest, TextureFilter::Linear)
+            .create_render_texture(work_size.x as _, work_size.y as _)
+            // .create_render_texture(width, height)
+            // .with_filter(TextureFilter::Linear, TextureFilter::Linear)
             // .with_depth()
             .build()
             .unwrap();
@@ -154,23 +158,28 @@ fn create_circle_texture(gfx: &mut Graphics, radius: f32, color: Color) -> Textu
     rt.take_inner()
 }
 
-fn init(gfx: &mut Graphics) -> State {
+fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
+    let window = app.window();
+    log::debug!("win id {:?}", window.id());
+    let work_size = DEFAULT_WORK_SIZE;
+
     // The texture radius is large because we want large textures that look nice when app is maximized
-    let circle_texture = create_circle_texture(gfx, WORK_SIZE.x * 0.5, CIRCLE_TEXTURE_COLOR);
+    let circle_texture = create_circle_texture(gfx, work_size.x * 0.5, CIRCLE_TEXTURE_COLOR);
 
     State {
+        work_size: DEFAULT_WORK_SIZE,
         rng: rng,
         last_update: 0.0,
-        rt: State::create_render_texture(gfx),
+        rt: State::create_render_texture(gfx, work_size),
         circle_texture: circle_texture,
         draw_alpha: 0.0,
         nodes: vec![],
-        parent_radius: WORK_SIZE.x * 0.02,
-        spawn_radius: WORK_SIZE.x * 0.01,
-        spawn_max_distance: WORK_SIZE.x * 0.1,
+        parent_radius: work_size.x * 0.02,
+        spawn_radius: work_size.x * 0.01,
+        spawn_max_distance: work_size.x * 0.1,
     }
 }
 
@@ -179,10 +188,9 @@ fn spawn_random(state: &mut State) {
         class: NodeClass::PARENT,
         alpha: state.draw_alpha,
         pos: vec2(
-            state.rng.gen_range(0.0..WORK_SIZE.x),
-            state.rng.gen_range(0.0..WORK_SIZE.y),
+            state.rng.gen_range(0.0..state.work_size.x),
+            state.rng.gen_range(0.0..state.work_size.y),
         ),
-        // last_angle: 0.0,
         active: true,
         ..Default::default()
     });
@@ -195,7 +203,7 @@ fn spawn_random_any_child(state: &mut State) {
     let mut candidates: Vec<&mut Node> = state
         .nodes
         .iter_mut()
-        .filter(|node| node.spawn_last_angle == 0.0 && node.is_within_view())
+        .filter(|node| node.spawn_last_angle == 0.0 && node.is_within_view(&state.work_size))
         .collect();
     if candidates.len() > 0 {
         // select random candidate
@@ -216,7 +224,9 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
         .nodes
         .iter_mut()
         .filter(|node| {
-            parent.id == node.parent_id && node.spawn_last_angle == 0.0 && node.is_within_view()
+            parent.id == node.parent_id
+                && node.spawn_last_angle == 0.0
+                && node.is_within_view(&state.work_size)
         })
         .collect();
     if candidates.len() > 0 {
@@ -355,12 +365,13 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     // let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
     // draw_nodes(draw, state);
 
+
     let draw = &mut state.rt.create_draw();
-    // draw.clear(Color::WHITE);
     draw_nodes(draw, state);
     gfx.render_to(&state.rt, draw);
 
-    let rdraw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
+
+    let rdraw = &mut get_draw_setup(gfx, state.work_size, false, Color::WHITE);
     rdraw.image(&state.rt);
 
     gfx.render(rdraw);
@@ -373,6 +384,8 @@ fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
         // let win_config = get_common_win_config().high_dpi(true).size(
+        // ScreenDimensions::RES_4KISH.x as i32,
+        // ScreenDimensions::RES_4KISH.y as i32,
         // ScreenDimensions::RES_HDPLUS.x as i32,
         // ScreenDimensions::RES_HDPLUS.y as i32,
         ScreenDimensions::RES_1080P.x as i32,
