@@ -10,7 +10,6 @@ use std::mem::size_of_val;
 use std::ops::RangeInclusive;
 use uuid::Uuid;
 
-
 // const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 // const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
@@ -23,13 +22,7 @@ const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 // The frequency of the wave that determines the distance of the Spawn2's position
 // from its parent
 const SPAWN2_WAVE_FREQ: RangeInclusive<f32> = 3.0..=30.0;
-// const SPAWN_STRATEGY: &str = "random";
-// const SPAWN_STRATEGY: &str = "random any child";
-const SPAWN_STRATEGY: &str = "random child of node";
-// const RANDOMIZE_SPAWN_DISTANCE: bool = false;
-const RANDOMIZE_SPAWN_DISTANCE: bool = true;
 // How many nodes are cleared during node size management
-// const NODES_ROTATED: usize = 100;
 const NODES_ROTATED: usize = 1024;
 // Max memory used for nodes
 // 10 KB: 10240
@@ -48,8 +41,28 @@ const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
 
 
+#[derive(Debug, PartialEq)]
+enum SpawnStrategy {
+    Random,
+    RandomAnyChild,
+    RandomChildOfNode,
+}
+
+impl SpawnStrategy {
+    fn random(rng: &mut Random) -> Self {
+        match rng.gen_range(0..10) {
+            8 => Self::Random,
+            9 => Self::RandomAnyChild,
+            _ => Self::RandomChildOfNode,
+        }
+    }
+}
+
+
 #[derive(Debug)]
 pub struct Settings {
+    spawn_strategy: SpawnStrategy,
+    vary_spawn_distance: bool,
     spawn_angle_step: f32,
     spawn2_angle_step: f32,
     spawn2_wave_freq: f32,
@@ -59,6 +72,8 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            spawn_strategy: SpawnStrategy::RandomChildOfNode,
+            vary_spawn_distance: true,
             spawn_angle_step: 10.0,
             spawn2_angle_step: 1.0,
             spawn2_wave_freq: 20.0,
@@ -69,7 +84,13 @@ impl Default for Settings {
 
 impl Settings {
     fn randomize(rng: &mut Random) -> Self {
+        let mut vary_spawn_distance = true;
+        if rng.gen_range(0..10) > 7 {
+            vary_spawn_distance = false;
+        }
         Self {
+            spawn_strategy: SpawnStrategy::random(rng),
+            vary_spawn_distance: vary_spawn_distance,
             spawn_angle_step: rng.gen_range(SPAWN_ANGLE_STEP),
             spawn2_angle_step: rng.gen_range(SPAWN2_ANGLE_STEP),
             spawn2_wave_freq: rng.gen_range(SPAWN2_WAVE_FREQ),
@@ -293,7 +314,7 @@ fn update(app: &mut App, state: &mut State) {
 
             let min_distance = state.parent_radius * 1.5;
             let distance: f32;
-            if RANDOMIZE_SPAWN_DISTANCE {
+            if state.settings.vary_spawn_distance {
                 distance = state.rng.gen_range(min_distance..state.spawn_max_distance);
             } else {
                 distance = state.spawn_max_distance;
@@ -346,9 +367,9 @@ fn update(app: &mut App, state: &mut State) {
                 }
             } else {
                 nodes[active_node].active = false;
-                if SPAWN_STRATEGY == "random any child" {
+                if state.settings.spawn_strategy == SpawnStrategy::RandomAnyChild {
                     spawn_random_any_child(state);
-                } else if SPAWN_STRATEGY == "random child of node" {
+                } else if state.settings.spawn_strategy == SpawnStrategy::RandomChildOfNode {
                     let node_clone = nodes[active_node].clone();
                     spawn_random_node_child(state, node_clone);
                 }
