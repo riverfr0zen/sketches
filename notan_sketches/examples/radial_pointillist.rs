@@ -7,7 +7,9 @@ use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, CapturingTexture, ScreenDimensions,
 };
 use std::mem::size_of_val;
+use std::ops::RangeInclusive;
 use uuid::Uuid;
+
 
 // const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 // const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
@@ -16,12 +18,11 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
-// const SPAWN_ANGLE_STEP: f32 = 30.0;
-const SPAWN_ANGLE_STEP: f32 = 10.0;
-const SPAWN2_ANGLE_STEP: f32 = 1.0;
+const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
+const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 // The frequency of the wave that determines the distance of the Spawn2's position
 // from its parent
-const SPAWN2_WAVE_FREQ: f32 = 20.0;
+const SPAWN2_WAVE_FREQ: RangeInclusive<f32> = 3.0..=30.0;
 // const SPAWN_STRATEGY: &str = "random";
 // const SPAWN_STRATEGY: &str = "random any child";
 const SPAWN_STRATEGY: &str = "random child of node";
@@ -41,9 +42,41 @@ const MAX_NODES_BYTES: u32 = 102400;
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
-const ALPHA_FREQ: f32 = 0.5;
-// Capture intervals
+const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
+// Capture interval
+// const CAPTURE_INTERVAL: f32 = 30.0;
 const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
+
+
+#[derive(Debug)]
+pub struct Settings {
+    spawn_angle_step: f32,
+    spawn2_angle_step: f32,
+    spawn2_wave_freq: f32,
+    alpha_freq: f32,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            spawn_angle_step: 10.0,
+            spawn2_angle_step: 1.0,
+            spawn2_wave_freq: 20.0,
+            alpha_freq: 0.5,
+        }
+    }
+}
+
+impl Settings {
+    fn randomize(rng: &mut Random) -> Self {
+        Self {
+            spawn_angle_step: rng.gen_range(SPAWN_ANGLE_STEP),
+            spawn2_angle_step: rng.gen_range(SPAWN2_ANGLE_STEP),
+            spawn2_wave_freq: rng.gen_range(SPAWN2_WAVE_FREQ),
+            alpha_freq: rng.gen_range(ALPHA_FREQ),
+        }
+    }
+}
 
 
 #[derive(Clone, PartialEq)]
@@ -109,6 +142,7 @@ pub struct State {
     pub parent_radius: f32,
     pub spawn_radius: f32,
     pub spawn_max_distance: f32,
+    pub settings: Settings,
 }
 
 
@@ -153,7 +187,7 @@ fn create_circle_texture(gfx: &mut Graphics, radius: f32, color: Color) -> Textu
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
-    let (rng, seed) = get_rng(None);
+    let (mut rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
     let window = app.window();
@@ -164,13 +198,16 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         gfx,
         &work_size,
         Color::WHITE,
-        format!("tmp/{}", seed),
+        format!("renders/radial_pointillist/{}", seed),
         CAPTURE_INTERVAL,
     );
 
     // The texture radius is large because we want large textures that look nice when app is maximized
     let circle_texture = create_circle_texture(gfx, work_size.x * 0.5, CIRCLE_TEXTURE_COLOR);
 
+    // let settings = Settings::default();
+    let settings = Settings::randomize(&mut rng);
+    log::debug!("With settings: {:#?}", settings);
     State {
         work_size: DEFAULT_WORK_SIZE,
         rng: rng,
@@ -182,6 +219,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         parent_radius: work_size.x * 0.02,
         spawn_radius: work_size.x * 0.01,
         spawn_max_distance: work_size.x * 0.1,
+        settings: settings,
     }
 }
 
@@ -247,7 +285,7 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
 fn update(app: &mut App, state: &mut State) {
     let curr_time = app.timer.time_since_init();
 
-    state.draw_alpha = (curr_time * ALPHA_FREQ).sin().abs();
+    state.draw_alpha = (curr_time * state.settings.alpha_freq).sin().abs();
 
     if curr_time - state.last_update > UPDATE_STEP {
         if let Some(active_node) = state.get_active_node() {
@@ -269,7 +307,7 @@ fn update(app: &mut App, state: &mut State) {
                 || nodes[active_node].spawn2_last_angle < 360.0
             {
                 if nodes[active_node].spawn_last_angle < 360.0 {
-                    nodes[active_node].spawn_last_angle += SPAWN_ANGLE_STEP;
+                    nodes[active_node].spawn_last_angle += state.settings.spawn_angle_step;
                     // log::debug!("angle: {}", node.last_angle);
                     let spawn_x = nodes[active_node].pos.x
                         + spawn_offset
@@ -286,10 +324,11 @@ fn update(app: &mut App, state: &mut State) {
                 }
 
                 if nodes[active_node].spawn2_last_angle < 360.0 {
-                    nodes[active_node].spawn2_last_angle += SPAWN2_ANGLE_STEP;
+                    nodes[active_node].spawn2_last_angle += state.settings.spawn2_angle_step;
                     // Spawn2 distance changes as a wave
                     let spawn2_distance = min_distance
-                        + ((curr_time * SPAWN2_WAVE_FREQ).sin().abs() * state.spawn_max_distance);
+                        + ((curr_time * state.settings.spawn2_wave_freq).sin().abs()
+                            * state.spawn_max_distance);
                     let spawn2_x = nodes[active_node].pos.x
                         + spawn_offset
                         + nodes[active_node].spawn2_last_angle.to_radians().cos() * spawn2_distance;
