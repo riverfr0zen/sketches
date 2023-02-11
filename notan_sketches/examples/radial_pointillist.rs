@@ -40,6 +40,14 @@ const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 // const CAPTURE_INTERVAL: f32 = 10.0;
 const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
 const MAX_CAPTURES: u32 = 3;
+const PALETTE: [Color; 6] = [
+    colors::AEGEAN,
+    colors::CERULEAN,
+    colors::SAFFRON,
+    colors::SALMON,
+    colors::SEAWEED,
+    colors::PICKLE,
+];
 
 
 #[derive(Debug, PartialEq)]
@@ -68,6 +76,9 @@ pub struct Settings {
     spawn2_angle_step: f32,
     spawn2_wave_freq: f32,
     alpha_freq: f32,
+    parent_color: Color,
+    spawn_color: Color,
+    spawn2_color: Color,
 }
 
 impl Default for Settings {
@@ -79,6 +90,9 @@ impl Default for Settings {
             spawn2_angle_step: 1.0,
             spawn2_wave_freq: 20.0,
             alpha_freq: 0.5,
+            parent_color: colors::AEGEAN,
+            spawn_color: colors::SEAWEED,
+            spawn2_color: colors::SALMON,
         }
     }
 }
@@ -89,6 +103,12 @@ impl Settings {
         if rng.gen_range(0..10) > 7 {
             vary_spawn_distance = false;
         }
+
+        let mut palette = PALETTE.to_vec();
+        let parent_color = palette.remove(rng.gen_range(0..palette.len()));
+        let spawn_color = palette.remove(rng.gen_range(0..palette.len()));
+        let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
+
         Self {
             spawn_strategy: SpawnStrategy::random(rng),
             vary_spawn_distance: vary_spawn_distance,
@@ -96,6 +116,9 @@ impl Settings {
             spawn2_angle_step: rng.gen_range(SPAWN2_ANGLE_STEP),
             spawn2_wave_freq: rng.gen_range(SPAWN2_WAVE_FREQ),
             alpha_freq: rng.gen_range(ALPHA_FREQ),
+            parent_color,
+            spawn_color,
+            spawn2_color,
         }
     }
 }
@@ -398,23 +421,17 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
             NodeClass::PARENT => {
                 texture = &state.circle_texture;
                 size = state.parent_radius * 2.0;
-                color = colors::AEGEAN;
-                // color = colors::CERULEAN;
+                color = state.settings.parent_color;
             }
             NodeClass::SPAWN => {
                 texture = &state.circle_texture;
                 size = state.spawn_radius * 2.0;
-                // color = colors::SAFFRON;
-                // color = colors::SALMON;
-                color = colors::SEAWEED;
+                color = state.settings.spawn_color;
             }
             NodeClass::SPAWN2 => {
                 texture = &state.circle_texture;
                 size = state.spawn_radius * 0.75;
-                // color = colors::SEAWEED;
-                // color = colors::PICKLE;
-                color = colors::SALMON;
-                // color = colors::AEGEAN;
+                color = state.settings.spawn2_color;
             }
         }
         draw.image(&texture)
