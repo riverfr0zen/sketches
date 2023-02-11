@@ -17,6 +17,8 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
+const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.05;
+const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 // The frequency of the wave that determines the distance of the Spawn2's position
@@ -72,6 +74,8 @@ impl SpawnStrategy {
 pub struct Settings {
     spawn_strategy: SpawnStrategy,
     vary_spawn_distance: bool,
+    parent_radius: f32,
+    spawn_radius: f32,
     spawn_angle_step: f32,
     spawn2_angle_step: f32,
     spawn2_wave_freq: f32,
@@ -86,6 +90,8 @@ impl Default for Settings {
         Self {
             spawn_strategy: SpawnStrategy::RandomChildOfNode,
             vary_spawn_distance: true,
+            parent_radius: DEFAULT_WORK_SIZE.x * 0.02,
+            spawn_radius: DEFAULT_WORK_SIZE.x * 0.01,
             spawn_angle_step: 10.0,
             spawn2_angle_step: 1.0,
             spawn2_wave_freq: 20.0,
@@ -98,7 +104,7 @@ impl Default for Settings {
 }
 
 impl Settings {
-    fn randomize(rng: &mut Random) -> Self {
+    fn randomize(rng: &mut Random, work_size: &Vec2) -> Self {
         let mut vary_spawn_distance = true;
         if rng.gen_range(0..10) > 7 {
             vary_spawn_distance = false;
@@ -112,6 +118,8 @@ impl Settings {
         Self {
             spawn_strategy: SpawnStrategy::random(rng),
             vary_spawn_distance: vary_spawn_distance,
+            parent_radius: work_size.x * rng.gen_range(PARENT_RADIUS),
+            spawn_radius: work_size.x * rng.gen_range(SPAWN_RADIUS),
             spawn_angle_step: rng.gen_range(SPAWN_ANGLE_STEP),
             spawn2_angle_step: rng.gen_range(SPAWN2_ANGLE_STEP),
             spawn2_wave_freq: rng.gen_range(SPAWN2_WAVE_FREQ),
@@ -150,10 +158,6 @@ impl Node {
     fn is_within_view(&self, work_size: &Vec2) -> bool {
         self.pos.x > 0.0 && self.pos.x < work_size.x && self.pos.y > 0.0 && self.pos.y < work_size.y
     }
-
-    fn is_parent(&self) -> bool {
-        return self.class == NodeClass::PARENT;
-    }
 }
 
 
@@ -184,8 +188,8 @@ pub struct State {
     pub circle_texture: Texture,
     pub draw_alpha: f32,
     pub nodes: Vec<Node>,
-    pub parent_radius: f32,
-    pub spawn_radius: f32,
+    // pub parent_radius: f32,
+    // pub spawn_radius: f32,
     pub spawn_max_distance: f32,
     pub settings: Settings,
     pub reinit_next_draw: bool,
@@ -218,7 +222,7 @@ impl State {
     fn reinitialize_drawing(&mut self, gfx: &mut Graphics) {
         log::debug!("Maximum captures reached. Creating new seed and re-randomizing settings...");
         let (mut rng, capture) = init_rng_and_capture(gfx, &self.work_size);
-        self.settings = Settings::randomize(&mut rng);
+        self.settings = Settings::randomize(&mut rng, &self.work_size);
         log::debug!("With settings: {:#?}", self.settings);
         self.rng = rng;
         self.capture = capture;
@@ -260,7 +264,7 @@ fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, Captur
 }
 
 
-fn init(app: &mut App, gfx: &mut Graphics) -> State {
+fn init(gfx: &mut Graphics) -> State {
     let work_size = DEFAULT_WORK_SIZE;
 
     let (mut rng, capture) = init_rng_and_capture(gfx, &work_size);
@@ -269,7 +273,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let circle_texture = create_circle_texture(gfx, work_size.x * 0.5, CIRCLE_TEXTURE_COLOR);
 
     // let settings = Settings::default();
-    let settings = Settings::randomize(&mut rng);
+    let settings = Settings::randomize(&mut rng, &work_size);
     log::debug!("With settings: {:#?}", settings);
     State {
         work_size: work_size,
@@ -279,8 +283,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         circle_texture: circle_texture,
         draw_alpha: 0.0,
         nodes: vec![],
-        parent_radius: work_size.x * 0.02,
-        spawn_radius: work_size.x * 0.01,
+        // parent_radius: work_size.x * 0.02,
+        // spawn_radius: work_size.x * 0.01,
         spawn_max_distance: work_size.x * 0.1,
         settings: settings,
         reinit_next_draw: false,
@@ -361,7 +365,7 @@ fn update(app: &mut App, state: &mut State) {
         if let Some(active_node) = state.get_active_node() {
             let nodes = &mut state.nodes;
 
-            let min_distance = state.parent_radius * 1.5;
+            let min_distance = state.settings.parent_radius * 1.5;
             let distance: f32;
             if state.settings.vary_spawn_distance {
                 distance = state.rng.gen_range(min_distance..state.spawn_max_distance);
@@ -370,7 +374,7 @@ fn update(app: &mut App, state: &mut State) {
             }
             // Need this offset so that spawn are positioned from the center of
             // parent node (because of how texture image positioning works)
-            let spawn_offset = state.parent_radius * 0.5;
+            let spawn_offset = state.settings.parent_radius * 0.5;
             let parent_id = nodes[active_node].id.clone();
 
             if nodes[active_node].spawn_last_angle < 360.0
@@ -440,17 +444,17 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
         match node.class {
             NodeClass::PARENT => {
                 texture = &state.circle_texture;
-                size = state.parent_radius * 2.0;
+                size = state.settings.parent_radius * 2.0;
                 color = state.settings.parent_color;
             }
             NodeClass::SPAWN => {
                 texture = &state.circle_texture;
-                size = state.spawn_radius * 2.0;
+                size = state.settings.spawn_radius * 2.0;
                 color = state.settings.spawn_color;
             }
             NodeClass::SPAWN2 => {
                 texture = &state.circle_texture;
-                size = state.spawn_radius * 0.75;
+                size = state.settings.spawn_radius * 0.75;
                 color = state.settings.spawn2_color;
             }
         }
