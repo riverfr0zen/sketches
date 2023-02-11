@@ -188,6 +188,7 @@ pub struct State {
     pub spawn_radius: f32,
     pub spawn_max_distance: f32,
     pub settings: Settings,
+    pub reinit_next_draw: bool,
 }
 
 
@@ -212,6 +213,18 @@ impl State {
             self.nodes.rotate_left(rotate_length);
             self.nodes.truncate(rotate_length);
         }
+    }
+
+    fn reinitialize_drawing(&mut self, gfx: &mut Graphics) {
+        log::debug!("Maximum captures reached. Creating new seed and re-randomizing settings...");
+        let (mut rng, capture) = init_rng_and_capture(gfx, &self.work_size);
+        self.settings = Settings::randomize(&mut rng);
+        log::debug!("With settings: {:#?}", self.settings);
+        self.rng = rng;
+        self.capture = capture;
+        // Manually lock the newly reset capture so that it does not immediately
+        // start capturing again.
+        self.capture.capture_lock = true;
     }
 }
 
@@ -270,6 +283,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         spawn_radius: work_size.x * 0.01,
         spawn_max_distance: work_size.x * 0.1,
         settings: settings,
+        reinit_next_draw: false,
     }
 }
 
@@ -333,6 +347,12 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
 
 
 fn update(app: &mut App, state: &mut State) {
+    if app.keyboard.was_pressed(KeyCode::R) {
+        log::debug!("R");
+        state.reinit_next_draw = true;
+    }
+
+
     let curr_time = app.timer.time_since_init();
 
     state.draw_alpha = (curr_time * state.settings.alpha_freq).sin().abs();
@@ -447,20 +467,17 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    if state.reinit_next_draw {
+        state.reinitialize_drawing(gfx);
+        state.reinit_next_draw = false;
+    }
+
     let draw = &mut state.capture.render_texture.create_draw();
     draw_nodes(draw, state);
     gfx.render_to(&state.capture.render_texture, draw);
     state.capture.capture(app, gfx);
     if state.capture.num_captures >= MAX_CAPTURES {
-        log::debug!("Maximum captures reached. Creating new seed and re-randomizing settings...");
-        let (mut rng, capture) = init_rng_and_capture(gfx, &state.work_size);
-        state.settings = Settings::randomize(&mut rng);
-        log::debug!("With settings: {:#?}", state.settings);
-        state.rng = rng;
-        state.capture = capture;
-        // Manually lock the newly reset capture so that it does not immediately
-        // start capturing again.
-        state.capture.capture_lock = true;
+        state.reinitialize_drawing(gfx);
     }
 
 
