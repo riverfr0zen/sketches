@@ -41,7 +41,7 @@ const DEFAULT_ALPHA: f32 = 0.5;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 2.0;
 const MAX_CAPTURES: u32 = 3;
 const PALETTE: [Color; 6] = [
     colors::AEGEAN,
@@ -192,7 +192,7 @@ pub struct State {
     pub circle_texture: Texture,
     pub draw_alpha: f32,
     pub nodes: Vec<Node>,
-    pub spawn_max_distance: f32,
+    pub spawn_max_distance_mod: f32,
     pub settings: Settings,
     pub reinit_next_draw: bool,
 }
@@ -285,7 +285,7 @@ fn init(gfx: &mut Graphics) -> State {
         circle_texture: circle_texture,
         draw_alpha: 0.0,
         nodes: vec![],
-        spawn_max_distance: work_size.x * 0.1,
+        spawn_max_distance_mod: 2.0,
         settings: settings,
         reinit_next_draw: false,
     }
@@ -366,11 +366,12 @@ fn update(app: &mut App, state: &mut State) {
             let nodes = &mut state.nodes;
 
             let min_distance = state.settings.parent_radius * 1.5;
+            let max_distance = min_distance * state.spawn_max_distance_mod;
             let distance: f32;
             if state.settings.vary_spawn_distance {
-                distance = state.rng.gen_range(min_distance..state.spawn_max_distance);
+                distance = state.rng.gen_range(min_distance..max_distance);
             } else {
-                distance = state.spawn_max_distance;
+                distance = max_distance;
             }
             // Need this offset so that spawn are positioned from the center of
             // parent node (because of how texture image positioning works)
@@ -400,9 +401,11 @@ fn update(app: &mut App, state: &mut State) {
                 if nodes[active_node].spawn2_last_angle < 360.0 {
                     nodes[active_node].spawn2_last_angle += state.settings.spawn2_angle_step;
                     // Spawn2 distance changes as a wave
+                    // let spawn2_max_distance = max_distance * 0.5;
+                    let spawn2_max_distance = max_distance * 0.75;
                     let spawn2_distance = min_distance
                         + ((curr_time * state.settings.spawn2_wave_freq).sin().abs()
-                            * state.spawn_max_distance);
+                            * spawn2_max_distance);
                     let spawn2_x = nodes[active_node].pos.x
                         + spawn_offset
                         + nodes[active_node].spawn2_last_angle.to_radians().cos() * spawn2_distance;
