@@ -17,8 +17,9 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
-const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.05;
-const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
+const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
+const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
+const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 // The frequency of the wave that determines the distance of the Spawn2's position
@@ -76,6 +77,7 @@ pub struct Settings {
     vary_spawn_distance: bool,
     parent_radius: f32,
     spawn_radius: f32,
+    spawn2_radius: f32,
     spawn_angle_step: f32,
     spawn2_angle_step: f32,
     spawn2_wave_freq: f32,
@@ -92,6 +94,7 @@ impl Default for Settings {
             vary_spawn_distance: true,
             parent_radius: DEFAULT_WORK_SIZE.x * 0.02,
             spawn_radius: DEFAULT_WORK_SIZE.x * 0.01,
+            spawn2_radius: DEFAULT_WORK_SIZE.x * 0.005,
             spawn_angle_step: 10.0,
             spawn2_angle_step: 1.0,
             spawn2_wave_freq: 20.0,
@@ -120,6 +123,7 @@ impl Settings {
             vary_spawn_distance: vary_spawn_distance,
             parent_radius: work_size.x * rng.gen_range(PARENT_RADIUS),
             spawn_radius: work_size.x * rng.gen_range(SPAWN_RADIUS),
+            spawn2_radius: work_size.x * rng.gen_range(SPAWN2_RADIUS),
             spawn_angle_step: rng.gen_range(SPAWN_ANGLE_STEP),
             spawn2_angle_step: rng.gen_range(SPAWN2_ANGLE_STEP),
             spawn2_wave_freq: rng.gen_range(SPAWN2_WAVE_FREQ),
@@ -188,8 +192,6 @@ pub struct State {
     pub circle_texture: Texture,
     pub draw_alpha: f32,
     pub nodes: Vec<Node>,
-    // pub parent_radius: f32,
-    // pub spawn_radius: f32,
     pub spawn_max_distance: f32,
     pub settings: Settings,
     pub reinit_next_draw: bool,
@@ -283,8 +285,6 @@ fn init(gfx: &mut Graphics) -> State {
         circle_texture: circle_texture,
         draw_alpha: 0.0,
         nodes: vec![],
-        // parent_radius: work_size.x * 0.02,
-        // spawn_radius: work_size.x * 0.01,
         spawn_max_distance: work_size.x * 0.1,
         settings: settings,
         reinit_next_draw: false,
@@ -454,7 +454,7 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
             }
             NodeClass::SPAWN2 => {
                 texture = &state.circle_texture;
-                size = state.settings.spawn_radius * 0.75;
+                size = state.settings.spawn2_radius * 2.0;
                 color = state.settings.spawn2_color;
             }
         }
