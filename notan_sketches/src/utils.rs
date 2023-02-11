@@ -115,6 +115,7 @@ pub struct CapturingTexture {
     pub capture_interval: f32,
     pub last_capture: f32,
     pub capture_lock: bool,
+    pub num_captures: u32,
 }
 
 impl CapturingTexture {
@@ -149,6 +150,7 @@ impl CapturingTexture {
             capture_interval: capture_interval,
             last_capture: 0.0,
             capture_lock: false,
+            num_captures: 0,
         }
     }
 
@@ -164,6 +166,7 @@ impl CapturingTexture {
                 log::debug!("Beginning capture at {}", app.timer.time_since_init());
                 let filepath = format!("{}_{}.png", self.capture_to, app.timer.time_since_init());
                 self.render_texture.to_file(gfx, &filepath).unwrap();
+                self.num_captures += 1;
                 self.capture_lock = true;
             }
         }

@@ -37,8 +37,9 @@ const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 // Capture interval
-// const CAPTURE_INTERVAL: f32 = 30.0;
+// const CAPTURE_INTERVAL: f32 = 10.0;
 const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
+const MAX_CAPTURES: u32 = 3;
 
 
 #[derive(Debug, PartialEq)]
@@ -207,13 +208,10 @@ fn create_circle_texture(gfx: &mut Graphics, radius: f32, color: Color) -> Textu
     rt.take_inner()
 }
 
-fn init(app: &mut App, gfx: &mut Graphics) -> State {
-    let (mut rng, seed) = get_rng(None);
-    log::info!("Seed: {}", seed);
 
-    let window = app.window();
-    log::debug!("win id {:?}", window.id());
-    let work_size = DEFAULT_WORK_SIZE;
+fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, CapturingTexture) {
+    let (rng, seed) = get_rng(None);
+    log::info!("Seed: {}", seed);
 
     let capture = CapturingTexture::new(
         gfx,
@@ -222,6 +220,14 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         format!("renders/radial_pointillist/{}", seed),
         CAPTURE_INTERVAL,
     );
+    (rng, capture)
+}
+
+
+fn init(app: &mut App, gfx: &mut Graphics) -> State {
+    let work_size = DEFAULT_WORK_SIZE;
+
+    let (mut rng, capture) = init_rng_and_capture(gfx, &work_size);
 
     // The texture radius is large because we want large textures that look nice when app is maximized
     let circle_texture = create_circle_texture(gfx, work_size.x * 0.5, CIRCLE_TEXTURE_COLOR);
@@ -230,7 +236,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let settings = Settings::randomize(&mut rng);
     log::debug!("With settings: {:#?}", settings);
     State {
-        work_size: DEFAULT_WORK_SIZE,
+        work_size: work_size,
         rng: rng,
         last_update: 0.0,
         capture,
@@ -424,14 +430,21 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
-    // let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
-    // draw_nodes(draw, state);
-
-
     let draw = &mut state.capture.render_texture.create_draw();
     draw_nodes(draw, state);
     gfx.render_to(&state.capture.render_texture, draw);
     state.capture.capture(app, gfx);
+    if state.capture.num_captures >= MAX_CAPTURES {
+        log::debug!("Maximum captures reached. Creating new seed and re-randomizing settings...");
+        let (mut rng, capture) = init_rng_and_capture(gfx, &state.work_size);
+        state.settings = Settings::randomize(&mut rng);
+        log::debug!("With settings: {:#?}", state.settings);
+        state.rng = rng;
+        state.capture = capture;
+        // Manually lock the newly reset capture so that it does not immediately
+        // start capturing again.
+        state.capture.capture_lock = true;
+    }
 
 
     let rdraw = &mut get_draw_setup(gfx, state.work_size, false, Color::WHITE);
