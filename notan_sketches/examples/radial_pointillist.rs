@@ -41,15 +41,21 @@ const DEFAULT_ALPHA: f32 = 0.5;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 2.0;
-const MAX_CAPTURES: u32 = 3;
-const PALETTE: [Color; 6] = [
+const CAPTURE_INTERVAL: f32 = 60.0 * 2.5;
+const MAX_CAPTURES: u32 = 2;
+const PALETTE: [Color; 12] = [
+    colors::PEACOCK,
     colors::AEGEAN,
     colors::CERULEAN,
+    colors::OLIVE,
     colors::SAFFRON,
-    colors::SALMON,
+    colors::BANANA,
     colors::SEAWEED,
+    colors::LIME,
     colors::PICKLE,
+    colors::GRAYPURP,
+    colors::CARMINE,
+    colors::SALMON,
 ];
 
 
@@ -62,9 +68,9 @@ enum SpawnStrategy {
 
 impl SpawnStrategy {
     fn random(rng: &mut Random) -> Self {
-        match rng.gen_range(0..10) {
-            8 => Self::Random,
-            9 => Self::RandomAnyChild,
+        match rng.gen_range(0..5) {
+            3 => Self::Random,
+            4 => Self::RandomAnyChild,
             _ => Self::RandomChildOfNode,
         }
     }
