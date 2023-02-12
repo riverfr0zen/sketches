@@ -98,7 +98,7 @@ fn update(app: &mut App, state: &mut State) {
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
-        state.analysis = state.emodoc.analyses.len() - 1;
+        state.analysis = state.emodoc.analyses.len();
         state
             .visualizer
             .update_model(&state.emodoc.analyses[state.analysis - 1]);

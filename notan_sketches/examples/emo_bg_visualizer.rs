@@ -173,7 +173,7 @@ fn update_read_view(app: &mut App, state: &mut State) {
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
-        state.reading.analysis = emodoc.analyses.len() - 1;
+        state.reading.analysis = emodoc.analyses.len();
         state
             .visualizer
             .update_model(&emodoc.analyses[state.reading.analysis - 1]);

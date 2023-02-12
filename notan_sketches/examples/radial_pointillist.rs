@@ -41,8 +41,8 @@ const DEFAULT_ALPHA: f32 = 0.5;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 2.5;
-const MAX_CAPTURES: u32 = 2;
+const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 12] = [
     colors::PEACOCK,
     colors::AEGEAN,
