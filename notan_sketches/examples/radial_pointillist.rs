@@ -18,12 +18,12 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
 
-// const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
-// const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
-// const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
-const PARENT_RADIUS: RangeInclusive<f32> = 0.02..=0.1;
-const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
+const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
+const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
 const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
+// const PARENT_RADIUS: RangeInclusive<f32> = 0.02..=0.1;
+// const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
+// const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
 
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
@@ -47,7 +47,7 @@ const DEFAULT_ALPHA: f32 = 0.5;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 2.0;
 const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -91,6 +91,23 @@ impl SpawnStrategy {
     }
 }
 
+#[derive(Debug)]
+enum Brush {
+    Circle,
+    Basic,
+    Embossed,
+}
+
+impl Brush {
+    fn random(rng: &mut Random) -> Self {
+        match rng.gen_range(0..2) {
+            2 => Self::Circle,
+            1 => Self::Embossed,
+            _ => Self::Basic,
+        }
+    }
+}
+
 
 #[derive(Debug)]
 pub struct Settings {
@@ -106,6 +123,9 @@ pub struct Settings {
     parent_color: Color,
     spawn_color: Color,
     spawn2_color: Color,
+    parent_brush: Brush,
+    spawn_brush: Brush,
+    spawn2_brush: Brush,
 }
 
 impl Default for Settings {
@@ -123,6 +143,9 @@ impl Default for Settings {
             parent_color: colors::AEGEAN,
             spawn_color: colors::SEAWEED,
             spawn2_color: colors::SALMON,
+            parent_brush: Brush::Circle,
+            spawn_brush: Brush::Circle,
+            spawn2_brush: Brush::Circle,
         }
     }
 }
@@ -152,6 +175,9 @@ impl Settings {
             parent_color,
             spawn_color,
             spawn2_color,
+            parent_brush: Brush::random(rng),
+            spawn_brush: Brush::random(rng),
+            spawn2_brush: Brush::random(rng),
         }
     }
 }
@@ -210,7 +236,9 @@ pub struct State {
     pub rng: Random,
     pub last_update: f32,
     pub capture: CapturingTexture,
-    pub circle_texture: Texture,
+    pub circle_brush: Texture,
+    pub basic_brush: Texture,
+    pub embossed_brush: Texture,
     pub draw_alpha: f32,
     pub nodes: Vec<Node>,
     pub spawn_max_distance_mod: f32,
@@ -272,6 +300,22 @@ fn create_circle_texture(gfx: &mut Graphics, radius: f32, color: Color) -> Textu
 }
 
 
+fn create_basic_brush_texture(gfx: &mut Graphics) -> Texture {
+    gfx.create_texture()
+        .from_image(include_bytes!("assets/brushes/basic.png"))
+        .build()
+        .unwrap()
+}
+
+
+fn create_embossed_brush_texture(gfx: &mut Graphics) -> Texture {
+    gfx.create_texture()
+        .from_image(include_bytes!("assets/brushes/embossed.png"))
+        .build()
+        .unwrap()
+}
+
+
 fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, CapturingTexture) {
     let (rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
@@ -293,7 +337,9 @@ fn init(gfx: &mut Graphics) -> State {
     let (mut rng, capture) = init_rng_and_capture(gfx, &work_size);
 
     // The texture radius is large because we want large textures that look nice when app is maximized
-    let circle_texture = create_circle_texture(gfx, work_size.x * 0.5, CIRCLE_TEXTURE_COLOR);
+    let circle_brush = create_circle_texture(gfx, work_size.x * 0.5, CIRCLE_TEXTURE_COLOR);
+    let basic_brush = create_basic_brush_texture(gfx);
+    let embossed_brush = create_embossed_brush_texture(gfx);
 
     // let settings = Settings::default();
     let settings = Settings::randomize(&mut rng, &work_size);
@@ -303,7 +349,9 @@ fn init(gfx: &mut Graphics) -> State {
         rng: rng,
         last_update: 0.0,
         capture,
-        circle_texture: circle_texture,
+        circle_brush: circle_brush,
+        basic_brush: basic_brush,
+        embossed_brush: embossed_brush,
         draw_alpha: 0.0,
         nodes: vec![],
         spawn_max_distance_mod: 2.0,
@@ -467,17 +515,32 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
         let color: Color;
         match node.class {
             NodeClass::PARENT => {
-                texture = &state.circle_texture;
+                // texture = &state.circle_texture;
+                texture = match &state.settings.parent_brush {
+                    Brush::Circle => &state.circle_brush,
+                    Brush::Basic => &state.basic_brush,
+                    Brush::Embossed => &state.embossed_brush,
+                };
                 size = state.settings.parent_radius * 2.0;
                 color = state.settings.parent_color;
             }
             NodeClass::SPAWN => {
-                texture = &state.circle_texture;
+                // texture = &state.circle_texture;
+                texture = match &state.settings.spawn_brush {
+                    Brush::Circle => &state.circle_brush,
+                    Brush::Basic => &state.basic_brush,
+                    Brush::Embossed => &state.embossed_brush,
+                };
                 size = state.settings.spawn_radius * 2.0;
                 color = state.settings.spawn_color;
             }
             NodeClass::SPAWN2 => {
-                texture = &state.circle_texture;
+                // texture = &state.circle_texture;
+                texture = match &state.settings.spawn2_brush {
+                    Brush::Circle => &state.circle_brush,
+                    Brush::Basic => &state.basic_brush,
+                    Brush::Embossed => &state.embossed_brush,
+                };
                 size = state.settings.spawn2_radius * 2.0;
                 color = state.settings.spawn2_color;
             }
