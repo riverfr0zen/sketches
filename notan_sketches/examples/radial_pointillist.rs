@@ -91,23 +91,6 @@ impl SpawnStrategy {
     }
 }
 
-#[derive(Debug, Clone)]
-enum Brush {
-    Circle,
-    Basic,
-    Embossed,
-}
-
-impl Brush {
-    fn random(rng: &mut Random) -> Self {
-        match rng.gen_range(0..2) {
-            2 => Self::Circle,
-            1 => Self::Embossed,
-            _ => Self::Basic,
-        }
-    }
-}
-
 
 #[derive(Debug)]
 pub struct Settings {
@@ -123,9 +106,6 @@ pub struct Settings {
     parent_color: Color,
     spawn_color: Color,
     spawn2_color: Color,
-    parent_brush: Brush,
-    spawn_brush: Brush,
-    spawn2_brush: Brush,
 }
 
 impl Default for Settings {
@@ -143,9 +123,6 @@ impl Default for Settings {
             parent_color: colors::AEGEAN,
             spawn_color: colors::SEAWEED,
             spawn2_color: colors::SALMON,
-            parent_brush: Brush::Circle,
-            spawn_brush: Brush::Circle,
-            spawn2_brush: Brush::Circle,
         }
     }
 }
@@ -175,9 +152,6 @@ impl Settings {
             parent_color,
             spawn_color,
             spawn2_color,
-            parent_brush: Brush::random(rng),
-            spawn_brush: Brush::random(rng),
-            spawn2_brush: Brush::random(rng),
         }
     }
 }
@@ -280,14 +254,6 @@ impl State {
         // Manually lock the newly reset capture so that it does not immediately
         // start capturing again.
         self.capture.capture_lock = true;
-    }
-
-    fn get_brush_texture(&self, brush: &Brush) -> &Texture {
-        match &brush {
-            Brush::Circle => &self.circle_brush,
-            Brush::Basic => &self.basic_brush,
-            Brush::Embossed => &self.embossed_brush,
-        }
     }
 }
 
@@ -517,33 +483,25 @@ fn update(app: &mut App, state: &mut State) {
 
 
 fn draw_nodes(draw: &mut Draw, state: &mut State) {
-    // @TODO annoying that I have to clone these textures on every draw, in an attempt to reduce code
-    // -- try to find a better way
-    let parent_texture = state
-        .get_brush_texture(&state.settings.parent_brush)
-        .clone();
-    let spawn_texture = state.get_brush_texture(&state.settings.spawn_brush).clone();
-    let spawn2_texture = state
-        .get_brush_texture(&state.settings.spawn2_brush)
-        .clone();
-
     for node in state.nodes.iter_mut().filter(|node| !node.rendered) {
-        let texture: &Texture;
         let size: f32;
         let color: Color;
+        let brush_chance = state.rng.gen_range(0..10);
+        let texture = match brush_chance {
+            7..=9 => &state.embossed_brush,
+            5..=6 => &state.circle_brush,
+            _ => &state.basic_brush,
+        };
         match node.class {
             NodeClass::PARENT => {
-                texture = &parent_texture;
                 size = state.settings.parent_radius * 2.0;
                 color = state.settings.parent_color;
             }
             NodeClass::SPAWN => {
-                texture = &spawn_texture;
                 size = state.settings.spawn_radius * 2.0;
                 color = state.settings.spawn_color;
             }
             NodeClass::SPAWN2 => {
-                texture = &spawn2_texture;
                 size = state.settings.spawn2_radius * 2.0;
                 color = state.settings.spawn2_color;
             }
