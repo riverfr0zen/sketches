@@ -213,6 +213,8 @@ pub struct State {
     pub circle_brush: Texture,
     pub basic_brush: Texture,
     pub embossed_brush: Texture,
+    pub splat_brush: Texture,
+    pub scratch_brush: Texture,
     pub draw_alpha: f32,
     pub nodes: Vec<Node>,
     pub spawn_max_distance_mod: f32,
@@ -282,6 +284,22 @@ fn create_basic_brush_texture(gfx: &mut Graphics) -> Texture {
 }
 
 
+fn create_splat_brush_texture(gfx: &mut Graphics) -> Texture {
+    gfx.create_texture()
+        .from_image(include_bytes!("assets/brushes/splat.png"))
+        .build()
+        .unwrap()
+}
+
+
+fn create_scratch_brush_texture(gfx: &mut Graphics) -> Texture {
+    gfx.create_texture()
+        .from_image(include_bytes!("assets/brushes/scratch.png"))
+        .build()
+        .unwrap()
+}
+
+
 fn create_embossed_brush_texture(gfx: &mut Graphics) -> Texture {
     gfx.create_texture()
         .from_image(include_bytes!("assets/brushes/embossed.png"))
@@ -314,22 +332,27 @@ fn init(gfx: &mut Graphics) -> State {
     let circle_brush = create_circle_texture(gfx, work_size.x * 0.5, CIRCLE_TEXTURE_COLOR);
     let basic_brush = create_basic_brush_texture(gfx);
     let embossed_brush = create_embossed_brush_texture(gfx);
+    let splat_brush = create_splat_brush_texture(gfx);
+    let scratch_brush = create_scratch_brush_texture(gfx);
+
 
     // let settings = Settings::default();
     let settings = Settings::randomize(&mut rng, &work_size);
     log::debug!("With settings: {:#?}", settings);
     State {
-        work_size: work_size,
-        rng: rng,
+        work_size,
+        rng,
         last_update: 0.0,
         capture,
-        circle_brush: circle_brush,
-        basic_brush: basic_brush,
-        embossed_brush: embossed_brush,
+        circle_brush,
+        basic_brush,
+        embossed_brush,
+        splat_brush,
+        scratch_brush,
         draw_alpha: 0.0,
         nodes: vec![],
         spawn_max_distance_mod: 2.0,
-        settings: settings,
+        settings,
         reinit_next_draw: false,
     }
 }
@@ -486,10 +509,12 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
     for node in state.nodes.iter_mut().filter(|node| !node.rendered) {
         let size: f32;
         let color: Color;
-        let brush_chance = state.rng.gen_range(0..10);
+        let brush_chance = state.rng.gen_range(0..12);
         let texture = match brush_chance {
-            7..=9 => &state.embossed_brush,
-            5..=6 => &state.circle_brush,
+            10..=11 => &state.scratch_brush,
+            8..=9 => &state.embossed_brush,
+            6..=7 => &state.circle_brush,
+            3..=5 => &state.splat_brush,
             _ => &state.basic_brush,
         };
         match node.class {
