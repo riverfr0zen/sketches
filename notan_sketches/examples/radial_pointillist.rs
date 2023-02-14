@@ -17,9 +17,14 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
-const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
-const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
+
+// const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
+// const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
+// const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
+const PARENT_RADIUS: RangeInclusive<f32> = 0.02..=0.1;
+const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
 const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
+
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 // The frequency of the wave that determines the distance of the Spawn2's position
@@ -38,23 +43,33 @@ const MAX_NODES_BYTES: u32 = 102400;
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
-const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
+// const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
+const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
 const MAX_CAPTURES: u32 = 1;
-const PALETTE: [Color; 12] = [
+const PALETTE: [Color; 21] = [
     colors::PEACOCK,
     colors::AEGEAN,
+    colors::AZURE,
     colors::CERULEAN,
+    colors::STONE,
+    colors::OCHRE,
     colors::OLIVE,
     colors::SAFFRON,
     colors::BANANA,
+    colors::LAGUNA,
+    colors::SACRAMENTO,
     colors::SEAWEED,
+    colors::PICKLE,
     colors::LIME,
+    colors::EMERALD,
     colors::PICKLE,
     colors::GRAYPURP,
+    colors::MAHOGANY,
     colors::CARMINE,
+    colors::SCARLET,
     colors::SALMON,
 ];
 
