@@ -517,6 +517,7 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
             3..=5 => &state.splat_brush,
             _ => &state.basic_brush,
         };
+        let texture_angle: f32 = state.rng.gen_range(0.0..=360.0);
         match node.class {
             NodeClass::PARENT => {
                 size = state.settings.parent_radius * 2.0;
@@ -534,9 +535,12 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
         draw.image(&texture)
             .alpha_mode(BlendMode::OVER)
             .alpha(node.alpha)
-            // .alpha(alpha_mod)
             .color(color)
             .position(node.pos.x, node.pos.y)
+            .rotate_degrees_from(
+                (node.pos.x + size * 0.5, node.pos.y + size * 0.5),
+                texture_angle,
+            )
             .size(size, size);
         node.rendered = true;
     }
