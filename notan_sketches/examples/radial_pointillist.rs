@@ -91,7 +91,7 @@ impl SpawnStrategy {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Brush {
     Circle,
     Basic,
@@ -280,6 +280,14 @@ impl State {
         // Manually lock the newly reset capture so that it does not immediately
         // start capturing again.
         self.capture.capture_lock = true;
+    }
+
+    fn get_brush_texture(&self, brush: &Brush) -> &Texture {
+        match &brush {
+            Brush::Circle => &self.circle_brush,
+            Brush::Basic => &self.basic_brush,
+            Brush::Embossed => &self.embossed_brush,
+        }
     }
 }
 
@@ -509,38 +517,33 @@ fn update(app: &mut App, state: &mut State) {
 
 
 fn draw_nodes(draw: &mut Draw, state: &mut State) {
+    // @TODO annoying that I have to clone these textures on every draw, in an attempt to reduce code
+    // -- try to find a better way
+    let parent_texture = state
+        .get_brush_texture(&state.settings.parent_brush)
+        .clone();
+    let spawn_texture = state.get_brush_texture(&state.settings.spawn_brush).clone();
+    let spawn2_texture = state
+        .get_brush_texture(&state.settings.spawn2_brush)
+        .clone();
+
     for node in state.nodes.iter_mut().filter(|node| !node.rendered) {
         let texture: &Texture;
         let size: f32;
         let color: Color;
         match node.class {
             NodeClass::PARENT => {
-                // texture = &state.circle_texture;
-                texture = match &state.settings.parent_brush {
-                    Brush::Circle => &state.circle_brush,
-                    Brush::Basic => &state.basic_brush,
-                    Brush::Embossed => &state.embossed_brush,
-                };
+                texture = &parent_texture;
                 size = state.settings.parent_radius * 2.0;
                 color = state.settings.parent_color;
             }
             NodeClass::SPAWN => {
-                // texture = &state.circle_texture;
-                texture = match &state.settings.spawn_brush {
-                    Brush::Circle => &state.circle_brush,
-                    Brush::Basic => &state.basic_brush,
-                    Brush::Embossed => &state.embossed_brush,
-                };
+                texture = &spawn_texture;
                 size = state.settings.spawn_radius * 2.0;
                 color = state.settings.spawn_color;
             }
             NodeClass::SPAWN2 => {
-                // texture = &state.circle_texture;
-                texture = match &state.settings.spawn2_brush {
-                    Brush::Circle => &state.circle_brush,
-                    Brush::Basic => &state.basic_brush,
-                    Brush::Embossed => &state.embossed_brush,
-                };
+                texture = &spawn2_texture;
                 size = state.settings.spawn2_radius * 2.0;
                 color = state.settings.spawn2_color;
             }
