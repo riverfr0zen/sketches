@@ -47,7 +47,7 @@ const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 // const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 2.0;
 const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -109,6 +109,7 @@ pub struct Settings {
     parent_brush: Texture,
     spawn_brush: Texture,
     spawn2_brush: Texture,
+    use_assigned_brushes: bool,
 }
 
 
@@ -139,6 +140,7 @@ impl Settings {
         let parent_brush = brushes[rng.gen_range(0..brushes.len())].clone();
         let spawn_brush = brushes[rng.gen_range(0..brushes.len())].clone();
         let spawn2_brush = brushes[rng.gen_range(0..brushes.len())].clone();
+        let use_assigned_brushes: bool = rng.gen();
 
         let mut palette = PALETTE.to_vec();
         let parent_color = palette.remove(rng.gen_range(0..palette.len()));
@@ -161,7 +163,12 @@ impl Settings {
             parent_brush,
             spawn_brush,
             spawn2_brush,
+            use_assigned_brushes,
         }
+    }
+
+    fn get_parent_brush(&self) -> &Texture {
+        &self.parent_brush
     }
 }
 
@@ -537,26 +544,32 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
         let color: Color;
         let brush_chance = state.rng.gen_range(0..12);
         let mut texture = match brush_chance {
-            // 8 => &state.scratch_brush,
-            // 7 => &state.embossed_brush,
-            // 6 => &state.splat_brush,
+            8 => &state.scratch_brush,
+            7 => &state.embossed_brush,
+            6 => &state.splat_brush,
             3..=5 => &state.circle_brush,
             _ => &state.basic_brush,
         };
         let texture_angle: f32 = state.rng.gen_range(0.0..=360.0);
         match node.class {
             NodeClass::PARENT => {
-                texture = &state.settings.parent_brush;
+                if state.settings.use_assigned_brushes {
+                    texture = &state.settings.parent_brush;
+                }
                 size = state.settings.parent_radius * 2.0;
                 color = state.settings.parent_color;
             }
             NodeClass::SPAWN => {
-                texture = &state.settings.spawn_brush;
+                if state.settings.use_assigned_brushes {
+                    texture = &state.settings.spawn_brush;
+                }
                 size = state.settings.spawn_radius * 2.0;
                 color = state.settings.spawn_color;
             }
             NodeClass::SPAWN2 => {
-                texture = &state.settings.spawn2_brush;
+                if state.settings.use_assigned_brushes {
+                    texture = &state.settings.spawn2_brush;
+                }
                 size = state.settings.spawn2_radius * 2.0;
                 color = state.settings.spawn2_color;
             }
