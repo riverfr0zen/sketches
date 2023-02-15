@@ -106,33 +106,39 @@ pub struct Settings {
     parent_color: Color,
     spawn_color: Color,
     spawn2_color: Color,
+    parent_brush: Texture,
+    spawn_brush: Texture,
+    spawn2_brush: Texture,
 }
 
-impl Default for Settings {
-    fn default() -> Self {
-        Self {
-            spawn_strategy: SpawnStrategy::RandomChildOfNode,
-            vary_spawn_distance: true,
-            parent_radius: DEFAULT_WORK_SIZE.x * 0.02,
-            spawn_radius: DEFAULT_WORK_SIZE.x * 0.01,
-            spawn2_radius: DEFAULT_WORK_SIZE.x * 0.005,
-            spawn_angle_step: 10.0,
-            spawn2_angle_step: 1.0,
-            spawn2_wave_freq: 20.0,
-            alpha_freq: 0.5,
-            parent_color: colors::AEGEAN,
-            spawn_color: colors::SEAWEED,
-            spawn2_color: colors::SALMON,
-        }
-    }
-}
 
 impl Settings {
-    fn randomize(rng: &mut Random, work_size: &Vec2) -> Self {
+    // fn default() -> Self {
+    //     Self {
+    //         spawn_strategy: SpawnStrategy::RandomChildOfNode,
+    //         vary_spawn_distance: true,
+    //         parent_radius: DEFAULT_WORK_SIZE.x * 0.02,
+    //         spawn_radius: DEFAULT_WORK_SIZE.x * 0.01,
+    //         spawn2_radius: DEFAULT_WORK_SIZE.x * 0.005,
+    //         spawn_angle_step: 10.0,
+    //         spawn2_angle_step: 1.0,
+    //         spawn2_wave_freq: 20.0,
+    //         alpha_freq: 0.5,
+    //         parent_color: colors::AEGEAN,
+    //         spawn_color: colors::SEAWEED,
+    //         spawn2_color: colors::SALMON,
+    //     }
+    // }
+
+    fn randomize(rng: &mut Random, work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
         let mut vary_spawn_distance = true;
         if rng.gen_range(0..10) > 7 {
             vary_spawn_distance = false;
         }
+
+        let parent_brush = brushes[rng.gen_range(0..brushes.len())].clone();
+        let spawn_brush = brushes[rng.gen_range(0..brushes.len())].clone();
+        let spawn2_brush = brushes[rng.gen_range(0..brushes.len())].clone();
 
         let mut palette = PALETTE.to_vec();
         let parent_color = palette.remove(rng.gen_range(0..palette.len()));
@@ -152,6 +158,9 @@ impl Settings {
             parent_color,
             spawn_color,
             spawn2_color,
+            parent_brush,
+            spawn_brush,
+            spawn2_brush,
         }
     }
 }
@@ -249,7 +258,17 @@ impl State {
     fn reinitialize_drawing(&mut self, gfx: &mut Graphics) {
         log::debug!("Maximum captures reached. Creating new seed and re-randomizing settings...");
         let (mut rng, capture) = init_rng_and_capture(gfx, &self.work_size);
-        self.settings = Settings::randomize(&mut rng, &self.work_size);
+        self.settings = Settings::randomize(
+            &mut rng,
+            &self.work_size,
+            vec![
+                &self.circle_brush,
+                &self.basic_brush,
+                &self.embossed_brush,
+                &self.splat_brush,
+                &self.scratch_brush,
+            ],
+        );
         log::debug!("With settings: {:#?}", self.settings);
         self.rng = rng;
         self.capture = capture;
@@ -335,9 +354,16 @@ fn init(gfx: &mut Graphics) -> State {
     let splat_brush = create_splat_brush_texture(gfx);
     let scratch_brush = create_scratch_brush_texture(gfx);
 
+    let brushes = vec![
+        &circle_brush,
+        &basic_brush,
+        &embossed_brush,
+        &splat_brush,
+        &scratch_brush,
+    ];
 
     // let settings = Settings::default();
-    let settings = Settings::randomize(&mut rng, &work_size);
+    let settings = Settings::randomize(&mut rng, &work_size, brushes);
     log::debug!("With settings: {:#?}", settings);
     State {
         work_size,
@@ -510,7 +536,7 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
         let size: f32;
         let color: Color;
         let brush_chance = state.rng.gen_range(0..12);
-        let texture = match brush_chance {
+        let mut texture = match brush_chance {
             // 8 => &state.scratch_brush,
             // 7 => &state.embossed_brush,
             // 6 => &state.splat_brush,
@@ -520,14 +546,17 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
         let texture_angle: f32 = state.rng.gen_range(0.0..=360.0);
         match node.class {
             NodeClass::PARENT => {
+                texture = &state.settings.parent_brush;
                 size = state.settings.parent_radius * 2.0;
                 color = state.settings.parent_color;
             }
             NodeClass::SPAWN => {
+                texture = &state.settings.spawn_brush;
                 size = state.settings.spawn_radius * 2.0;
                 color = state.settings.spawn_color;
             }
             NodeClass::SPAWN2 => {
+                texture = &state.settings.spawn2_brush;
                 size = state.settings.spawn2_radius * 2.0;
                 color = state.settings.spawn2_color;
             }
