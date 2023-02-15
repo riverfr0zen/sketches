@@ -159,7 +159,7 @@ fn draw(
     let work_size = get_work_size(gfx);
     let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
 
-    state.visualizer.draw(draw);
+    state.visualizer.draw(gfx, draw);
 
     if state.analysis == 0 {
         draw_title(draw, state, work_size);

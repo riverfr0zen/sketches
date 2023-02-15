@@ -41,7 +41,7 @@ pub trait EmoVisualizer {
 
     fn get_text_color(&self) -> Color;
 
-    fn draw(&mut self, draw: &mut Draw);
+    fn draw(&mut self, graphics: &mut Graphics, draw: &mut Draw);
 
 
     fn draw_title(

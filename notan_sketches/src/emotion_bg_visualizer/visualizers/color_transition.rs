@@ -190,7 +190,7 @@ impl EmoVisualizer for ColorTransitionVisualizer {
         self.text_color
     }
 
-    fn draw(&mut self, draw: &mut Draw) {
+    fn draw(&mut self, _gfx: &mut Graphics, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.transition.color);
     }

@@ -74,6 +74,7 @@ pub struct TilesVisualizer {
     text_color: Color,
     pub text_shadow_style: String,
     dynamic_text_color: bool,
+    tile_texture: Option<Texture>,
     tiles: Vec<Tile>,
     layout: TilesLayout,
     refresh_layout: bool,
@@ -136,6 +137,7 @@ impl TilesVisualizer {
             text_color: text_color,
             text_shadow_style: "None".to_string(),
             dynamic_text_color: enable_dynamic_text_color,
+            tile_texture: None,
             tiles: vec![],
             layout: TilesLayout::none(),
             refresh_layout: false,
@@ -254,17 +256,26 @@ impl TilesVisualizer {
                     col.transitioning = true;
                 }
 
-                draw.rect(
-                    (
+                // draw.rect(
+                //     (
+                //         col_index as f32 * self.layout.tile_size.x,
+                //         row_index as f32 * self.layout.tile_size.y,
+                //     ),
+                //     (self.layout.tile_size.x, self.layout.tile_size.y),
+                // )
+                // .alpha_mode(BlendMode::OVER)
+                // .alpha(TILE_ALPHA)
+                // .fill_color(col.color)
+                // .fill();
+                draw.image(&self.tile_texture.as_ref().unwrap())
+                    .position(
                         col_index as f32 * self.layout.tile_size.x,
                         row_index as f32 * self.layout.tile_size.y,
-                    ),
-                    (self.layout.tile_size.x, self.layout.tile_size.y),
-                )
-                .alpha_mode(BlendMode::OVER)
-                .alpha(TILE_ALPHA)
-                .fill_color(col.color)
-                .fill();
+                    )
+                    .size(self.layout.tile_size.x, self.layout.tile_size.y)
+                    .alpha_mode(BlendMode::OVER)
+                    .alpha(TILE_ALPHA)
+                    .color(col.color);
             }
         }
     }
@@ -325,7 +336,17 @@ impl EmoVisualizer for TilesVisualizer {
     }
 
 
-    fn draw(&mut self, draw: &mut Draw) {
+    fn draw(&mut self, gfx: &mut Graphics, draw: &mut Draw) {
+        if let None = self.tile_texture {
+            self.tile_texture = Some(
+                gfx.create_texture()
+                    .from_image(include_bytes!(
+                        "../../../examples/assets/tiles/tile3_4k.png"
+                    ))
+                    .build()
+                    .unwrap(),
+            );
+        }
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.transition.color);
         self.draw_tiles_grid(draw);

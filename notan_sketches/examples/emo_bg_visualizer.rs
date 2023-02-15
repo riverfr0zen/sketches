@@ -274,7 +274,7 @@ fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     // NOTE: If the egui ui seems to be "blocking" the draw, it may be because the visualizer
     // draw() method is not calling `draw.clear()`. If this isn't done, the egui background
     // will block the draw. For an example, see impl method of ColorTransitionVisualizer::draw().
-    state.visualizer.draw(draw);
+    state.visualizer.draw(gfx, draw);
 
     if state.reading.analysis == 0 {
         draw_title(draw, state, work_size);
