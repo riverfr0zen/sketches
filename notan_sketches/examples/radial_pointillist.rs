@@ -10,9 +10,9 @@ use std::mem::size_of_val;
 use std::ops::RangeInclusive;
 use uuid::Uuid;
 
-const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
+// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 // const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
-// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
+const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
@@ -511,10 +511,10 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
         let color: Color;
         let brush_chance = state.rng.gen_range(0..12);
         let texture = match brush_chance {
-            8 => &state.scratch_brush,
-            7 => &state.embossed_brush,
-            6 => &state.circle_brush,
-            3..=5 => &state.splat_brush,
+            // 8 => &state.scratch_brush,
+            // 7 => &state.embossed_brush,
+            // 6 => &state.splat_brush,
+            3..=5 => &state.circle_brush,
             _ => &state.basic_brush,
         };
         let texture_angle: f32 = state.rng.gen_range(0.0..=360.0);
@@ -579,10 +579,10 @@ fn main() -> Result<(), String> {
         // ScreenDimensions::RES_4KISH.y as i32,
         // ScreenDimensions::RES_HDPLUS.x as i32,
         // ScreenDimensions::RES_HDPLUS.y as i32,
-        // ScreenDimensions::RES_1080P.x as i32,
-        // ScreenDimensions::RES_1080P.y as i32,
-        ScreenDimensions::DEFAULT.x as i32,
-        ScreenDimensions::DEFAULT.y as i32,
+        ScreenDimensions::RES_1080P.x as i32,
+        ScreenDimensions::RES_1080P.y as i32,
+        // ScreenDimensions::DEFAULT.x as i32,
+        // ScreenDimensions::DEFAULT.y as i32,
     );
 
     #[cfg(target_arch = "wasm32")]
