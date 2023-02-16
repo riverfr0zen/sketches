@@ -11,8 +11,8 @@ use std::ops::RangeInclusive;
 use uuid::Uuid;
 
 // const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
-// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
-const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
+const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
@@ -47,7 +47,7 @@ const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 // const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 2.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
 const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -72,6 +72,7 @@ const PALETTE: [Color; 21] = [
     colors::SCARLET,
     colors::SALMON,
 ];
+const IS_WASM: bool = cfg!(target_arch = "wasm32");
 
 
 #[derive(Debug, PartialEq)]
@@ -598,13 +599,16 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut state.capture.render_texture.create_draw();
     draw_nodes(draw, state);
     gfx.render_to(&state.capture.render_texture, draw);
-    state.capture.capture(app, gfx);
-    if state.capture.num_captures >= MAX_CAPTURES {
-        state.reinitialize_drawing(gfx);
+
+    if !IS_WASM {
+        state.capture.capture(app, gfx);
+        if state.capture.num_captures >= MAX_CAPTURES {
+            state.reinitialize_drawing(gfx);
+        }
     }
 
 
-    let rdraw = &mut get_draw_setup(gfx, state.work_size, false, Color::WHITE);
+    let rdraw = &mut get_draw_setup(gfx, state.work_size, true, Color::GRAY);
     rdraw.image(&state.capture.render_texture);
 
     gfx.render(rdraw);
