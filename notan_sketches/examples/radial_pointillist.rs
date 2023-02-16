@@ -115,22 +115,31 @@ pub struct Settings {
 
 
 impl Settings {
-    // fn default() -> Self {
-    //     Self {
-    //         spawn_strategy: SpawnStrategy::RandomChildOfNode,
-    //         vary_spawn_distance: true,
-    //         parent_radius: DEFAULT_WORK_SIZE.x * 0.02,
-    //         spawn_radius: DEFAULT_WORK_SIZE.x * 0.01,
-    //         spawn2_radius: DEFAULT_WORK_SIZE.x * 0.005,
-    //         spawn_angle_step: 10.0,
-    //         spawn2_angle_step: 1.0,
-    //         spawn2_wave_freq: 20.0,
-    //         alpha_freq: 0.5,
-    //         parent_color: colors::AEGEAN,
-    //         spawn_color: colors::SEAWEED,
-    //         spawn2_color: colors::SALMON,
-    //     }
-    // }
+    // Note this is not a Default impl
+    fn default(brushes: Vec<&Texture>) -> Self {
+        let parent_brush = brushes[0].clone();
+        let spawn_brush = brushes[0].clone();
+        let spawn2_brush = brushes[0].clone();
+
+        Self {
+            spawn_strategy: SpawnStrategy::RandomChildOfNode,
+            vary_spawn_distance: true,
+            parent_radius: DEFAULT_WORK_SIZE.x * 0.02,
+            spawn_radius: DEFAULT_WORK_SIZE.x * 0.01,
+            spawn2_radius: DEFAULT_WORK_SIZE.x * 0.005,
+            spawn_angle_step: 10.0,
+            spawn2_angle_step: 1.0,
+            spawn2_wave_freq: 20.0,
+            alpha_freq: 0.5,
+            parent_color: colors::AEGEAN,
+            spawn_color: colors::SEAWEED,
+            spawn2_color: colors::SALMON,
+            parent_brush,
+            spawn_brush,
+            spawn2_brush,
+            use_assigned_brushes: true,
+        }
+    }
 
     fn randomize(rng: &mut Random, work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
         let mut vary_spawn_distance = true;
