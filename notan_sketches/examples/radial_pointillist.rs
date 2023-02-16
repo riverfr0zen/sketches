@@ -11,8 +11,8 @@ use std::ops::RangeInclusive;
 use uuid::Uuid;
 
 // const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
-const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
-// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
+// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
@@ -125,10 +125,10 @@ impl Settings {
             spawn_strategy: SpawnStrategy::RandomChildOfNode,
             vary_spawn_distance: true,
             parent_radius: DEFAULT_WORK_SIZE.x * 0.02,
-            spawn_radius: DEFAULT_WORK_SIZE.x * 0.01,
+            spawn_radius: DEFAULT_WORK_SIZE.x * 0.015,
             spawn2_radius: DEFAULT_WORK_SIZE.x * 0.005,
             spawn_angle_step: 10.0,
-            spawn2_angle_step: 1.0,
+            spawn2_angle_step: 5.0,
             spawn2_wave_freq: 20.0,
             alpha_freq: 0.5,
             parent_color: colors::AEGEAN,
@@ -142,6 +142,8 @@ impl Settings {
     }
 
     fn randomize(rng: &mut Random, work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
+        // return Settings::default(brushes);
+
         let mut vary_spawn_distance = true;
         if rng.gen_range(0..10) > 7 {
             vary_spawn_distance = false;
@@ -482,17 +484,16 @@ fn update(app: &mut App, state: &mut State) {
             } else {
                 distance = max_distance;
             }
+            let parent_id = nodes[active_node].id.clone();
             // Need this offset so that spawn are positioned from the center of
             // parent node (because of how texture image positioning works)
-            let spawn_offset = state.settings.parent_radius * 0.5;
-            let parent_id = nodes[active_node].id.clone();
+            let spawn_offset = state.settings.parent_radius - state.settings.spawn_radius;
 
             if nodes[active_node].spawn_last_angle < 360.0
                 || nodes[active_node].spawn2_last_angle < 360.0
             {
                 if nodes[active_node].spawn_last_angle < 360.0 {
                     nodes[active_node].spawn_last_angle += state.settings.spawn_angle_step;
-                    // log::debug!("angle: {}", node.last_angle);
                     let spawn_x = nodes[active_node].pos.x
                         + spawn_offset
                         + nodes[active_node].spawn_last_angle.to_radians().cos() * distance;
@@ -507,19 +508,19 @@ fn update(app: &mut App, state: &mut State) {
                     });
                 }
 
+                let spawn2_offset = state.settings.parent_radius - state.settings.spawn2_radius;
                 if nodes[active_node].spawn2_last_angle < 360.0 {
                     nodes[active_node].spawn2_last_angle += state.settings.spawn2_angle_step;
                     // Spawn2 distance changes as a wave
-                    // let spawn2_max_distance = max_distance * 0.5;
                     let spawn2_max_distance = max_distance * 0.75;
                     let spawn2_distance = min_distance
                         + ((curr_time * state.settings.spawn2_wave_freq).sin().abs()
                             * spawn2_max_distance);
                     let spawn2_x = nodes[active_node].pos.x
-                        + spawn_offset
+                        + spawn2_offset
                         + nodes[active_node].spawn2_last_angle.to_radians().cos() * spawn2_distance;
                     let spawn2_y = nodes[active_node].pos.y
-                        + spawn_offset
+                        + spawn2_offset
                         + nodes[active_node].spawn2_last_angle.to_radians().sin() * spawn2_distance;
 
                     nodes.push(Node {
