@@ -21,9 +21,12 @@ const UPDATE_STEP: f32 = 0.0;
 // const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
 // const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
 // const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
-const PARENT_RADIUS: RangeInclusive<f32> = 0.02..=0.1;
-const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
-const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
+// const PARENT_RADIUS: RangeInclusive<f32> = 0.02..=0.1;
+// const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
+// const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
+const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.2;
+const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.2;
+const SPAWN2_RADIUS: RangeInclusive<f32> = 0.001..=0.2;
 
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
@@ -47,7 +50,7 @@ const DEFAULT_ALPHA: f32 = 0.5;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 2.0;
 const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -362,8 +365,13 @@ fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, Captur
 }
 
 
-fn init(gfx: &mut Graphics) -> State {
-    let work_size = DEFAULT_WORK_SIZE;
+fn init(app: &mut App, gfx: &mut Graphics) -> State {
+    log::info!(
+        "Getting work size from screen: {:?}",
+        app.window().screen_size()
+    );
+    let (screen_width, screen_height) = app.window().screen_size();
+    let work_size = vec2(screen_width as f32, screen_height as f32);
 
     let (mut rng, capture) = init_rng_and_capture(gfx, &work_size);
 
