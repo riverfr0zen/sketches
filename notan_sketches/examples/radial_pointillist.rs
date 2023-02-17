@@ -10,23 +10,21 @@ use std::mem::size_of_val;
 use std::ops::RangeInclusive;
 use uuid::Uuid;
 
-// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
-// const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
-const DEFAULT_WORK_SIZE: Vec2 = ScreenDimensions::RES_5K;
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
 
-// const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
-// const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
-// const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
-// const PARENT_RADIUS: RangeInclusive<f32> = 0.02..=0.1;
-// const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
-// const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
-const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.2;
-const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.2;
-const SPAWN2_RADIUS: RangeInclusive<f32> = 0.001..=0.2;
+const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
+const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
+const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
+const PARENT_RADIUS_LARGE: RangeInclusive<f32> = 0.01..=0.2;
+const SPAWN_RADIUS_LARGE: RangeInclusive<f32> = 0.01..=0.2;
+const SPAWN2_RADIUS_LARGE: RangeInclusive<f32> = 0.001..=0.2;
+const PARENT_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.02;
+const SPAWN_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.01;
+const SPAWN2_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.05;
+
 
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
@@ -96,10 +94,30 @@ impl SpawnStrategy {
 }
 
 
+#[derive(Debug, PartialEq)]
+enum RadialRangeStyle {
+    Small,
+    Medium,
+    Large,
+    None,
+}
+
+impl RadialRangeStyle {
+    fn random(rng: &mut Random) -> Self {
+        match rng.gen_range(0..=2) {
+            2 => Self::Small,
+            1 => Self::Large,
+            _ => Self::Medium,
+        }
+    }
+}
+
+
 #[derive(Debug)]
 pub struct Settings {
     spawn_strategy: SpawnStrategy,
     vary_spawn_distance: bool,
+    radial_range_style: RadialRangeStyle,
     parent_radius: f32,
     spawn_radius: f32,
     spawn2_radius: f32,
@@ -119,7 +137,7 @@ pub struct Settings {
 
 impl Settings {
     // Note this is not a Default impl
-    fn default(brushes: Vec<&Texture>) -> Self {
+    pub fn default(work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
         let parent_brush = brushes[0].clone();
         let spawn_brush = brushes[0].clone();
         let spawn2_brush = brushes[0].clone();
@@ -127,9 +145,10 @@ impl Settings {
         Self {
             spawn_strategy: SpawnStrategy::RandomChildOfNode,
             vary_spawn_distance: true,
-            parent_radius: DEFAULT_WORK_SIZE.x * 0.02,
-            spawn_radius: DEFAULT_WORK_SIZE.x * 0.015,
-            spawn2_radius: DEFAULT_WORK_SIZE.x * 0.005,
+            radial_range_style: RadialRangeStyle::None,
+            parent_radius: work_size.x * 0.02,
+            spawn_radius: work_size.x * 0.015,
+            spawn2_radius: work_size.x * 0.005,
             spawn_angle_step: 10.0,
             spawn2_angle_step: 5.0,
             spawn2_wave_freq: 20.0,
@@ -145,7 +164,7 @@ impl Settings {
     }
 
     fn randomize(rng: &mut Random, work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
-        // return Settings::default(brushes);
+        // return Settings::default(work_size, brushes);
 
         let mut vary_spawn_distance = true;
         if rng.gen_range(0..10) > 7 {
@@ -162,12 +181,32 @@ impl Settings {
         let spawn_color = palette.remove(rng.gen_range(0..palette.len()));
         let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
 
+        let radial_range_style = RadialRangeStyle::random(rng);
+        let (parent_radius, spawn_radius, spawn2_radius) = match &radial_range_style {
+            RadialRangeStyle::Small => (
+                work_size.x * rng.gen_range(PARENT_RADIUS_SMALL),
+                work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
+                work_size.x * rng.gen_range(SPAWN2_RADIUS_SMALL),
+            ),
+            RadialRangeStyle::Large => (
+                work_size.x * rng.gen_range(PARENT_RADIUS_LARGE),
+                work_size.x * rng.gen_range(SPAWN_RADIUS_LARGE),
+                work_size.x * rng.gen_range(SPAWN2_RADIUS_LARGE),
+            ),
+            _ => (
+                work_size.x * rng.gen_range(PARENT_RADIUS),
+                work_size.x * rng.gen_range(SPAWN_RADIUS),
+                work_size.x * rng.gen_range(SPAWN2_RADIUS),
+            ),
+        };
+
         Self {
             spawn_strategy: SpawnStrategy::random(rng),
             vary_spawn_distance: vary_spawn_distance,
-            parent_radius: work_size.x * rng.gen_range(PARENT_RADIUS),
-            spawn_radius: work_size.x * rng.gen_range(SPAWN_RADIUS),
-            spawn2_radius: work_size.x * rng.gen_range(SPAWN2_RADIUS),
+            radial_range_style,
+            parent_radius,
+            spawn_radius,
+            spawn2_radius,
             spawn_angle_step: rng.gen_range(SPAWN_ANGLE_STEP),
             spawn2_angle_step: rng.gen_range(SPAWN2_ANGLE_STEP),
             spawn2_wave_freq: rng.gen_range(SPAWN2_WAVE_FREQ),
@@ -180,10 +219,6 @@ impl Settings {
             spawn2_brush,
             use_assigned_brushes,
         }
-    }
-
-    fn get_parent_brush(&self) -> &Texture {
-        &self.parent_brush
     }
 }
 
