@@ -18,12 +18,12 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
 
-const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
-const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
-const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
-// const PARENT_RADIUS: RangeInclusive<f32> = 0.02..=0.1;
-// const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
+// const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
+// const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
 // const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
+const PARENT_RADIUS: RangeInclusive<f32> = 0.02..=0.1;
+const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.03;
+const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
 
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
@@ -43,8 +43,8 @@ const MAX_NODES_BYTES: u32 = 102400;
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
-const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
-// const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
+// const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
+const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
 const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
@@ -248,6 +248,7 @@ pub struct State {
     pub spawn_max_distance_mod: f32,
     pub settings: Settings,
     pub reinit_next_draw: bool,
+    pub capture_next_draw: bool,
 }
 
 
@@ -399,6 +400,7 @@ fn init(gfx: &mut Graphics) -> State {
         spawn_max_distance_mod: 2.0,
         settings,
         reinit_next_draw: false,
+        capture_next_draw: false,
     }
 }
 
@@ -465,6 +467,11 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::R) {
         log::debug!("R");
         state.reinit_next_draw = true;
+    }
+
+    if app.keyboard.was_pressed(KeyCode::C) {
+        log::debug!("C");
+        state.capture_next_draw = true;
     }
 
 
@@ -610,13 +617,15 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     draw_nodes(draw, state);
     gfx.render_to(&state.capture.render_texture, draw);
 
-    if !IS_WASM {
+    if state.capture_next_draw {
         state.capture.capture(app, gfx);
+        state.capture_next_draw = false;
+    } else if !IS_WASM {
+        state.capture.periodic_capture(app, gfx);
         if state.capture.num_captures >= MAX_CAPTURES {
             state.reinitialize_drawing(gfx);
         }
     }
-
 
     let rdraw = &mut get_draw_setup(gfx, state.work_size, true, Color::GRAY);
     rdraw.image(&state.capture.render_texture);

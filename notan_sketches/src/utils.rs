@@ -155,6 +155,13 @@ impl CapturingTexture {
     }
 
     pub fn capture(&mut self, app: &mut App, gfx: &mut Graphics) {
+        log::debug!("Beginning capture at {}", app.timer.time_since_init());
+        let filepath = format!("{}_{}.png", self.capture_to, app.timer.time_since_init());
+        self.render_texture.to_file(gfx, &filepath).unwrap();
+        self.capture_lock = true;
+    }
+
+    pub fn periodic_capture(&mut self, app: &mut App, gfx: &mut Graphics) {
         if self.capture_lock {
             self.last_capture = app.timer.time_since_init();
             log::debug!("Last capture completed at {} seconds", self.last_capture);
@@ -163,11 +170,8 @@ impl CapturingTexture {
             if self.capture_interval > 0.0
                 && ((app.timer.time_since_init() - self.last_capture) > self.capture_interval)
             {
-                log::debug!("Beginning capture at {}", app.timer.time_since_init());
-                let filepath = format!("{}_{}.png", self.capture_to, app.timer.time_since_init());
-                self.render_texture.to_file(gfx, &filepath).unwrap();
+                self.capture(app, gfx);
                 self.num_captures += 1;
-                self.capture_lock = true;
             }
         }
     }
