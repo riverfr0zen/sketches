@@ -510,6 +510,10 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
 
 #[derive(Debug)]
 pub struct TouchState {
+    /// The minimum distance on an axis after which the interaction is considered a swipe
+    pub swipe_threshold: f32,
+    /// The maximum length of a touch for an interaction to be considered a short tap
+    pub tap_threshold: f32,
     started_at: f32,
     start_x: f32,
     start_y: f32,
@@ -521,6 +525,8 @@ pub struct TouchState {
 impl Default for TouchState {
     fn default() -> Self {
         Self {
+            swipe_threshold: 100.0,
+            tap_threshold: 0.5,
             started_at: 0.0,
             start_x: 0.0,
             start_y: 0.0,
@@ -565,29 +571,29 @@ impl TouchState {
             let y_diff = self.end_y - self.start_y;
             log::debug!("xdiff {} ydiff {}", x_diff, y_diff);
             if x_diff.abs() > y_diff.abs() {
-                if x_diff > 100.0 {
+                if x_diff > self.swipe_threshold {
                     log::debug!("swipe right");
                     return;
                 }
-                if x_diff < -100.0 {
+                if x_diff < -self.swipe_threshold {
                     log::debug!("swipe left");
                     return;
                 }
             }
             if y_diff.abs() > x_diff.abs() {
-                if y_diff > 100.0 {
+                if y_diff > self.swipe_threshold {
                     log::debug!("swipe down");
                     return;
                 }
-                if y_diff < -100.0 {
+                if y_diff < -self.swipe_threshold {
                     log::debug!("swipe up");
                     return;
                 }
             }
-            if touch_duration < 0.5 {
+            if touch_duration < self.tap_threshold {
                 log::debug!("tap");
                 return;
-            } else if touch_duration >= 0.5 {
+            } else if touch_duration >= self.tap_threshold {
                 log::debug!("long tap");
                 return;
             }
