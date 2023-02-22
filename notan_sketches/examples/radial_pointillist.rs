@@ -508,6 +508,7 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
 }
 
 
+#[derive(Debug)]
 pub struct TouchState {
     started_at: f32,
     start_x: f32,
@@ -536,24 +537,67 @@ pub enum TouchGesture {
     SwipeLeft,
     SwipeRight,
     Tap,
+    LongTap,
+    DoubleTap,
 }
 
 impl TouchState {
-    fn get_gesture(time: &f32, evt: &Event) {
+    fn get_gesture(&mut self, time: &f32, evt: &Event) {
         match evt {
             Event::TouchStart { x, y, .. } => {
-                log::debug!("touch start x {} y {} at {}", x, y, time);
+                // log::debug!("touch start x {} y {} at {}", x, y, time);
+                self.started_at = time.clone();
+                self.start_x = x.clone();
+                self.start_y = y.clone();
             }
             Event::TouchEnd { x, y, .. } => {
-                log::debug!("touch end x {} y {} at {}", x, y, time);
+                // log::debug!("touch end x {} y {} at {}", x, y, time);
+                self.ended_at = time.clone();
+                self.end_x = x.clone();
+                self.end_y = y.clone();
             }
             _ => {}
+        }
+        let touch_duration = self.ended_at - self.started_at;
+        if touch_duration > 0.0 {
+            log::debug!("touch duration {}", touch_duration);
+            let x_diff = self.end_x - self.start_x;
+            let y_diff = self.end_y - self.start_y;
+            log::debug!("xdiff {} ydiff {}", x_diff, y_diff);
+            if x_diff.abs() > y_diff.abs() {
+                if x_diff > 100.0 {
+                    log::debug!("swipe right");
+                    return;
+                }
+                if x_diff < -100.0 {
+                    log::debug!("swipe left");
+                    return;
+                }
+            }
+            if y_diff.abs() > x_diff.abs() {
+                if y_diff > 100.0 {
+                    log::debug!("swipe down");
+                    return;
+                }
+                if y_diff < -100.0 {
+                    log::debug!("swipe up");
+                    return;
+                }
+            }
+            if touch_duration < 0.5 {
+                log::debug!("tap");
+                return;
+            } else if touch_duration >= 0.5 {
+                log::debug!("long tap");
+                return;
+            }
+            // log::debug!("touch state: {:?}", self);
         }
     }
 }
 
 fn event(app: &mut App, state: &mut State, evt: Event) {
-    TouchState::get_gesture(&app.timer.time_since_init(), &evt);
+    state.touch.get_gesture(&app.timer.time_since_init(), &evt);
 }
 
 fn update(app: &mut App, state: &mut State) {
