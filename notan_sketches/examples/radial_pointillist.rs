@@ -287,6 +287,7 @@ pub struct State {
     pub settings: Settings,
     pub reinit_next_draw: bool,
     pub capture_next_draw: bool,
+    pub touch: TouchState,
 }
 
 
@@ -444,6 +445,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         settings,
         reinit_next_draw: false,
         capture_next_draw: false,
+        touch: TouchState::default(),
     }
 }
 
@@ -506,6 +508,54 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
 }
 
 
+pub struct TouchState {
+    started_at: f32,
+    start_x: f32,
+    start_y: f32,
+    ended_at: f32,
+    end_x: f32,
+    end_y: f32,
+}
+
+impl Default for TouchState {
+    fn default() -> Self {
+        Self {
+            started_at: 0.0,
+            start_x: 0.0,
+            start_y: 0.0,
+            ended_at: 0.0,
+            end_x: 0.0,
+            end_y: 0.0,
+        }
+    }
+}
+
+pub enum TouchGesture {
+    SwipeUp,
+    SwipeDown,
+    SwipeLeft,
+    SwipeRight,
+    Tap,
+}
+
+impl TouchState {
+    fn get_gesture(time: &f32, evt: &Event) {
+        match evt {
+            Event::TouchStart { x, y, .. } => {
+                log::debug!("touch start x {} y {} at {}", x, y, time);
+            }
+            Event::TouchEnd { x, y, .. } => {
+                log::debug!("touch end x {} y {} at {}", x, y, time);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn event(app: &mut App, state: &mut State, evt: Event) {
+    TouchState::get_gesture(&app.timer.time_since_init(), &evt);
+}
+
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::R) {
         log::debug!("R");
@@ -516,6 +566,30 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("C");
         state.capture_next_draw = true;
     }
+
+    // app.touch.down.iter().for_each(|(&index, delta)| {
+    //     // log::debug!("touch id {} delta {}", index, delta);
+    //     // if app.touch.was_pressed(index) {
+    //     //     let press_pos = app.touch.position(index);
+    //     //     log::debug!("pressed id {} pos {:?}", index, press_pos);
+    //     // }
+    //     if app.touch.was_released(index) {
+    //         let release_pos = app.touch.position(index);
+    //         let down_delta = app.touch.down_delta(index);
+    //         log::debug!(
+    //             "released id {} pos {:?} dd {}",
+    //             index,
+    //             release_pos,
+    //             down_delta
+    //         );
+    //         if down_delta <= 0.5 {
+    //             log::debug!("Tap")
+    //         }
+    //         if down_delta > 0.5 {
+    //             log::debug!("Tap")
+    //         }
+    //     }
+    // });
 
 
     let curr_time = app.timer.time_since_init();
@@ -702,7 +776,9 @@ fn main() -> Result<(), String> {
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
-        .draw(draw)
+        // .touch_as_mouse(true)
+        .event(event)
         .update(update)
+        .draw(draw)
         .build()
 }
