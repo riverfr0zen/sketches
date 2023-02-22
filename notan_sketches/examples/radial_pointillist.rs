@@ -537,6 +537,7 @@ impl Default for TouchState {
     }
 }
 
+#[derive(Debug)]
 pub enum TouchGesture {
     SwipeUp,
     SwipeDown,
@@ -548,7 +549,16 @@ pub enum TouchGesture {
 }
 
 impl TouchState {
-    fn get_gesture(&mut self, time: &f32, evt: &Event) {
+    fn reset(&self) -> Self {
+        Self {
+            swipe_threshold: self.swipe_threshold,
+            tap_threshold: self.tap_threshold,
+            ..Default::default()
+        }
+    }
+
+    fn get_gesture(&mut self, time: &f32, evt: &Event) -> Option<TouchGesture> {
+        let mut gesture: Option<TouchGesture> = None;
         match evt {
             Event::TouchStart { x, y, .. } => {
                 // log::debug!("touch start x {} y {} at {}", x, y, time);
@@ -573,37 +583,43 @@ impl TouchState {
             if x_diff.abs() > y_diff.abs() {
                 if x_diff > self.swipe_threshold {
                     log::debug!("swipe right");
-                    return;
+                    gesture = Some(TouchGesture::SwipeRight);
                 }
                 if x_diff < -self.swipe_threshold {
                     log::debug!("swipe left");
-                    return;
+                    gesture = Some(TouchGesture::SwipeLeft);
                 }
             }
-            if y_diff.abs() > x_diff.abs() {
+            if gesture.is_none() && y_diff.abs() > x_diff.abs() {
                 if y_diff > self.swipe_threshold {
                     log::debug!("swipe down");
-                    return;
+                    gesture = Some(TouchGesture::SwipeDown);
                 }
                 if y_diff < -self.swipe_threshold {
                     log::debug!("swipe up");
-                    return;
+                    gesture = Some(TouchGesture::SwipeUp);
                 }
             }
-            if touch_duration < self.tap_threshold {
-                log::debug!("tap");
-                return;
-            } else if touch_duration >= self.tap_threshold {
-                log::debug!("long tap");
-                return;
+            if gesture.is_none() {
+                if touch_duration < self.tap_threshold {
+                    log::debug!("tap");
+                    gesture = Some(TouchGesture::Tap);
+                } else if touch_duration >= self.tap_threshold {
+                    log::debug!("long tap");
+                    gesture = Some(TouchGesture::LongTap);
+                }
             }
-            // log::debug!("touch state: {:?}", self);
         }
+        if gesture.is_some() {
+            *self = self.reset();
+        }
+        gesture
     }
 }
 
 fn event(app: &mut App, state: &mut State, evt: Event) {
-    state.touch.get_gesture(&app.timer.time_since_init(), &evt);
+    let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
+    log::debug!("gesture found: {:?}", gesture);
 }
 
 fn update(app: &mut App, state: &mut State) {
@@ -616,31 +632,6 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("C");
         state.capture_next_draw = true;
     }
-
-    // app.touch.down.iter().for_each(|(&index, delta)| {
-    //     // log::debug!("touch id {} delta {}", index, delta);
-    //     // if app.touch.was_pressed(index) {
-    //     //     let press_pos = app.touch.position(index);
-    //     //     log::debug!("pressed id {} pos {:?}", index, press_pos);
-    //     // }
-    //     if app.touch.was_released(index) {
-    //         let release_pos = app.touch.position(index);
-    //         let down_delta = app.touch.down_delta(index);
-    //         log::debug!(
-    //             "released id {} pos {:?} dd {}",
-    //             index,
-    //             release_pos,
-    //             down_delta
-    //         );
-    //         if down_delta <= 0.5 {
-    //             log::debug!("Tap")
-    //         }
-    //         if down_delta > 0.5 {
-    //             log::debug!("Tap")
-    //         }
-    //     }
-    // });
-
 
     let curr_time = app.timer.time_since_init();
 
