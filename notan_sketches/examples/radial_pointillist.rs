@@ -4,7 +4,8 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, get_rng, scale_font, CapturingTexture, ScreenDimensions,
+    get_common_win_config, get_draw_setup, get_rng, modal, scale_font, CapturingTexture,
+    ScreenDimensions,
 };
 use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
@@ -697,48 +698,6 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 }
 
 
-fn modal(
-    draw: &mut Draw,
-    state: &mut State,
-    text: &str,
-    font_size: f32,
-    padding: f32,
-    font_color: Color,
-    bg_color: Color,
-) {
-    let font_size = scale_font(font_size, state.work_size);
-    draw.text(&state.help_font, text)
-        .position(state.work_size.x * 0.5, state.work_size.y * 0.5)
-        .size(font_size)
-        .color(font_color)
-        .h_align_center()
-        .v_align_middle();
-    let help_bounds = draw.last_text_bounds();
-    let bg_padding = state.work_size.x.max(state.work_size.y) * padding;
-    let bg_padding_half = bg_padding * 0.5;
-    draw.rect(
-        (
-            help_bounds.x - bg_padding_half,
-            help_bounds.y - bg_padding_half,
-        ),
-        (
-            help_bounds.width + bg_padding,
-            help_bounds.height + bg_padding,
-        ),
-    )
-    .fill_color(bg_color)
-    .fill()
-    .corner_radius(bg_padding)
-    .alpha(0.8);
-    draw.text(&state.help_font, text)
-        .position(state.work_size.x * 0.5, state.work_size.y * 0.5)
-        .size(font_size)
-        .color(font_color)
-        .h_align_center()
-        .v_align_middle();
-}
-
-
 fn draw_help(draw: &mut Draw, state: &mut State) {
     let help_text = concat!(
         "Radial Pointillist Help:\n\n",
@@ -748,8 +707,9 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
     );
     modal(
         draw,
-        state,
+        state.work_size,
         help_text,
+        state.help_font,
         24.0,
         0.02,
         Color::WHITE,
@@ -767,8 +727,9 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
     );
     modal(
         draw,
-        state,
+        state.work_size,
         help_text,
+        state.help_font,
         24.0,
         0.02,
         Color::WHITE,
