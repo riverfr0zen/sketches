@@ -3,9 +3,8 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
-use notan_sketches::emotion_bg_visualizer::visualizers::scale_font;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, get_rng, CapturingTexture, ScreenDimensions,
+    get_common_win_config, get_draw_setup, get_rng, scale_font, CapturingTexture, ScreenDimensions,
 };
 use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
