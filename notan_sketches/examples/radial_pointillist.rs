@@ -436,7 +436,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         .create_font(include_bytes!("assets/fonts/Ubuntu-B.ttf"))
         .unwrap();
 
-    // let settings = Settings::default();
     let settings = Settings::randomize(&mut rng, &work_size, brushes);
     log::debug!("With settings: {:#?}", settings);
     State {
@@ -698,27 +697,43 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 }
 
 
-fn modal(draw: &mut Draw, state: &mut State, text: &str) {
-    let font_size = scale_font(24.0, state.work_size);
+fn modal(
+    draw: &mut Draw,
+    state: &mut State,
+    text: &str,
+    font_size: f32,
+    padding: f32,
+    font_color: Color,
+    bg_color: Color,
+) {
+    let font_size = scale_font(font_size, state.work_size);
     draw.text(&state.help_font, text)
         .position(state.work_size.x * 0.5, state.work_size.y * 0.5)
         .size(font_size)
-        .color(Color::BLACK)
+        .color(font_color)
         .h_align_center()
         .v_align_middle();
     let help_bounds = draw.last_text_bounds();
+    let bg_padding = state.work_size.x.max(state.work_size.y) * padding;
+    let bg_padding_half = bg_padding * 0.5;
     draw.rect(
-        (help_bounds.x - 10.0, help_bounds.y - 10.0),
-        (help_bounds.width + 20.0, help_bounds.height + 20.0),
+        (
+            help_bounds.x - bg_padding_half,
+            help_bounds.y - bg_padding_half,
+        ),
+        (
+            help_bounds.width + bg_padding,
+            help_bounds.height + bg_padding,
+        ),
     )
-    .fill_color(HELP_PANEL_COLOR)
+    .fill_color(bg_color)
     .fill()
-    .corner_radius(10.0)
+    .corner_radius(bg_padding)
     .alpha(0.8);
     draw.text(&state.help_font, text)
         .position(state.work_size.x * 0.5, state.work_size.y * 0.5)
         .size(font_size)
-        .color(Color::WHITE)
+        .color(font_color)
         .h_align_center()
         .v_align_middle();
 }
@@ -729,9 +744,17 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         "Radial Pointillist Help:\n\n",
         "Press 'R' to start a new piece\nwith new settings\n\n",
         "Press 'C' to capture image\n\n",
-        "Click mouse to close Help\n",
+        "Click mouse to close help\n",
     );
-    modal(draw, state, help_text);
+    modal(
+        draw,
+        state,
+        help_text,
+        24.0,
+        0.02,
+        Color::WHITE,
+        HELP_PANEL_COLOR,
+    );
 }
 
 
@@ -740,9 +763,17 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
         "Radial Pointillist Help:\n\n",
         "Swipe left to start a new piece\nwith new settings\n\n",
         "Swipe down to save image\n\n",
-        "Tap to close Help\n",
+        "Tap to close help\n",
     );
-    modal(draw, state, help_text);
+    modal(
+        draw,
+        state,
+        help_text,
+        24.0,
+        0.02,
+        Color::WHITE,
+        HELP_PANEL_COLOR,
+    );
 }
 
 
@@ -770,17 +801,16 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     rdraw.image(&state.capture.render_texture);
 
     if state.show_help {
-        log::debug!("Showing help");
+        // log::debug!("Showing help");
         draw_help(rdraw, state);
     }
 
     if state.show_touch_help {
-        log::debug!("Showing touch help");
+        // log::debug!("Showing touch help");
         draw_touch_help(rdraw, state);
     }
 
     gfx.render(rdraw);
-    // log::debug!("fps: {}", app.timer.fps().round());
 }
 
 
@@ -808,7 +838,7 @@ fn main() -> Result<(), String> {
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
-        // .touch_as_mouse(true)
+        .touch_as_mouse(false)
         .event(event)
         .update(update)
         .draw(draw)
