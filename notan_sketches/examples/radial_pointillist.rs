@@ -3,6 +3,7 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
+use notan_sketches::emotion_bg_visualizer::visualizers::scale_font;
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, CapturingTexture, ScreenDimensions,
 };
@@ -540,6 +541,19 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
             }
         }
     }
+
+    match evt {
+        // Event::MouseUp { button, .. } => {
+        Event::MouseUp { .. } => {
+            if !state.has_shown_help {
+                state.show_help = true;
+                state.has_shown_help = true;
+            } else {
+                state.show_help = !state.show_help;
+            }
+        }
+        _ => {}
+    }
 }
 
 fn update(app: &mut App, state: &mut State) {
@@ -685,16 +699,11 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 }
 
 
-fn draw_touch_help(draw: &mut Draw, state: &mut State) {
-    let help_text = concat!(
-        "Radial Pointillist Help:\n\n",
-        "Swipe left to start a new piece\nwith new settings\n\n",
-        "Swipe down to save image\n\n",
-        "Tap to close Help\n",
-    );
-    draw.text(&state.help_font, help_text)
+fn modal(draw: &mut Draw, state: &mut State, text: &str) {
+    let font_size = scale_font(24.0, state.work_size);
+    draw.text(&state.help_font, text)
         .position(state.work_size.x * 0.5, state.work_size.y * 0.5)
-        .size(24.0)
+        .size(font_size)
         .color(Color::BLACK)
         .h_align_center()
         .v_align_middle();
@@ -707,12 +716,34 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
     .fill()
     .corner_radius(10.0)
     .alpha(0.8);
-    draw.text(&state.help_font, help_text)
+    draw.text(&state.help_font, text)
         .position(state.work_size.x * 0.5, state.work_size.y * 0.5)
-        .size(24.0)
+        .size(font_size)
         .color(Color::WHITE)
         .h_align_center()
         .v_align_middle();
+}
+
+
+fn draw_help(draw: &mut Draw, state: &mut State) {
+    let help_text = concat!(
+        "Radial Pointillist Help:\n\n",
+        "Press 'R' to start a new piece\nwith new settings\n\n",
+        "Press 'C' to capture image\n\n",
+        "Click mouse to close Help\n",
+    );
+    modal(draw, state, help_text);
+}
+
+
+fn draw_touch_help(draw: &mut Draw, state: &mut State) {
+    let help_text = concat!(
+        "Radial Pointillist Help:\n\n",
+        "Swipe left to start a new piece\nwith new settings\n\n",
+        "Swipe down to save image\n\n",
+        "Tap to close Help\n",
+    );
+    modal(draw, state, help_text);
 }
 
 
@@ -738,6 +769,11 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     let rdraw = &mut get_draw_setup(gfx, state.work_size, true, Color::GRAY);
     rdraw.image(&state.capture.render_texture);
+
+    if state.show_help {
+        log::debug!("Showing help");
+        draw_help(rdraw, state);
+    }
 
     if state.show_touch_help {
         log::debug!("Showing touch help");
