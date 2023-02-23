@@ -1,6 +1,6 @@
 use notan::draw::*;
 use notan::log;
-use notan::math::{vec2, vec3, Mat4, Vec2};
+use notan::math::{vec2, vec3, Mat4, Rect, Vec2};
 use notan::prelude::*;
 
 
@@ -141,37 +141,48 @@ pub fn modal(
     padding: f32,
     font_color: Color,
     bg_color: Color,
-) {
+    vertical_position: Option<f32>,
+) -> Rect {
     let font_size = scale_font(font_size, work_size);
+    let bg_padding = work_size.x.max(work_size.y) * padding;
+    let bg_padding_half = bg_padding * 0.5;
+    let pos_y: f32;
+    if vertical_position.is_some() {
+        // If we are given a specific vertical position, then we need to compensate
+        // for the padding that add to the modal rect.
+        pos_y = vertical_position.unwrap() + bg_padding;
+    } else {
+        pos_y = work_size.y * 0.5;
+    }
     draw.text(&font, text)
-        .position(work_size.x * 0.5, work_size.y * 0.5)
+        .position(work_size.x * 0.5, pos_y)
         .size(font_size)
         .color(font_color)
         .h_align_center()
         .v_align_middle();
     let help_bounds = draw.last_text_bounds();
-    let bg_padding = work_size.x.max(work_size.y) * padding;
-    let bg_padding_half = bg_padding * 0.5;
+    let panel_rect = Rect {
+        x: help_bounds.x - bg_padding_half,
+        y: help_bounds.y - bg_padding_half,
+        width: help_bounds.width + bg_padding,
+        height: help_bounds.height + bg_padding,
+    };
     draw.rect(
-        (
-            help_bounds.x - bg_padding_half,
-            help_bounds.y - bg_padding_half,
-        ),
-        (
-            help_bounds.width + bg_padding,
-            help_bounds.height + bg_padding,
-        ),
+        (panel_rect.x, panel_rect.y),
+        (panel_rect.width, panel_rect.height),
     )
     .fill_color(bg_color)
     .fill()
     .corner_radius(bg_padding)
     .alpha(0.8);
     draw.text(&font, text)
-        .position(work_size.x * 0.5, work_size.y * 0.5)
+        .position(work_size.x * 0.5, pos_y)
         .size(font_size)
         .color(font_color)
         .h_align_center()
         .v_align_middle();
+
+    panel_rect
 }
 
 
