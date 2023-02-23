@@ -6,6 +6,7 @@ use notan_sketches::colors;
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, CapturingTexture, ScreenDimensions,
 };
+use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
 use std::ops::RangeInclusive;
 use uuid::Uuid;
@@ -507,115 +508,6 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
     }
 }
 
-
-#[derive(Debug)]
-pub struct TouchState {
-    /// The minimum distance on an axis after which the interaction is considered a swipe
-    pub swipe_threshold: f32,
-    /// The maximum length of a touch for an interaction to be considered a short tap
-    pub tap_threshold: f32,
-    started_at: f32,
-    start_x: f32,
-    start_y: f32,
-    ended_at: f32,
-    end_x: f32,
-    end_y: f32,
-}
-
-impl Default for TouchState {
-    fn default() -> Self {
-        Self {
-            swipe_threshold: 100.0,
-            tap_threshold: 0.5,
-            started_at: 0.0,
-            start_x: 0.0,
-            start_y: 0.0,
-            ended_at: 0.0,
-            end_x: 0.0,
-            end_y: 0.0,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum TouchGesture {
-    SwipeUp,
-    SwipeDown,
-    SwipeLeft,
-    SwipeRight,
-    Tap,
-    LongTap,
-    DoubleTap,
-}
-
-impl TouchState {
-    fn reset(&self) -> Self {
-        Self {
-            swipe_threshold: self.swipe_threshold,
-            tap_threshold: self.tap_threshold,
-            ..Default::default()
-        }
-    }
-
-    fn get_gesture(&mut self, time: &f32, evt: &Event) -> Option<TouchGesture> {
-        let mut gesture: Option<TouchGesture> = None;
-        match evt {
-            Event::TouchStart { x, y, .. } => {
-                // log::debug!("touch start x {} y {} at {}", x, y, time);
-                self.started_at = time.clone();
-                self.start_x = x.clone();
-                self.start_y = y.clone();
-            }
-            Event::TouchEnd { x, y, .. } => {
-                // log::debug!("touch end x {} y {} at {}", x, y, time);
-                self.ended_at = time.clone();
-                self.end_x = x.clone();
-                self.end_y = y.clone();
-            }
-            _ => {}
-        }
-        let touch_duration = self.ended_at - self.started_at;
-        if touch_duration > 0.0 {
-            log::debug!("touch duration {}", touch_duration);
-            let x_diff = self.end_x - self.start_x;
-            let y_diff = self.end_y - self.start_y;
-            log::debug!("xdiff {} ydiff {}", x_diff, y_diff);
-            if x_diff.abs() > y_diff.abs() {
-                if x_diff > self.swipe_threshold {
-                    log::debug!("swipe right");
-                    gesture = Some(TouchGesture::SwipeRight);
-                }
-                if x_diff < -self.swipe_threshold {
-                    log::debug!("swipe left");
-                    gesture = Some(TouchGesture::SwipeLeft);
-                }
-            }
-            if gesture.is_none() && y_diff.abs() > x_diff.abs() {
-                if y_diff > self.swipe_threshold {
-                    log::debug!("swipe down");
-                    gesture = Some(TouchGesture::SwipeDown);
-                }
-                if y_diff < -self.swipe_threshold {
-                    log::debug!("swipe up");
-                    gesture = Some(TouchGesture::SwipeUp);
-                }
-            }
-            if gesture.is_none() {
-                if touch_duration < self.tap_threshold {
-                    log::debug!("tap");
-                    gesture = Some(TouchGesture::Tap);
-                } else if touch_duration >= self.tap_threshold {
-                    log::debug!("long tap");
-                    gesture = Some(TouchGesture::LongTap);
-                }
-            }
-        }
-        if gesture.is_some() {
-            *self = self.reset();
-        }
-        gesture
-    }
-}
 
 fn event(app: &mut App, state: &mut State, evt: Event) {
     let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);

@@ -1637,6 +1637,7 @@ name = "notan_sketches"
 version = "0.1.0"
 dependencies = [
  "notan",
+ "notan_touchy",
  "palette",
  "rapier2d",
  "serde",
@@ -1658,6 +1659,14 @@ dependencies = [
  "notan_graphics",
  "notan_math",
  "parking_lot",
+]
+
+[[package]]
+name = "notan_touchy"
+version = "0.1.0"
+dependencies = [
+ "notan_core",
+ "notan_log",
 ]
 
 [[package]]

@@ -14,3 +14,4 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 palette = "0.6.1"
 uuid = { version = "1.2.2", features = ["v4", "fast-rng"] }
+notan_touchy = { path = "../notan_touchy" }
