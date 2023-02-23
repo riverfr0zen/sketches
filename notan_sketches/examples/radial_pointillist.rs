@@ -74,6 +74,7 @@ const PALETTE: [Color; 21] = [
     colors::SCARLET,
     colors::SALMON,
 ];
+const HELP_PANEL_COLOR: Color = Color::GRAY;
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 
 
@@ -289,6 +290,10 @@ pub struct State {
     pub reinit_next_draw: bool,
     pub capture_next_draw: bool,
     pub touch: TouchState,
+    show_help: bool,
+    show_touch_help: bool,
+    has_shown_help: bool,
+    help_font: Font,
 }
 
 
@@ -427,6 +432,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         &scratch_brush,
     ];
 
+    let help_font = gfx
+        .create_font(include_bytes!("assets/fonts/Ubuntu-B.ttf"))
+        .unwrap();
+
     // let settings = Settings::default();
     let settings = Settings::randomize(&mut rng, &work_size, brushes);
     log::debug!("With settings: {:#?}", settings);
@@ -447,8 +456,13 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         reinit_next_draw: false,
         capture_next_draw: false,
         touch: TouchState::default(),
+        show_help: false,
+        show_touch_help: false,
+        has_shown_help: false,
+        help_font,
     }
 }
+
 
 fn spawn_random(state: &mut State) {
     state.nodes.push(Node {
@@ -511,7 +525,21 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
 
 fn event(app: &mut App, state: &mut State, evt: Event) {
     let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
-    log::debug!("gesture found: {:?}", gesture);
+    // log::debug!("gesture found: {:?}", gesture);
+
+    if gesture.is_some() {
+        if !state.has_shown_help {
+            state.show_touch_help = true;
+            state.has_shown_help = true;
+        } else {
+            match gesture {
+                Some(TouchGesture::SwipeLeft) => state.reinit_next_draw = true,
+                Some(TouchGesture::SwipeDown) => state.capture_next_draw = true,
+                Some(TouchGesture::Tap) => state.show_touch_help = !state.show_touch_help,
+                _ => {}
+            }
+        }
+    }
 }
 
 fn update(app: &mut App, state: &mut State) {
@@ -657,6 +685,37 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 }
 
 
+fn draw_touch_help(draw: &mut Draw, state: &mut State) {
+    let help_text = concat!(
+        "Radial Pointillist Help:\n\n",
+        "Swipe left to start a new piece\nwith new settings\n\n",
+        "Swipe down to save image\n\n",
+        "Tap to close Help\n",
+    );
+    draw.text(&state.help_font, help_text)
+        .position(state.work_size.x * 0.5, state.work_size.y * 0.5)
+        .size(24.0)
+        .color(Color::BLACK)
+        .h_align_center()
+        .v_align_middle();
+    let help_bounds = draw.last_text_bounds();
+    draw.rect(
+        (help_bounds.x - 10.0, help_bounds.y - 10.0),
+        (help_bounds.width + 20.0, help_bounds.height + 20.0),
+    )
+    .fill_color(HELP_PANEL_COLOR)
+    .fill()
+    .corner_radius(10.0)
+    .alpha(0.8);
+    draw.text(&state.help_font, help_text)
+        .position(state.work_size.x * 0.5, state.work_size.y * 0.5)
+        .size(24.0)
+        .color(Color::WHITE)
+        .h_align_center()
+        .v_align_middle();
+}
+
+
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.reinit_next_draw {
         state.reinitialize_drawing(gfx);
@@ -679,6 +738,11 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     let rdraw = &mut get_draw_setup(gfx, state.work_size, true, Color::GRAY);
     rdraw.image(&state.capture.render_texture);
+
+    if state.show_touch_help {
+        log::debug!("Showing touch help");
+        draw_touch_help(rdraw, state);
+    }
 
     gfx.render(rdraw);
     // log::debug!("fps: {}", app.timer.fps().round());
