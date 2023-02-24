@@ -141,40 +141,44 @@ pub fn modal(
     padding: f32,
     font_color: Color,
     bg_color: Color,
-    // @TODO: This positioning is broken and doesn't account for how text is positioned
-    // centrally
     vertical_position: Option<f32>,
     horizontal_position: Option<f32>,
 ) -> Rect {
     let font_size = scale_font(font_size, work_size);
     let bg_padding = work_size.x.max(work_size.y) * padding;
     let bg_padding_half = bg_padding * 0.5;
-    let pos_y: f32;
-    if vertical_position.is_some() {
-        // If we are given a specific vertical position, then we need to compensate
-        // for the padding added to the modal rect.
-        pos_y = vertical_position.unwrap() + bg_padding;
-    } else {
-        pos_y = work_size.y * 0.5;
-    }
-    let pos_x: f32;
-    if horizontal_position.is_some() {
-        // If we are given a specific horizontal_position, then we need to compensate
-        // for the padding that added to the modal rect.
-        pos_x = horizontal_position.unwrap() + bg_padding;
-    } else {
-        pos_x = work_size.x * 0.5;
-    }
     draw.text(&font, text)
-        .position(pos_x, pos_y)
+        .position(0.0, 0.0)
         .size(font_size)
         .color(font_color)
         .h_align_center()
-        .v_align_middle();
+        .v_align_middle()
+        .alpha(0.0);
     let help_bounds = draw.last_text_bounds();
+
+
+    let text_y_offset = help_bounds.height * 0.5 + bg_padding_half;
+    let text_pos_y: f32;
+    if vertical_position.is_some() {
+        // If we are given a specific vertical position, we adjust for text
+        // being set centrally
+        text_pos_y = vertical_position.unwrap() + text_y_offset;
+    } else {
+        text_pos_y = work_size.y * 0.5;
+    }
+    let text_x_offset = help_bounds.width * 0.5 + bg_padding_half;
+    let text_pos_x: f32;
+    if horizontal_position.is_some() {
+        // If we are given a specific horizontal position, we adjust for text
+        // being set centrally
+        text_pos_x = horizontal_position.unwrap() + text_x_offset;
+    } else {
+        text_pos_x = work_size.x * 0.5;
+    }
+
     let panel_rect = Rect {
-        x: help_bounds.x - bg_padding_half,
-        y: help_bounds.y - bg_padding_half,
+        x: text_pos_x - text_x_offset,
+        y: text_pos_y - text_y_offset,
         width: help_bounds.width + bg_padding,
         height: help_bounds.height + bg_padding,
     };
@@ -187,7 +191,7 @@ pub fn modal(
     .corner_radius(bg_padding)
     .alpha(0.8);
     draw.text(&font, text)
-        .position(pos_x, pos_y)
+        .position(text_pos_x, text_pos_y)
         .size(font_size)
         .color(font_color)
         .h_align_center()
