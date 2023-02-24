@@ -11,8 +11,6 @@ use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
 use std::ops::RangeInclusive;
 use uuid::Uuid;
-#[cfg(target_arch = "wasm32")]
-use web_sys;
 
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
@@ -524,13 +522,11 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
     }
 }
 
-#[cfg(target_arch = "wasm32")]
-fn open_source_code() {
+fn open_source_code(app: &mut App) {
     {
-        log::debug!("opening source code...");
-        let wasm_window = web_sys::window().unwrap();
+        // log::debug!("opening source code...");
         let src_url = "https://github.com/riverfr0zen/sketches/blob/main/notan_sketches/examples/radial_pointillist.rs";
-        wasm_window.open_with_url(src_url).ok();
+        app.backend.open_link(src_url, true);
     }
 }
 
@@ -547,8 +543,7 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
             match gesture {
                 Some(TouchGesture::SwipeLeft) => state.reinit_next_draw = true,
                 Some(TouchGesture::SwipeDown) => state.capture_next_draw = true,
-                #[cfg(target_arch = "wasm32")]
-                Some(TouchGesture::SwipeUp) => open_source_code(),
+                Some(TouchGesture::SwipeUp) => open_source_code(app),
                 Some(TouchGesture::Tap) => state.show_touch_help = !state.show_touch_help,
                 _ => {}
             }
@@ -556,7 +551,6 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
     }
 
     match evt {
-        // Event::MouseUp { button, .. } => {
         Event::MouseUp { .. } => {
             if !state.has_shown_help {
                 state.show_help = true;
@@ -569,6 +563,7 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
     }
 }
 
+
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::R) {
         log::debug!("R");
@@ -580,10 +575,9 @@ fn update(app: &mut App, state: &mut State) {
         state.capture_next_draw = true;
     }
 
-    #[cfg(target_arch = "wasm32")]
     if app.keyboard.was_pressed(KeyCode::S) {
         log::debug!("S");
-        open_source_code();
+        open_source_code(app);
     }
 
 
@@ -724,14 +718,13 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         "Controls:\n\n",
         "Press 'R' to start a new painting\n\n",
         "Press 'C' to capture image\n\n",
+        "Press 'S' to view code\n\n",
+        "Click mouse to close help\n",
     );
-    #[cfg(target_arch = "wasm32")]
-    let help_text = format!("{}{}", help_text, "Press 'S' to view code\n\n");
-    let help_text = format!("{}{}", help_text, "Click mouse to close help\n");
     let help_bounds = modal(
         draw,
         state.work_size,
-        help_text.as_str(),
+        help_text,
         state.help_font,
         24.0,
         0.04,
@@ -766,14 +759,13 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
         "Controls:\n\n",
         "Swipe left to start a\nnew painting\n\n",
         "Swipe down to save image\n\n",
+        "Swipe up to view code\n\n",
+        "Tap to close help\n",
     );
-    #[cfg(target_arch = "wasm32")]
-    let help_text = format!("{}{}", help_text, "Swipe up to view code\n\n");
-    let help_text = format!("{}{}", help_text, "Tap to close help\n");
     let help_bounds = modal(
         draw,
         state.work_size,
-        help_text.as_str(),
+        help_text,
         state.help_font,
         24.0,
         0.04,
