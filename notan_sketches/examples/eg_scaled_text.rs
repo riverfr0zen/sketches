@@ -44,7 +44,7 @@ pub fn get_draw_setup(gfx: &mut Graphics, work_size: Vec2, clear_color: Color) -
 
 fn init(gfx: &mut Graphics) -> State {
     let font = gfx
-        .create_font(include_bytes!("./assets/fonts/Ubuntu-B.ttf"))
+        .create_font(include_bytes!("./assets/fonts/ubuntu/Ubuntu-B.ttf"))
         .unwrap();
 
     let state = State { font: font };

@@ -435,7 +435,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     ];
 
     let help_font = gfx
-        .create_font(include_bytes!("assets/fonts/Ubuntu-R.ttf"))
+        .create_font(include_bytes!("assets/fonts/ubuntu/Ubuntu-R.ttf"))
         .unwrap();
 
     let settings = Settings::randomize(&mut rng, &work_size, brushes);
