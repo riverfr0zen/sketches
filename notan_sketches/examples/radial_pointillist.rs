@@ -700,8 +700,8 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 
 fn draw_help(draw: &mut Draw, state: &mut State) {
     let help_text = concat!(
-        "Radial Pointillist Help:\n\n",
-        "Press 'R' to start a new piece\nwith new settings\n\n",
+        "Controls:\n\n",
+        "Press 'R' to start a new painting\n\n",
         "Press 'C' to capture image\n\n",
         "Click mouse to close help\n",
     );
@@ -711,14 +711,14 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         help_text,
         state.help_font,
         24.0,
-        0.02,
+        0.04,
         Color::WHITE,
         HELP_PANEL_COLOR,
         None,
         None,
     );
 
-    let info_text = concat!("Copyright 2023 Irfan Baig\n",);
+    let info_text = concat!("Radial Pointillist\n", "Copyright 2023 Irfan Baig\n",);
     modal(
         draw,
         state.work_size,
@@ -729,7 +729,6 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         Color::WHITE,
         HELP_PANEL_COLOR,
         Some(help_bounds.y + help_bounds.height + state.work_size.x.max(state.work_size.y) * 0.02),
-        // Some(20.0),
         None,
     );
 }
@@ -737,8 +736,8 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
 
 fn draw_touch_help(draw: &mut Draw, state: &mut State) {
     let help_text = concat!(
-        "Radial Pointillist Help:\n\n",
-        "Swipe left to start a new piece\nwith new settings\n\n",
+        "Controls:\n\n",
+        "Swipe left to start a\nnew painting\n\n",
         "Swipe down to save image\n\n",
         "Tap to close help\n",
     );
@@ -748,14 +747,14 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
         help_text,
         state.help_font,
         24.0,
-        0.02,
+        0.04,
         Color::WHITE,
         HELP_PANEL_COLOR,
         None,
         None,
     );
 
-    let info_text = concat!("Copyright 2023 Irfan Baig\n",);
+    let info_text = concat!("Radial Pointillist\n", "Copyright 2023 Irfan Baig\n",);
     modal(
         draw,
         state.work_size,
