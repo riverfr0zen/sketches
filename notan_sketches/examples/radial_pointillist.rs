@@ -715,9 +715,10 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         Color::WHITE,
         HELP_PANEL_COLOR,
         None,
+        None,
     );
 
-    let info_text = concat!("Copyright 2023 Irfan Baig\n", "License: MIT\n",);
+    let info_text = concat!("Copyright 2023 Irfan Baig\n",);
     modal(
         draw,
         state.work_size,
@@ -728,6 +729,7 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         Color::WHITE,
         HELP_PANEL_COLOR,
         Some(help_bounds.y + help_bounds.height + state.work_size.x.max(state.work_size.y) * 0.02),
+        None,
     );
 }
 
@@ -749,9 +751,10 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
         Color::WHITE,
         HELP_PANEL_COLOR,
         None,
+        None,
     );
 
-    let info_text = concat!("Copyright 2023 Irfan Baig\n", "License: MIT\n",);
+    let info_text = concat!("Copyright 2023 Irfan Baig\n",);
     modal(
         draw,
         state.work_size,
@@ -762,6 +765,7 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
         Color::WHITE,
         HELP_PANEL_COLOR,
         Some(help_bounds.y + help_bounds.height + state.work_size.x.max(state.work_size.y) * 0.02),
+        None,
     );
 }
 

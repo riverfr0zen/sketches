@@ -141,7 +141,10 @@ pub fn modal(
     padding: f32,
     font_color: Color,
     bg_color: Color,
+    // @TODO: This positioning is broken and doesn't account for how text is positioned
+    // centrally
     vertical_position: Option<f32>,
+    horizontal_position: Option<f32>,
 ) -> Rect {
     let font_size = scale_font(font_size, work_size);
     let bg_padding = work_size.x.max(work_size.y) * padding;
@@ -149,13 +152,21 @@ pub fn modal(
     let pos_y: f32;
     if vertical_position.is_some() {
         // If we are given a specific vertical position, then we need to compensate
-        // for the padding that add to the modal rect.
+        // for the padding added to the modal rect.
         pos_y = vertical_position.unwrap() + bg_padding;
     } else {
         pos_y = work_size.y * 0.5;
     }
+    let pos_x: f32;
+    if horizontal_position.is_some() {
+        // If we are given a specific horizontal_position, then we need to compensate
+        // for the padding that added to the modal rect.
+        pos_x = horizontal_position.unwrap() + bg_padding;
+    } else {
+        pos_x = work_size.x * 0.5;
+    }
     draw.text(&font, text)
-        .position(work_size.x * 0.5, pos_y)
+        .position(pos_x, pos_y)
         .size(font_size)
         .color(font_color)
         .h_align_center()
@@ -176,7 +187,7 @@ pub fn modal(
     .corner_radius(bg_padding)
     .alpha(0.8);
     draw.text(&font, text)
-        .position(work_size.x * 0.5, pos_y)
+        .position(pos_x, pos_y)
         .size(font_size)
         .color(font_color)
         .h_align_center()
