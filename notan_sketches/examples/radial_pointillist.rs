@@ -718,13 +718,7 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         None,
     );
 
-    let info_text = concat!(
-        "Copyright 2023 Irfan Baig\n",
-        "dsdsaas\n",
-        "dsdsaas\n",
-        "dsdsaas\n",
-        "dsdsaas\n"
-    );
+    let info_text = concat!("Copyright 2023 Irfan Baig\n",);
     modal(
         draw,
         state.work_size,
@@ -734,8 +728,8 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         0.02,
         Color::WHITE,
         HELP_PANEL_COLOR,
-        // Some(help_bounds.y + help_bounds.height + state.work_size.x.max(state.work_size.y) * 0.02),
-        Some(20.0),
+        Some(help_bounds.y + help_bounds.height + state.work_size.x.max(state.work_size.y) * 0.02),
+        // Some(20.0),
         None,
     );
 }

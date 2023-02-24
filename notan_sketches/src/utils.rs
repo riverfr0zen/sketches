@@ -158,27 +158,29 @@ pub fn modal(
 
 
     let text_y_offset = help_bounds.height * 0.5 + bg_padding_half;
-    let text_pos_y: f32;
+    let panel_y: f32;
     if vertical_position.is_some() {
-        // If we are given a specific vertical position, we adjust for text
-        // being set centrally
-        text_pos_y = vertical_position.unwrap() + text_y_offset;
+        panel_y = vertical_position.unwrap();
     } else {
-        text_pos_y = work_size.y * 0.5;
+        // Text is positioned centrally, and if no position is given, we want
+        // it to be in the center. So we need to apply an offset to position the
+        // panel relative to the centrally positioned text.
+        panel_y = work_size.y * 0.5 - text_y_offset;
     }
     let text_x_offset = help_bounds.width * 0.5 + bg_padding_half;
-    let text_pos_x: f32;
+    let panel_x: f32;
     if horizontal_position.is_some() {
-        // If we are given a specific horizontal position, we adjust for text
-        // being set centrally
-        text_pos_x = horizontal_position.unwrap() + text_x_offset;
+        panel_x = horizontal_position.unwrap();
     } else {
-        text_pos_x = work_size.x * 0.5;
+        // Text is positioned centrally, and if no position is given, we want
+        // it to be in the center. So we need to apply an offset to position the
+        // panel relative to the centrally positioned text.
+        panel_x = work_size.x * 0.5 - text_x_offset;
     }
 
     let panel_rect = Rect {
-        x: text_pos_x - text_x_offset,
-        y: text_pos_y - text_y_offset,
+        x: panel_x,
+        y: panel_y,
         width: help_bounds.width + bg_padding,
         height: help_bounds.height + bg_padding,
     };
@@ -191,7 +193,7 @@ pub fn modal(
     .corner_radius(bg_padding)
     .alpha(0.8);
     draw.text(&font, text)
-        .position(text_pos_x, text_pos_y)
+        .position(panel_x + text_x_offset, panel_y + text_y_offset)
         .size(font_size)
         .color(font_color)
         .h_align_center()
