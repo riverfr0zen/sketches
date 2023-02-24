@@ -11,6 +11,8 @@ use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
 use std::ops::RangeInclusive;
 use uuid::Uuid;
+#[cfg(target_arch = "wasm32")]
+use web_sys;
 
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
@@ -522,6 +524,16 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
     }
 }
 
+#[cfg(target_arch = "wasm32")]
+fn open_source_code() {
+    {
+        log::debug!("opening source code...");
+        let wasm_window = web_sys::window().unwrap();
+        let src_url = "https://github.com/riverfr0zen/sketches/blob/main/notan_sketches/examples/radial_pointillist.rs";
+        wasm_window.open_with_url(src_url).ok();
+    }
+}
+
 
 fn event(app: &mut App, state: &mut State, evt: Event) {
     let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
@@ -535,6 +547,8 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
             match gesture {
                 Some(TouchGesture::SwipeLeft) => state.reinit_next_draw = true,
                 Some(TouchGesture::SwipeDown) => state.capture_next_draw = true,
+                #[cfg(target_arch = "wasm32")]
+                Some(TouchGesture::SwipeUp) => open_source_code(),
                 Some(TouchGesture::Tap) => state.show_touch_help = !state.show_touch_help,
                 _ => {}
             }
@@ -565,6 +579,13 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("C");
         state.capture_next_draw = true;
     }
+
+    #[cfg(target_arch = "wasm32")]
+    if app.keyboard.was_pressed(KeyCode::S) {
+        log::debug!("S");
+        open_source_code();
+    }
+
 
     let curr_time = app.timer.time_since_init();
 
@@ -703,12 +724,14 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         "Controls:\n\n",
         "Press 'R' to start a new painting\n\n",
         "Press 'C' to capture image\n\n",
-        "Click mouse to close help\n",
     );
+    #[cfg(target_arch = "wasm32")]
+    let help_text = format!("{}{}", help_text, "Press 'S' to view code\n\n");
+    let help_text = format!("{}{}", help_text, "Click mouse to close help\n");
     let help_bounds = modal(
         draw,
         state.work_size,
-        help_text,
+        help_text.as_str(),
         state.help_font,
         24.0,
         0.04,
@@ -718,7 +741,11 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         None,
     );
 
-    let info_text = concat!("Radial Pointillist\n", "Copyright 2023 Irfan Baig\n",);
+    let info_text = concat!(
+        "'Radial Pointillist'\n",
+        "Copyright 2023 Irfan Baig\n",
+        "License: MIT"
+    );
     modal(
         draw,
         state.work_size,
@@ -739,12 +766,14 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
         "Controls:\n\n",
         "Swipe left to start a\nnew painting\n\n",
         "Swipe down to save image\n\n",
-        "Tap to close help\n",
     );
+    #[cfg(target_arch = "wasm32")]
+    let help_text = format!("{}{}", help_text, "Swipe up to view code\n\n");
+    let help_text = format!("{}{}", help_text, "Tap to close help\n");
     let help_bounds = modal(
         draw,
         state.work_size,
-        help_text,
+        help_text.as_str(),
         state.help_font,
         24.0,
         0.04,
@@ -754,7 +783,11 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
         None,
     );
 
-    let info_text = concat!("Radial Pointillist\n", "Copyright 2023 Irfan Baig\n",);
+    let info_text = concat!(
+        "'Radial Pointillist'\n",
+        "Copyright 2023 Irfan Baig\n",
+        "License: MIT"
+    );
     modal(
         draw,
         state.work_size,
