@@ -410,8 +410,9 @@ fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, Captur
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!(
-        "Getting work size from screen: {:?}",
-        app.window().screen_size()
+        "Getting work size from screen: {:?} with dpi {}",
+        app.window().screen_size(),
+        app.window().dpi()
     );
     let (screen_width, screen_height) = app.window().screen_size();
     let work_size = vec2(screen_width as f32, screen_height as f32);
@@ -434,7 +435,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     ];
 
     let help_font = gfx
-        .create_font(include_bytes!("assets/fonts/Ubuntu-B.ttf"))
+        .create_font(include_bytes!("assets/fonts/Ubuntu-R.ttf"))
         .unwrap();
 
     let settings = Settings::randomize(&mut rng, &work_size, brushes);
