@@ -239,6 +239,8 @@ pub fn modal(
     )
     .fill_color(bg_color)
     .fill()
+    .stroke_color(Color::WHITE)
+    .stroke(1.0)
     .corner_radius(bg_padding)
     .alpha(0.8);
     draw.text(&font, text)

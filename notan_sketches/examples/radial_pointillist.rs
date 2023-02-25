@@ -731,7 +731,7 @@ fn get_font_sizes(work_size: Vec2) -> (f32, f32) {
     if portrait {
         return (
             scale_font_fullcomp(42.0, work_size),
-            scale_font_fullcomp(26.0, work_size),
+            scale_font_fullcomp(32.0, work_size),
         );
         // return (24.0 * 1.875, 12.0 * 1.875);
     }
