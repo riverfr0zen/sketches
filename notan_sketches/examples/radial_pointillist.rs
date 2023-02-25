@@ -4,7 +4,7 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, get_rng, modal, scale_font, CapturingTexture,
+    get_common_win_config, get_draw_setup, get_rng, modal, scale_font_fullcomp, CapturingTexture,
     ScreenDimensions,
 };
 use notan_touchy::{TouchGesture, TouchState};
@@ -407,14 +407,25 @@ fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, Captur
     (rng, capture)
 }
 
-
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
-    log::info!(
-        "Getting work size from screen: {:?} with dpi {}",
+    log::debug!(
+        "Screen size: {:?} Container size: {:?} dpi {} limits {:?}",
         app.window().screen_size(),
-        app.window().dpi()
+        app.window().container_size(),
+        app.window().dpi(),
+        gfx.limits(),
     );
-    let (screen_width, screen_height) = app.window().screen_size();
+    let (mut screen_width, mut screen_height) = app.window().screen_size();
+    // let work_size = vec2(screen_width as f32, screen_height as f32);
+    if gfx.limits().max_texture_size as i32 / screen_width.max(screen_height) > 2 {
+        screen_width = screen_width * 2;
+        screen_height = screen_height * 2;
+        log::debug!(
+            "Screen 'super sampled' x 2 to w {} h {}",
+            screen_width,
+            screen_height,
+        );
+    }
     let work_size = vec2(screen_width as f32, screen_height as f32);
 
     let (mut rng, capture) = init_rng_and_capture(gfx, &work_size);
@@ -714,7 +725,25 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 }
 
 
+/// Returns font sizes adjusted for portrait vs landscape
+fn get_font_sizes(work_size: Vec2) -> (f32, f32) {
+    let portrait = work_size.x < work_size.y;
+    if portrait {
+        return (
+            scale_font_fullcomp(36.0, work_size),
+            scale_font_fullcomp(24.0, work_size),
+        );
+        // return (24.0 * 1.875, 12.0 * 1.875);
+    }
+    (
+        scale_font_fullcomp(24.0, work_size),
+        scale_font_fullcomp(12.0, work_size),
+    )
+}
+
+
 fn draw_help(draw: &mut Draw, state: &mut State) {
+    let (help_size, info_size) = get_font_sizes(state.work_size);
     let help_text = concat!(
         "Controls:\n\n",
         "Press 'R' to start a new painting\n\n",
@@ -727,7 +756,7 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         state.work_size,
         help_text,
         state.help_font,
-        24.0,
+        help_size,
         0.04,
         Color::WHITE,
         HELP_PANEL_COLOR,
@@ -745,7 +774,7 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
         state.work_size,
         info_text,
         state.help_font,
-        12.0,
+        info_size,
         0.02,
         Color::WHITE,
         HELP_PANEL_COLOR,
@@ -756,6 +785,8 @@ fn draw_help(draw: &mut Draw, state: &mut State) {
 
 
 fn draw_touch_help(draw: &mut Draw, state: &mut State) {
+    let (help_size, info_size) = get_font_sizes(state.work_size);
+
     let help_text = concat!(
         "Controls:\n\n",
         "Swipe left to start a\nnew painting\n\n",
@@ -768,7 +799,7 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
         state.work_size,
         help_text,
         state.help_font,
-        24.0,
+        help_size,
         0.04,
         Color::WHITE,
         HELP_PANEL_COLOR,
@@ -786,7 +817,7 @@ fn draw_touch_help(draw: &mut Draw, state: &mut State) {
         state.work_size,
         info_text,
         state.help_font,
-        16.0,
+        info_size,
         0.02,
         Color::WHITE,
         HELP_PANEL_COLOR,

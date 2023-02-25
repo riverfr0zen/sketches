@@ -132,6 +132,56 @@ pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
 }
 
 
+pub fn scale_font_fullcomp(default_size: f32, work_size: Vec2) -> f32 {
+    if (work_size.x >= ScreenDimensions::RES_QHD.x
+        && work_size.x < ScreenDimensions::RES_720P.x
+        && work_size.y >= ScreenDimensions::RES_QHD.y
+        && work_size.y < ScreenDimensions::RES_720P.y)
+    {
+        // log::debug!("QHD, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 1.5;
+    }
+    if (work_size.x >= ScreenDimensions::RES_720P.x
+        && work_size.x < ScreenDimensions::RES_HDPLUS.x
+        && work_size.y >= ScreenDimensions::RES_720P.y
+        && work_size.y < ScreenDimensions::RES_HDPLUS.y)
+    {
+        // log::debug!("720p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 1.75;
+    }
+    if (work_size.x >= ScreenDimensions::RES_HDPLUS.x
+        && work_size.x < ScreenDimensions::RES_1080P.x
+        && work_size.y >= ScreenDimensions::RES_HDPLUS.y
+        && work_size.y < ScreenDimensions::RES_1080P.y)
+    {
+        // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 2.2;
+    }
+    if (work_size.x >= ScreenDimensions::RES_1080P.x
+        && work_size.x < ScreenDimensions::RES_1440P.x
+        && work_size.y >= ScreenDimensions::RES_1080P.y
+        && work_size.y < ScreenDimensions::RES_1440P.y)
+    {
+        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 2.5;
+    }
+    if (work_size.x >= ScreenDimensions::RES_1440P.x
+        && work_size.x < ScreenDimensions::RES_4K.x
+        && work_size.y >= ScreenDimensions::RES_1440P.y
+        && work_size.y < ScreenDimensions::RES_4K.y)
+    {
+        // log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 3.0;
+    }
+    if (work_size.x >= ScreenDimensions::RES_4K.x && work_size.y >= ScreenDimensions::RES_4K.y) {
+        // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 4.5;
+    }
+    // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
+    return default_size;
+}
+
+
 pub fn modal(
     draw: &mut Draw,
     work_size: Vec2,
@@ -144,7 +194,6 @@ pub fn modal(
     vertical_position: Option<f32>,
     horizontal_position: Option<f32>,
 ) -> Rect {
-    let font_size = scale_font(font_size, work_size);
     let bg_padding = work_size.x.max(work_size.y) * padding;
     let bg_padding_half = bg_padding * 0.5;
     draw.text(&font, text)
