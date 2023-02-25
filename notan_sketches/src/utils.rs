@@ -133,47 +133,47 @@ pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
 
 
 pub fn scale_font_fullcomp(default_size: f32, work_size: Vec2) -> f32 {
-    if (work_size.x >= ScreenDimensions::RES_QHD.x
+    if work_size.x >= ScreenDimensions::RES_QHD.x
         && work_size.x < ScreenDimensions::RES_720P.x
         && work_size.y >= ScreenDimensions::RES_QHD.y
-        && work_size.y < ScreenDimensions::RES_720P.y)
+        && work_size.y < ScreenDimensions::RES_720P.y
     {
         // log::debug!("QHD, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 1.5;
     }
-    if (work_size.x >= ScreenDimensions::RES_720P.x
+    if work_size.x >= ScreenDimensions::RES_720P.x
         && work_size.x < ScreenDimensions::RES_HDPLUS.x
         && work_size.y >= ScreenDimensions::RES_720P.y
-        && work_size.y < ScreenDimensions::RES_HDPLUS.y)
+        && work_size.y < ScreenDimensions::RES_HDPLUS.y
     {
         // log::debug!("720p, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 1.75;
     }
-    if (work_size.x >= ScreenDimensions::RES_HDPLUS.x
+    if work_size.x >= ScreenDimensions::RES_HDPLUS.x
         && work_size.x < ScreenDimensions::RES_1080P.x
         && work_size.y >= ScreenDimensions::RES_HDPLUS.y
-        && work_size.y < ScreenDimensions::RES_1080P.y)
+        && work_size.y < ScreenDimensions::RES_1080P.y
     {
         // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 2.2;
     }
-    if (work_size.x >= ScreenDimensions::RES_1080P.x
+    if work_size.x >= ScreenDimensions::RES_1080P.x
         && work_size.x < ScreenDimensions::RES_1440P.x
         && work_size.y >= ScreenDimensions::RES_1080P.y
-        && work_size.y < ScreenDimensions::RES_1440P.y)
+        && work_size.y < ScreenDimensions::RES_1440P.y
     {
         // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 2.5;
     }
-    if (work_size.x >= ScreenDimensions::RES_1440P.x
+    if work_size.x >= ScreenDimensions::RES_1440P.x
         && work_size.x < ScreenDimensions::RES_4K.x
         && work_size.y >= ScreenDimensions::RES_1440P.y
-        && work_size.y < ScreenDimensions::RES_4K.y)
+        && work_size.y < ScreenDimensions::RES_4K.y
     {
         // log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 3.0;
     }
-    if (work_size.x >= ScreenDimensions::RES_4K.x && work_size.y >= ScreenDimensions::RES_4K.y) {
+    if work_size.x >= ScreenDimensions::RES_4K.x && work_size.y >= ScreenDimensions::RES_4K.y {
         // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
         return default_size * 4.5;
     }
@@ -233,16 +233,25 @@ pub fn modal(
         width: help_bounds.width + bg_padding,
         height: help_bounds.height + bg_padding,
     };
+
+    draw.rect(
+        (panel_rect.x, panel_rect.y),
+        (panel_rect.width, panel_rect.height),
+    )
+    .stroke_color(Color::WHITE)
+    .stroke(5.0)
+    .corner_radius(bg_padding)
+    .alpha(0.5);
+
     draw.rect(
         (panel_rect.x, panel_rect.y),
         (panel_rect.width, panel_rect.height),
     )
     .fill_color(bg_color)
     .fill()
-    .stroke_color(Color::WHITE)
-    .stroke(1.0)
     .corner_radius(bg_padding)
-    .alpha(0.8);
+    .alpha(0.6);
+
     draw.text(&font, text)
         .position(panel_x + text_x_offset, panel_y + text_y_offset)
         .size(font_size)
