@@ -4,8 +4,10 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, get_rng, CapturingTexture, ScreenDimensions,
+    get_common_win_config, get_draw_setup, get_rng, modal, scale_font_fullcomp, CapturingTexture,
+    ScreenDimensions,
 };
+use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
 use std::ops::RangeInclusive;
 use uuid::Uuid;
@@ -73,6 +75,7 @@ const PALETTE: [Color; 21] = [
     colors::SCARLET,
     colors::SALMON,
 ];
+const HELP_PANEL_COLOR: Color = Color::GRAY;
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 
 
@@ -287,6 +290,11 @@ pub struct State {
     pub settings: Settings,
     pub reinit_next_draw: bool,
     pub capture_next_draw: bool,
+    pub touch: TouchState,
+    show_help: bool,
+    show_touch_help: bool,
+    has_shown_help: bool,
+    help_font: Font,
 }
 
 
@@ -399,13 +407,25 @@ fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, Captur
     (rng, capture)
 }
 
-
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
-    log::info!(
-        "Getting work size from screen: {:?}",
-        app.window().screen_size()
+    log::debug!(
+        "Screen size: {:?} Container size: {:?} dpi {} limits {:?}",
+        app.window().screen_size(),
+        app.window().container_size(),
+        app.window().dpi(),
+        gfx.limits(),
     );
-    let (screen_width, screen_height) = app.window().screen_size();
+    let (mut screen_width, mut screen_height) = app.window().screen_size();
+    // let work_size = vec2(screen_width as f32, screen_height as f32);
+    if gfx.limits().max_texture_size as i32 / screen_width.max(screen_height) > 2 {
+        screen_width = screen_width * 2;
+        screen_height = screen_height * 2;
+        log::debug!(
+            "Screen 'super sampled' x 2 to w {} h {}",
+            screen_width,
+            screen_height,
+        );
+    }
     let work_size = vec2(screen_width as f32, screen_height as f32);
 
     let (mut rng, capture) = init_rng_and_capture(gfx, &work_size);
@@ -425,7 +445,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         &scratch_brush,
     ];
 
-    // let settings = Settings::default();
+    let help_font = gfx
+        .create_font(include_bytes!("assets/fonts/ubuntu/Ubuntu-R.ttf"))
+        .unwrap();
+
     let settings = Settings::randomize(&mut rng, &work_size, brushes);
     log::debug!("With settings: {:#?}", settings);
     State {
@@ -444,8 +467,14 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         settings,
         reinit_next_draw: false,
         capture_next_draw: false,
+        touch: TouchState::default(),
+        show_help: false,
+        show_touch_help: false,
+        has_shown_help: false,
+        help_font,
     }
 }
+
 
 fn spawn_random(state: &mut State) {
     state.nodes.push(Node {
@@ -505,6 +534,47 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
     }
 }
 
+fn open_source_code(app: &mut App) {
+    {
+        // log::debug!("opening source code...");
+        let src_url = "https://github.com/riverfr0zen/sketches/blob/main/notan_sketches/examples/radial_pointillist.rs";
+        app.backend.open_link(src_url, true);
+    }
+}
+
+
+fn event(app: &mut App, state: &mut State, evt: Event) {
+    let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
+    // log::debug!("gesture found: {:?}", gesture);
+
+    if gesture.is_some() {
+        if !state.has_shown_help {
+            state.show_touch_help = true;
+            state.has_shown_help = true;
+        } else {
+            match gesture {
+                Some(TouchGesture::SwipeLeft) => state.reinit_next_draw = true,
+                Some(TouchGesture::SwipeDown) => state.capture_next_draw = true,
+                Some(TouchGesture::SwipeUp) => open_source_code(app),
+                Some(TouchGesture::Tap) => state.show_touch_help = !state.show_touch_help,
+                _ => {}
+            }
+        }
+    }
+
+    match evt {
+        Event::MouseUp { .. } => {
+            if !state.has_shown_help {
+                state.show_help = true;
+                state.has_shown_help = true;
+            } else {
+                state.show_help = !state.show_help;
+            }
+        }
+        _ => {}
+    }
+}
+
 
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::R) {
@@ -515,6 +585,11 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::C) {
         log::debug!("C");
         state.capture_next_draw = true;
+    }
+
+    if app.keyboard.was_pressed(KeyCode::S) {
+        log::debug!("S");
+        open_source_code(app);
     }
 
 
@@ -650,6 +725,108 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 }
 
 
+/// Returns font sizes adjusted for portrait vs landscape
+fn get_font_sizes(work_size: Vec2) -> (f32, f32) {
+    let portrait = work_size.x < work_size.y;
+    if portrait {
+        return (
+            scale_font_fullcomp(42.0, work_size),
+            scale_font_fullcomp(32.0, work_size),
+        );
+        // return (24.0 * 1.875, 12.0 * 1.875);
+    }
+    (
+        scale_font_fullcomp(32.0, work_size),
+        scale_font_fullcomp(24.0, work_size),
+    )
+}
+
+
+fn draw_help(draw: &mut Draw, state: &mut State) {
+    let (help_size, info_size) = get_font_sizes(state.work_size);
+    let help_text = concat!(
+        "Controls:\n\n",
+        "Press 'R' to start a new painting\n\n",
+        "Press 'C' to capture image\n\n",
+        "Press 'S' to view code\n\n",
+        "Click mouse to close help\n",
+    );
+    let help_bounds = modal(
+        draw,
+        state.work_size,
+        help_text,
+        state.help_font,
+        help_size,
+        0.04,
+        Color::WHITE,
+        HELP_PANEL_COLOR,
+        None,
+        None,
+    );
+
+    let info_text = concat!(
+        "'Radial Pointillist'\n",
+        "Copyright 2023 Irfan Baig\n",
+        "License: MIT"
+    );
+    modal(
+        draw,
+        state.work_size,
+        info_text,
+        state.help_font,
+        info_size,
+        0.02,
+        Color::WHITE,
+        HELP_PANEL_COLOR,
+        Some(help_bounds.y + help_bounds.height + state.work_size.x.max(state.work_size.y) * 0.02),
+        None,
+    );
+}
+
+
+fn draw_touch_help(draw: &mut Draw, state: &mut State) {
+    let (help_size, info_size) = get_font_sizes(state.work_size);
+
+    let help_text = concat!(
+        "Controls:\n\n",
+        "Swipe left to start a\nnew painting\n\n",
+        "Swipe down to save image\n\n",
+        "Swipe up to view code\n\n",
+        "Tap to close help\n",
+    );
+    let help_bounds = modal(
+        draw,
+        state.work_size,
+        help_text,
+        state.help_font,
+        help_size,
+        0.04,
+        Color::WHITE,
+        HELP_PANEL_COLOR,
+        None,
+        None,
+    );
+
+    let info_text = concat!(
+        "'Radial Pointillist'\n",
+        "Copyright 2023 Irfan Baig\n",
+        "License: MIT"
+    );
+    modal(
+        draw,
+        state.work_size,
+        info_text,
+        state.help_font,
+        info_size,
+        0.02,
+        Color::WHITE,
+        HELP_PANEL_COLOR,
+        Some(help_bounds.y + help_bounds.height + state.work_size.x.max(state.work_size.y) * 0.02),
+        None,
+    );
+}
+
+
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.reinit_next_draw {
         state.reinitialize_drawing(gfx);
@@ -673,8 +850,17 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let rdraw = &mut get_draw_setup(gfx, state.work_size, true, Color::GRAY);
     rdraw.image(&state.capture.render_texture);
 
+    if state.show_help {
+        // log::debug!("Showing help");
+        draw_help(rdraw, state);
+    }
+
+    if state.show_touch_help {
+        // log::debug!("Showing touch help");
+        draw_touch_help(rdraw, state);
+    }
+
     gfx.render(rdraw);
-    // log::debug!("fps: {}", app.timer.fps().round());
 }
 
 
@@ -702,7 +888,9 @@ fn main() -> Result<(), String> {
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
-        .draw(draw)
+        .touch_as_mouse(false)
+        .event(event)
         .update(update)
+        .draw(draw)
         .build()
 }

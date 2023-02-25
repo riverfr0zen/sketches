@@ -1,7 +1,7 @@
 use super::color_transition::ColorTransition;
-use super::{get_optimal_text_color, scale_font, EmoVisualizer, VisualizerSelection};
+use super::{get_optimal_text_color, EmoVisualizer, VisualizerSelection};
 use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, Sentiment, TopEmotionsModel};
-use crate::utils::get_rng;
+use crate::utils::{get_rng, scale_font};
 use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};

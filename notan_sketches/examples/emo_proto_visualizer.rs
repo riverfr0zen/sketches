@@ -6,7 +6,6 @@ use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::emotion_bg_visualizer::get_work_size;
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
-use notan_sketches::emotion_bg_visualizer::visualizers::scale_font;
 use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};

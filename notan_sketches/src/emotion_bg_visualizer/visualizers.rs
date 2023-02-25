@@ -2,7 +2,7 @@ pub mod color_transition;
 pub mod tile;
 
 use crate::emotion::EmocatTextAnalysis;
-use crate::utils::ScreenDimensions;
+use crate::utils::{scale_font, ScreenDimensions};
 use notan::draw::*;
 use notan::math::Vec2;
 use notan::prelude::*;
@@ -110,42 +110,4 @@ pub fn get_optimal_text_color(bgcolor: &Color) -> Color {
         return Color::WHITE;
     }
     Color::BLACK
-}
-
-
-/// Scale the font according to the current work size. Quite simple right now,
-/// probably lots of room for improving this.
-///
-/// These return values were decided by comparing sizes on my own setup. Needs testing
-/// across devices.
-///
-/// @TODO: What about portrait dimensions?
-pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
-    if work_size.x >= ScreenDimensions::RES_QHD.x && work_size.x < ScreenDimensions::RES_720P.x {
-        // log::debug!("QHD, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 1.5;
-    }
-    if work_size.x >= ScreenDimensions::RES_720P.x && work_size.x < ScreenDimensions::RES_HDPLUS.x {
-        // log::debug!("720p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 1.75;
-    }
-    if work_size.x >= ScreenDimensions::RES_HDPLUS.x && work_size.x < ScreenDimensions::RES_1080P.x
-    {
-        // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 2.2;
-    }
-    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x {
-        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 2.5;
-    }
-    if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
-        // log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 3.0;
-    }
-    if work_size.x >= ScreenDimensions::RES_4K.x {
-        // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
-        return default_size * 4.5;
-    }
-    // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
-    return default_size;
 }

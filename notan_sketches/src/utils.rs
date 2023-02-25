@@ -1,6 +1,6 @@
 use notan::draw::*;
 use notan::log;
-use notan::math::{vec2, vec3, Mat4, Vec2};
+use notan::math::{vec2, vec3, Mat4, Rect, Vec2};
 use notan::prelude::*;
 
 
@@ -91,6 +91,166 @@ impl ScreenDimensions {
     pub const RES_4KISH: Vec2 = vec2(3500.0, 1800.0);
     pub const RES_5K: Vec2 = vec2(5120.0, 2880.0);
     pub const RES_8K: Vec2 = vec2(7680.0, 4320.0);
+}
+
+
+/// Scale the font according to the current work size. Quite simple right now,
+/// probably lots of room for improving this.
+///
+/// These return values were decided by comparing sizes on my own setup. Needs testing
+/// across devices.
+///
+/// @TODO: What about portrait dimensions?
+pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
+    if work_size.x >= ScreenDimensions::RES_QHD.x && work_size.x < ScreenDimensions::RES_720P.x {
+        // log::debug!("QHD, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 1.5;
+    }
+    if work_size.x >= ScreenDimensions::RES_720P.x && work_size.x < ScreenDimensions::RES_HDPLUS.x {
+        // log::debug!("720p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 1.75;
+    }
+    if work_size.x >= ScreenDimensions::RES_HDPLUS.x && work_size.x < ScreenDimensions::RES_1080P.x
+    {
+        // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 2.2;
+    }
+    if work_size.x >= ScreenDimensions::RES_1080P.x && work_size.x < ScreenDimensions::RES_1440P.x {
+        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 2.5;
+    }
+    if work_size.x >= ScreenDimensions::RES_1440P.x && work_size.x < ScreenDimensions::RES_4K.x {
+        // log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 3.0;
+    }
+    if work_size.x >= ScreenDimensions::RES_4K.x {
+        // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 4.5;
+    }
+    // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
+    return default_size;
+}
+
+
+pub fn scale_font_fullcomp(default_size: f32, work_size: Vec2) -> f32 {
+    if (work_size.x >= ScreenDimensions::RES_QHD.x
+        && work_size.x < ScreenDimensions::RES_720P.x
+        && work_size.y >= ScreenDimensions::RES_QHD.y
+        && work_size.y < ScreenDimensions::RES_720P.y)
+    {
+        // log::debug!("QHD, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 1.5;
+    }
+    if (work_size.x >= ScreenDimensions::RES_720P.x
+        && work_size.x < ScreenDimensions::RES_HDPLUS.x
+        && work_size.y >= ScreenDimensions::RES_720P.y
+        && work_size.y < ScreenDimensions::RES_HDPLUS.y)
+    {
+        // log::debug!("720p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 1.75;
+    }
+    if (work_size.x >= ScreenDimensions::RES_HDPLUS.x
+        && work_size.x < ScreenDimensions::RES_1080P.x
+        && work_size.y >= ScreenDimensions::RES_HDPLUS.y
+        && work_size.y < ScreenDimensions::RES_1080P.y)
+    {
+        // log::debug!("HDPLus, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 2.2;
+    }
+    if (work_size.x >= ScreenDimensions::RES_1080P.x
+        && work_size.x < ScreenDimensions::RES_1440P.x
+        && work_size.y >= ScreenDimensions::RES_1080P.y
+        && work_size.y < ScreenDimensions::RES_1440P.y)
+    {
+        // log::debug!("1080p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 2.5;
+    }
+    if (work_size.x >= ScreenDimensions::RES_1440P.x
+        && work_size.x < ScreenDimensions::RES_4K.x
+        && work_size.y >= ScreenDimensions::RES_1440P.y
+        && work_size.y < ScreenDimensions::RES_4K.y)
+    {
+        // log::debug!("1440p, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 3.0;
+    }
+    if (work_size.x >= ScreenDimensions::RES_4K.x && work_size.y >= ScreenDimensions::RES_4K.y) {
+        // log::debug!("4k, x:{} y:{}", work_size.x, work_size.y);
+        return default_size * 4.5;
+    }
+    // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
+    return default_size;
+}
+
+
+pub fn modal(
+    draw: &mut Draw,
+    work_size: Vec2,
+    text: &str,
+    font: Font,
+    font_size: f32,
+    padding: f32,
+    font_color: Color,
+    bg_color: Color,
+    vertical_position: Option<f32>,
+    horizontal_position: Option<f32>,
+) -> Rect {
+    let bg_padding = work_size.x.max(work_size.y) * padding;
+    let bg_padding_half = bg_padding * 0.5;
+    draw.text(&font, text)
+        .position(0.0, 0.0)
+        .size(font_size)
+        .color(font_color)
+        .h_align_center()
+        .v_align_middle()
+        .alpha(0.0);
+    let help_bounds = draw.last_text_bounds();
+
+
+    let text_y_offset = help_bounds.height * 0.5 + bg_padding_half;
+    let panel_y: f32;
+    if vertical_position.is_some() {
+        panel_y = vertical_position.unwrap();
+    } else {
+        // Text is positioned centrally, and if no position is given, we want
+        // it to be in the center. So we need to apply an offset to position the
+        // panel relative to the centrally positioned text.
+        panel_y = work_size.y * 0.5 - text_y_offset;
+    }
+    let text_x_offset = help_bounds.width * 0.5 + bg_padding_half;
+    let panel_x: f32;
+    if horizontal_position.is_some() {
+        panel_x = horizontal_position.unwrap();
+    } else {
+        // Text is positioned centrally, and if no position is given, we want
+        // it to be in the center. So we need to apply an offset to position the
+        // panel relative to the centrally positioned text.
+        panel_x = work_size.x * 0.5 - text_x_offset;
+    }
+
+    let panel_rect = Rect {
+        x: panel_x,
+        y: panel_y,
+        width: help_bounds.width + bg_padding,
+        height: help_bounds.height + bg_padding,
+    };
+    draw.rect(
+        (panel_rect.x, panel_rect.y),
+        (panel_rect.width, panel_rect.height),
+    )
+    .fill_color(bg_color)
+    .fill()
+    .stroke_color(Color::WHITE)
+    .stroke(1.0)
+    .corner_radius(bg_padding)
+    .alpha(0.8);
+    draw.text(&font, text)
+        .position(panel_x + text_x_offset, panel_y + text_y_offset)
+        .size(font_size)
+        .color(font_color)
+        .h_align_center()
+        .v_align_middle();
+
+    panel_rect
 }
 
 
