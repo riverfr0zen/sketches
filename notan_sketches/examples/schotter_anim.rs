@@ -7,9 +7,9 @@ use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
-use notan_sketches::colors::{BANANA, CARMINE, GRAYPURP, PEACOCK, SAFFRON, SCARLET};
+use notan_sketches::colors::{BANANA, CARMINE, PEACOCK, SAFFRON, SCARLET};
 use notan_sketches::schotter::*;
-use notan_sketches::utils::{get_common_win_config, ScreenDimensions};
+use notan_sketches::utils::{get_common_win_config, set_html_bgcolor, ScreenDimensions};
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
@@ -82,6 +82,8 @@ fn main() -> Result<(), String> {
         .vsync(true)
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32)
         .title("Schotter (animated)");
+
+    set_html_bgcolor(PEACOCK);
 
     // Solid variant 2 animated
     notan::init_with(init)

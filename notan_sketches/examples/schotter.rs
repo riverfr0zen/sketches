@@ -8,7 +8,7 @@ use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::schotter::*;
-use notan_sketches::utils::{get_common_win_config, ScreenDimensions};
+use notan_sketches::utils::{get_common_win_config, set_html_bgcolor, ScreenDimensions};
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
@@ -30,14 +30,14 @@ const RAND_STEP: f32 = 0.022;
 // const DAMPEN: f32 = 0.045;
 const DAMPEN: f32 = 4.5;
 // const DAMPEN: f32 = 450.0;
-
+const CLEAR_COLOR: Color = Color::WHITE;
 
 fn draw(
     gfx: &mut Graphics,
     state: &mut State,
     // app: &mut App,
 ) {
-    draw_basic(gfx, state, WORK_SIZE, DAMPEN)
+    draw_basic(gfx, state, WORK_SIZE, CLEAR_COLOR, DAMPEN)
 }
 
 
@@ -53,6 +53,8 @@ fn main() -> Result<(), String> {
         .vsync(true)
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32)
         .title("Schotter");
+
+    set_html_bgcolor(CLEAR_COLOR);
 
     // Basic reproduction
     notan::init_with(init)

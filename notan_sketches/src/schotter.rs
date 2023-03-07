@@ -6,7 +6,6 @@ use notan::prelude::*;
 
 const STROKE_WIDTH: f32 = 4.0;
 
-
 // Visualization modifier
 pub enum VizMod {
     BASIC,
@@ -268,11 +267,12 @@ pub fn draw_basic(
     gfx: &mut Graphics,
     state: &mut State,
     work_size: Vec2,
+    clear_color: Color,
     dampen: f32,
     // app: &mut App,
 ) {
     if !state.freeze {
-        let mut draw = get_draw_setup(gfx, work_size, true, Color::WHITE);
+        let mut draw = get_draw_setup(gfx, work_size, true, clear_color);
 
         // Cumulative rotation value
         let mut rand_sum = 0.0;
@@ -309,12 +309,13 @@ pub fn draw_solid(
     state: &mut State,
     // app: &mut App,
     work_size: Vec2,
+    clear_color: Color,
     dampen: f32,
     box1_color: Color,
 ) {
     if !state.freeze {
         // let mut draw = get_draw_setup(gfx, WORK_SIZE, true, MAHOGANY);
-        let mut draw = get_draw_setup(gfx, work_size, true, Color::GRAY);
+        let mut draw = get_draw_setup(gfx, work_size, true, clear_color);
 
         // Cumulative rotation value
         let mut rand_sum = 0.0;
@@ -379,8 +380,8 @@ pub fn _draw_solid2(
     state: &mut State,
     // app: &mut App,
     work_size: Vec2,
-    dampen: f32,
     clear_color: Color,
+    dampen: f32,
     box1_color: Color,
     box2_color: Color,
     box3_color: Color,
@@ -507,8 +508,8 @@ pub fn draw_solid2(
         gfx,
         state,
         work_size,
-        dampen,
         clear_color,
+        dampen,
         box1_color,
         box2_color,
         box3_color,
@@ -534,8 +535,8 @@ pub fn draw_solid2_anim(
         gfx,
         state,
         work_size,
-        dampen,
         clear_color,
+        dampen,
         box1_color,
         box2_color,
         box3_color,

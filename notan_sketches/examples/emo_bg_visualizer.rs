@@ -6,7 +6,9 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::emotion::*;
-use notan_sketches::utils::{get_common_win_config, get_draw_setup, scale_font, ScreenDimensions};
+use notan_sketches::utils::{
+    get_common_win_config, get_draw_setup, scale_font, set_html_bgcolor, ScreenDimensions,
+};
 // use serde_json::{Result as JsonResult, Value};
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
@@ -781,6 +783,8 @@ fn main() -> Result<(), String> {
 
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
+
+    set_html_bgcolor(CLEAR_COLOR);
 
     notan::init_with(init)
         .add_config(log::LogConfig::debug())

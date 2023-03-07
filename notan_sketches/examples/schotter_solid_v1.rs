@@ -9,7 +9,7 @@ use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::colors::CARMINE;
 use notan_sketches::schotter::*;
-use notan_sketches::utils::{get_common_win_config, ScreenDimensions};
+use notan_sketches::utils::{get_common_win_config, set_html_bgcolor, ScreenDimensions};
 
 // const WORK_SIZE: Vec2 = ScreenDimensions::DEFAULT;
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
@@ -31,6 +31,7 @@ const RAND_STEP: f32 = 0.022;
 // const DAMPEN: f32 = 0.045;
 const DAMPEN: f32 = 4.5;
 // const DAMPEN: f32 = 450.0;
+const CLEAR_COLOR: Color = Color::GRAY;
 
 
 fn init(gfx: &mut Graphics) -> State {
@@ -43,7 +44,7 @@ fn draw(
     state: &mut State,
     // app: &mut App,
 ) {
-    draw_solid(gfx, state, WORK_SIZE, DAMPEN, CARMINE)
+    draw_solid(gfx, state, WORK_SIZE, CLEAR_COLOR, DAMPEN, CARMINE)
 }
 
 
@@ -54,6 +55,8 @@ fn main() -> Result<(), String> {
         .vsync(true)
         .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32)
         .title("Schotter (solid variant 1)");
+
+    set_html_bgcolor(CLEAR_COLOR);
 
     // Solid variant 1
     notan::init_with(init)

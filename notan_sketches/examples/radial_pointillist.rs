@@ -4,14 +4,15 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, get_rng, modal, scale_font_fullcomp, CapturingTexture,
-    ScreenDimensions,
+    get_common_win_config, get_draw_setup, get_rng, modal, scale_font_fullcomp, set_html_bgcolor,
+    CapturingTexture, ScreenDimensions,
 };
 use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
 use std::ops::RangeInclusive;
 use uuid::Uuid;
 
+const CLEAR_COLOR: Color = Color::GRAY;
 const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
@@ -871,7 +872,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         }
     }
 
-    let rdraw = &mut get_draw_setup(gfx, state.work_size, true, Color::BLACK);
+    let rdraw = &mut get_draw_setup(gfx, state.work_size, true, CLEAR_COLOR);
     rdraw.image(&state.capture.render_texture);
 
     if state.show_help {
@@ -906,6 +907,7 @@ fn main() -> Result<(), String> {
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
 
+    set_html_bgcolor(CLEAR_COLOR);
 
     // notan::init()
     notan::init_with(init)

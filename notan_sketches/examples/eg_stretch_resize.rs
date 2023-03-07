@@ -9,8 +9,9 @@
 use notan::draw::*;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan_sketches::utils::get_scaling_projection;
+use notan_sketches::utils::{get_scaling_projection, set_html_bgcolor};
 
+const CLEAR_COLOR: Color = Color::BLACK;
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
 
@@ -18,6 +19,7 @@ const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = WindowConfig::default().maximized(true).resizable(true);
+    set_html_bgcolor(CLEAR_COLOR);
 
     notan::init()
         .add_config(win_config)
@@ -35,7 +37,7 @@ fn draw(gfx: &mut Graphics) {
     let projection = get_scaling_projection(win_size, WORK_SIZE);
 
     let mut draw = gfx.create_draw();
-    draw.clear(Color::BLACK);
+    draw.clear(CLEAR_COLOR);
 
     // We set our projection here
     // Anything draw bellow will keep the aspect ratio

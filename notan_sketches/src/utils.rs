@@ -2,6 +2,8 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, vec3, Mat4, Rect, Vec2};
 use notan::prelude::*;
+#[cfg(target_arch = "wasm32")]
+use web_sys;
 
 
 /// This returns a projection that keeps the aspect ratio while scaling
@@ -42,6 +44,26 @@ pub fn get_scaling_projection(win_size: Vec2, work_size: Vec2) -> Mat4 {
 }
 
 
+pub fn set_html_bgcolor(clear_color: Color) {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let window = web_sys::window().expect("global window does not exists");
+        let document = window.document().expect("expecting a document on window");
+        let body = document.body().expect("document expected to have a body");
+        let _ = body.style().set_property(
+            "background-color",
+            format!(
+                "rgb({}, {}, {})",
+                clear_color.r * 255.0,
+                clear_color.g * 255.0,
+                clear_color.b * 255.0
+            )
+            .as_str(),
+        );
+    }
+}
+
+
 /// Set up a Draw with some common basics
 pub fn get_draw_setup(
     gfx: &mut Graphics,
@@ -51,6 +73,7 @@ pub fn get_draw_setup(
 ) -> Draw {
     let (width, height) = gfx.size();
     let win_size = vec2(width as f32, height as f32);
+
 
     let mut draw = gfx.create_draw();
     draw.clear(clear_color);
