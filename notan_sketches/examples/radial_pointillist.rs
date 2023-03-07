@@ -41,7 +41,7 @@ const NODES_ROTATED: usize = 1024;
 // 500KB: 512000
 // 1 MB: 1048576
 // 10 MB: 10485760
-const MAX_NODES_BYTES: u32 = 102400;
+const MAX_NODES_BYTES: u32 = 10485760;
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.5, 0.5, 0.5);
 // const CIRCLE_TEXTURE_COLOR: Color = Color::from_rgb(0.7, 0.7, 0.7);
 const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
@@ -291,6 +291,7 @@ pub struct State {
     pub reinit_next_draw: bool,
     pub capture_next_draw: bool,
     pub touch: TouchState,
+    enable_pointer_events: bool,
     show_help: bool,
     show_touch_help: bool,
     has_shown_help: bool,
@@ -479,6 +480,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         reinit_next_draw: false,
         capture_next_draw: false,
         touch: TouchState::default(),
+        enable_pointer_events: false,
         show_help: false,
         show_touch_help: false,
         has_shown_help: false,
@@ -558,6 +560,29 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
     let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
     // log::debug!("gesture found: {:?}", gesture);
 
+
+    match evt {
+        Event::MouseEnter { .. } => {
+            // log::debug!("mouse entered");
+            state.enable_pointer_events = true;
+        }
+        Event::MouseLeft { .. } => {
+            // log::debug!("mouse left");
+            state.enable_pointer_events = false;
+        }
+        Event::MouseUp { .. } => {
+            if state.enable_pointer_events {
+                if !state.has_shown_help {
+                    state.show_help = true;
+                    state.has_shown_help = true;
+                } else {
+                    state.show_help = !state.show_help;
+                }
+            }
+        }
+        _ => {}
+    }
+
     if gesture.is_some() {
         if !state.has_shown_help {
             state.show_touch_help = true;
@@ -571,18 +596,6 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
                 _ => {}
             }
         }
-    }
-
-    match evt {
-        Event::MouseUp { .. } => {
-            if !state.has_shown_help {
-                state.show_help = true;
-                state.has_shown_help = true;
-            } else {
-                state.show_help = !state.show_help;
-            }
-        }
-        _ => {}
     }
 }
 
@@ -858,7 +871,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         }
     }
 
-    let rdraw = &mut get_draw_setup(gfx, state.work_size, true, Color::GRAY);
+    let rdraw = &mut get_draw_setup(gfx, state.work_size, true, Color::BLACK);
     rdraw.image(&state.capture.render_texture);
 
     if state.show_help {
