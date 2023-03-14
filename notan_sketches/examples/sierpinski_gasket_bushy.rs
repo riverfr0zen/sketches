@@ -3,7 +3,7 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::fractals::sierpinski::{draw_bushy_gasket, State};
-use notan_sketches::utils::{get_common_win_config, get_draw_setup};
+use notan_sketches::utils::{get_common_win_config, get_draw_setup, set_html_bgcolor};
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
@@ -54,7 +54,7 @@ fn draw(
 fn main() -> Result<(), String> {
     let mut win_config = get_common_win_config();
     win_config = win_config.title("sierpinski gasket (bushy)");
-
+    set_html_bgcolor(Color::BLACK);
     // notan::init()
     // notan::init_with(init)
     notan::init_with(State::default)

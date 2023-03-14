@@ -3,7 +3,7 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::fractals::sierpinski::{draw_gasket, State};
-use notan_sketches::utils::{get_common_win_config, get_draw_setup};
+use notan_sketches::utils::{get_common_win_config, get_draw_setup, set_html_bgcolor};
 
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
@@ -52,7 +52,7 @@ fn draw(
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = get_common_win_config();
-
+    set_html_bgcolor(Color::WHITE);
     // notan::init()
     // notan::init_with(init)
     notan::init_with(State::default)
