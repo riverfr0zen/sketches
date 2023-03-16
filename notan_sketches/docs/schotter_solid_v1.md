@@ -1,10 +1,10 @@
 ---
-published: '2023-03-14T12:17:48.609181-04:00'
+published: '2023-03-14T12:10:59.780459-04:00'
 ---
 
 "Schotter" is a computer art work created by [George Nees](https://en.wikipedia.org/wiki/Georg_Nees) in the 1960s. Nees is considered a pioneer in generative computer graphics, and the piece examines the relationship between order and disorder with the use of random number generators. 
 
-This piece is a basic reproduction of the original, created with the [notan crate](https://crates.io/crates/notan) in the Rust programming language. 
+This piece is a variation on the original that simply adds color fills. It was created with the [notan crate](https://crates.io/crates/notan) in the Rust programming language. 
 
 **Controls**: Press the 'R' button to redraw the piece 
 
