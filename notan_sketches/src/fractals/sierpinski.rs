@@ -40,14 +40,39 @@ pub fn event(app: &mut App, state: &mut State, event: Event) {
                 log::debug!("state.max_depth increased: {}", state.max_depth);
             }
             Some(TouchGesture::SwipeDown) => {
-                state.max_depth -= 1;
-                log::debug!("state.max_depth decreased: {}", state.max_depth);
+                if state.max_depth > 0 {
+                    state.max_depth -= 1;
+                    log::debug!("state.max_depth decreased: {}", state.max_depth);
+                }
             }
             Some(TouchGesture::SwipeLeft) => {
                 state.max_depth = State::default().max_depth;
                 log::debug!("state.max_depth reset: {}", state.max_depth);
             }
             _ => {}
+        }
+    }
+}
+
+
+pub fn update(app: &mut App, state: &mut State) {
+    if state.events_focus.has_focus() {
+        // if app.keyboard.is_down(KeyCode::W) {
+        //     state.y -= MOVE_SPEED * app.timer.delta_f32();
+        // }
+        if app.keyboard.was_pressed(KeyCode::Up) {
+            state.max_depth += 1;
+            log::debug!("state.max_depth increased: {}", state.max_depth);
+        }
+
+        if app.keyboard.was_pressed(KeyCode::Down) && state.max_depth > 0 {
+            state.max_depth -= 1;
+            log::debug!("state.max_depth decreased: {}", state.max_depth);
+        }
+
+        if app.keyboard.was_pressed(KeyCode::R) {
+            state.max_depth = State::default().max_depth;
+            log::debug!("state.max_depth reset: {}", state.max_depth);
         }
     }
 }

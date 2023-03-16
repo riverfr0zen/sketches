@@ -2,7 +2,7 @@
 published: '2023-03-14T13:19:17.673173-04:00'
 ---
 
-A variation of the [Sierpinski Gasket](https://en.wikipedia.org/wiki/Sierpi%C5%84ski_triangle) fractal. The fractal is a basic example of a self-similar set -- a mathematically generated pattern that repeats on every iteration, infinitely.
+A variation on the [Sierpinski Gasket](sierpinski_gasket.html) fractal. 
 
 **Controls:**
 * Press the 'Up' Key or Swipe Up to increase number of iterations
