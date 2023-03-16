@@ -368,3 +368,26 @@ impl CapturingTexture {
         }
     }
 }
+
+
+pub struct EventsFocus(pub bool);
+
+impl EventsFocus {
+    pub fn has_focus(&self) -> bool {
+        return self.0;
+    }
+
+    pub fn detect(&mut self, evt: &Event) {
+        match evt {
+            Event::MouseEnter { .. } => {
+                log::debug!("EventsFocus: mouse entered");
+                self.0 = true;
+            }
+            Event::MouseLeft { .. } => {
+                log::debug!("EventsFocus: mouse left");
+                self.0 = false;
+            }
+            _ => {}
+        }
+    }
+}

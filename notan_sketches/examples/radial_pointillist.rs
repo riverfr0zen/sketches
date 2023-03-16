@@ -5,7 +5,7 @@ use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, modal, scale_font_fullcomp, set_html_bgcolor,
-    CapturingTexture, ScreenDimensions,
+    CapturingTexture, EventsFocus, ScreenDimensions,
 };
 use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
@@ -292,7 +292,7 @@ pub struct State {
     pub reinit_next_draw: bool,
     pub capture_next_draw: bool,
     pub touch: TouchState,
-    enable_pointer_events: bool,
+    events_focus: EventsFocus,
     show_help: bool,
     show_touch_help: bool,
     has_shown_help: bool,
@@ -481,7 +481,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         reinit_next_draw: false,
         capture_next_draw: false,
         touch: TouchState::default(),
-        enable_pointer_events: false,
+        events_focus: EventsFocus(false),
         show_help: false,
         show_touch_help: false,
         has_shown_help: false,
@@ -558,21 +558,14 @@ fn open_source_code(app: &mut App) {
 
 
 fn event(app: &mut App, state: &mut State, evt: Event) {
+    state.events_focus.detect(&evt);
+
     let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
     // log::debug!("gesture found: {:?}", gesture);
 
-
     match evt {
-        Event::MouseEnter { .. } => {
-            // log::debug!("mouse entered");
-            state.enable_pointer_events = true;
-        }
-        Event::MouseLeft { .. } => {
-            // log::debug!("mouse left");
-            state.enable_pointer_events = false;
-        }
         Event::MouseUp { .. } => {
-            if state.enable_pointer_events {
+            if state.events_focus.has_focus() {
                 if !state.has_shown_help {
                     state.show_help = true;
                     state.has_shown_help = true;
@@ -602,19 +595,21 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
 
 
 fn update(app: &mut App, state: &mut State) {
-    if app.keyboard.was_pressed(KeyCode::R) {
-        log::debug!("R");
-        state.reinit_next_draw = true;
-    }
+    if state.events_focus.has_focus() {
+        if app.keyboard.was_pressed(KeyCode::R) {
+            log::debug!("R");
+            state.reinit_next_draw = true;
+        }
 
-    if app.keyboard.was_pressed(KeyCode::C) {
-        log::debug!("C");
-        state.capture_next_draw = true;
-    }
+        if app.keyboard.was_pressed(KeyCode::C) {
+            log::debug!("C");
+            state.capture_next_draw = true;
+        }
 
-    if app.keyboard.was_pressed(KeyCode::S) {
-        log::debug!("S");
-        open_source_code(app);
+        if app.keyboard.was_pressed(KeyCode::S) {
+            log::debug!("S");
+            open_source_code(app);
+        }
     }
 
 

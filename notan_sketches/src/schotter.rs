@@ -1,4 +1,4 @@
-use super::utils::{get_draw_setup, get_rng};
+use super::utils::{get_draw_setup, get_rng, EventsFocus};
 use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
@@ -76,6 +76,7 @@ pub struct State {
     pub rand_step: f32,
     pub cols: u8,
     pub rows: u8,
+    pub events_focus: EventsFocus,
 }
 
 
@@ -135,6 +136,7 @@ impl State {
             rand_step: rand_step,
             rows: rows,
             cols: cols,
+            events_focus: EventsFocus(false),
         }
     }
 }
@@ -181,6 +183,7 @@ pub fn init_solid(
 
 
 pub fn event(state: &mut State, event: Event) {
+    state.events_focus.detect(&event);
     match event {
         Event::WindowResize { .. } => {
             log::debug!("Release freeze due to resize...");
@@ -192,7 +195,7 @@ pub fn event(state: &mut State, event: Event) {
 
 
 pub fn update_common(app: &mut App, state: &mut State) {
-    if app.keyboard.was_pressed(KeyCode::R) {
+    if state.events_focus.has_focus() && app.keyboard.was_pressed(KeyCode::R) {
         state.freeze = false;
         log::debug!("Freeze released");
     }

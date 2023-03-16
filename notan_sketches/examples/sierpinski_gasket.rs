@@ -10,23 +10,30 @@ const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
 
 
+pub fn event(state: &mut State, event: Event) {
+    state.events_focus.detect(&event);
+}
+
+
 fn update(app: &mut App, state: &mut State) {
     // if app.keyboard.is_down(KeyCode::W) {
     //     state.y -= MOVE_SPEED * app.timer.delta_f32();
     // }
-    if app.keyboard.was_pressed(KeyCode::Up) {
-        state.max_depth += 1;
-        log::debug!("state.max_depth increased: {}", state.max_depth);
-    }
+    if state.events_focus.has_focus() {
+        if app.keyboard.was_pressed(KeyCode::Up) {
+            state.max_depth += 1;
+            log::debug!("state.max_depth increased: {}", state.max_depth);
+        }
 
-    if app.keyboard.was_pressed(KeyCode::Down) && state.max_depth > 0 {
-        state.max_depth -= 1;
-        log::debug!("state.max_depth decreased: {}", state.max_depth);
-    }
+        if app.keyboard.was_pressed(KeyCode::Down) && state.max_depth > 0 {
+            state.max_depth -= 1;
+            log::debug!("state.max_depth decreased: {}", state.max_depth);
+        }
 
-    if app.keyboard.was_pressed(KeyCode::R) {
-        state.max_depth = State::default().max_depth;
-        log::debug!("state.max_depth reset: {}", state.max_depth);
+        if app.keyboard.was_pressed(KeyCode::R) {
+            state.max_depth = State::default().max_depth;
+            log::debug!("state.max_depth reset: {}", state.max_depth);
+        }
     }
 }
 
@@ -59,6 +66,7 @@ fn main() -> Result<(), String> {
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
+        .event(event)
         .draw(draw)
         .update(update)
         .build()

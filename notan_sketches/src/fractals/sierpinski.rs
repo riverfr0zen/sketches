@@ -1,4 +1,5 @@
 use crate::mathutils::get_vec2_midpoint;
+use crate::utils::EventsFocus;
 use notan::draw::*;
 // use notan::log;
 use notan::math::{vec2, Vec2};
@@ -8,12 +9,16 @@ use notan::prelude::*;
 #[derive(AppState)]
 pub struct State {
     pub max_depth: usize,
+    pub events_focus: EventsFocus,
 }
 
 
 impl Default for State {
     fn default() -> Self {
-        State { max_depth: 0 }
+        State {
+            max_depth: 0,
+            events_focus: EventsFocus(false),
+        }
     }
 }
 
