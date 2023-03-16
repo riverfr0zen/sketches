@@ -3,6 +3,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
+use notan_touchy::{TouchGesture, TouchState};
 
 const STROKE_WIDTH: f32 = 4.0;
 
@@ -77,6 +78,7 @@ pub struct State {
     pub cols: u8,
     pub rows: u8,
     pub events_focus: EventsFocus,
+    pub touch: TouchState,
 }
 
 
@@ -137,6 +139,7 @@ impl State {
             rows: rows,
             cols: cols,
             events_focus: EventsFocus(false),
+            touch: TouchState::default(),
         }
     }
 }
@@ -182,14 +185,28 @@ pub fn init_solid(
 }
 
 
-pub fn event(state: &mut State, event: Event) {
+pub fn event(app: &mut App, state: &mut State, event: Event) {
     state.events_focus.detect(&event);
+    let gesture = state
+        .touch
+        .get_gesture(&app.timer.time_since_init(), &event);
+
     match event {
         Event::WindowResize { .. } => {
             log::debug!("Release freeze due to resize...");
             state.freeze = false;
         }
         _ => {}
+    }
+
+    if gesture.is_some() {
+        match gesture {
+            Some(TouchGesture::SwipeLeft) => {
+                state.freeze = false;
+                log::debug!("Freeze released");
+            }
+            _ => {}
+        }
     }
 }
 

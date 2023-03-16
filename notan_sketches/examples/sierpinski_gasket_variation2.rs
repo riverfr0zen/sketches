@@ -2,16 +2,12 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan_sketches::fractals::sierpinski::{draw_varied_gasket, State};
-use notan_sketches::utils::{get_common_win_config, get_draw_setup};
+use notan_sketches::colors::SAFFRON;
+use notan_sketches::fractals::sierpinski::{draw_varied_gasket, event, State};
+use notan_sketches::utils::{get_common_win_config, get_draw_setup, set_html_bgcolor};
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
-
-
-pub fn event(state: &mut State, event: Event) {
-    state.events_focus.detect(&event);
-}
 
 
 fn update(app: &mut App, state: &mut State) {
@@ -42,7 +38,7 @@ fn draw(
     state: &mut State,
     // app: &mut App,
 ) {
-    let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::BLACK);
+    let mut draw = get_draw_setup(gfx, WORK_SIZE, false, SAFFRON);
 
     let a = vec2(WORK_SIZE.x / 2.0, 0.0);
     let b = vec2(WORK_SIZE.x, WORK_SIZE.y);
@@ -59,6 +55,7 @@ fn draw(
 fn main() -> Result<(), String> {
     let mut win_config = get_common_win_config();
     win_config = win_config.title("sierpinski gasket (varied)");
+    set_html_bgcolor(SAFFRON);
 
     // notan::init()
     // notan::init_with(init)

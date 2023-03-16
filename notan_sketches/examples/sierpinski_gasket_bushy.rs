@@ -2,16 +2,11 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan_sketches::fractals::sierpinski::{draw_bushy_gasket, State};
+use notan_sketches::fractals::sierpinski::{draw_bushy_gasket, event, State};
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, set_html_bgcolor};
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
-
-
-pub fn event(state: &mut State, event: Event) {
-    state.events_focus.detect(&event);
-}
 
 
 fn update(app: &mut App, state: &mut State) {

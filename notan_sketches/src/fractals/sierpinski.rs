@@ -1,6 +1,8 @@
 use crate::mathutils::get_vec2_midpoint;
 use crate::utils::EventsFocus;
 use notan::draw::*;
+use notan::log;
+use notan_touchy::{TouchGesture, TouchState};
 // use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
@@ -10,6 +12,7 @@ use notan::prelude::*;
 pub struct State {
     pub max_depth: usize,
     pub events_focus: EventsFocus,
+    pub touch: TouchState,
 }
 
 
@@ -18,6 +21,33 @@ impl Default for State {
         State {
             max_depth: 0,
             events_focus: EventsFocus(false),
+            touch: TouchState::default(),
+        }
+    }
+}
+
+
+pub fn event(app: &mut App, state: &mut State, event: Event) {
+    state.events_focus.detect(&event);
+    let gesture = state
+        .touch
+        .get_gesture(&app.timer.time_since_init(), &event);
+
+    if gesture.is_some() {
+        match gesture {
+            Some(TouchGesture::SwipeUp) => {
+                state.max_depth += 1;
+                log::debug!("state.max_depth increased: {}", state.max_depth);
+            }
+            Some(TouchGesture::SwipeDown) => {
+                state.max_depth -= 1;
+                log::debug!("state.max_depth decreased: {}", state.max_depth);
+            }
+            Some(TouchGesture::SwipeLeft) => {
+                state.max_depth = State::default().max_depth;
+                log::debug!("state.max_depth reset: {}", state.max_depth);
+            }
+            _ => {}
         }
     }
 }
