@@ -275,7 +275,7 @@ pub fn modal(
     .fill_color(bg_color)
     .fill()
     .corner_radius(bg_padding)
-    .alpha(0.6);
+    .alpha(0.8);
 
     draw.text(&font, text)
         .position(panel_x + text_x_offset, panel_y + text_y_offset)

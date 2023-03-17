@@ -1,5 +1,5 @@
 use crate::mathutils::get_vec2_midpoint;
-use crate::utils::EventsFocus;
+use crate::utils::{CommonHelpModal, EventsFocus};
 use notan::draw::*;
 use notan::log;
 use notan_touchy::{TouchGesture, TouchState};
@@ -13,17 +13,43 @@ pub struct State {
     pub max_depth: usize,
     pub events_focus: EventsFocus,
     pub touch: TouchState,
+    pub help_modal: CommonHelpModal,
 }
 
+impl State {
+    fn new(gfx: &mut Graphics) -> Self {
+        let help_text = concat!(
+            "Controls:\n\n",
+            "Press 'UP' arrow key to increase fractal depth\n\n",
+            "Press 'DOWN' arrow key to decrease fractal depth\n\n",
+            "Press 'R' to reset\n\n",
+            "Click mouse to close help\n",
+        );
 
-impl Default for State {
-    fn default() -> Self {
-        State {
+        let touch_help_text = concat!(
+            "Controls:\n\n",
+            "Swipe Up to increase fractal depth\n\n",
+            "Swipe Down to decrease fractal depth\n\n",
+            "Swipe Left to reset\n\n",
+            "Tap screen to close help\n",
+        );
+
+        Self {
             max_depth: 0,
             events_focus: EventsFocus(false),
             touch: TouchState::default(),
+            help_modal: CommonHelpModal::new(
+                gfx,
+                help_text.to_string(),
+                touch_help_text.to_string(),
+                None,
+            ),
         }
     }
+}
+
+pub fn init(gfx: &mut Graphics) -> State {
+    State::new(gfx)
 }
 
 
@@ -32,6 +58,15 @@ pub fn event(app: &mut App, state: &mut State, event: Event) {
     let gesture = state
         .touch
         .get_gesture(&app.timer.time_since_init(), &event);
+
+    match event {
+        Event::MouseUp { .. } => {
+            if state.events_focus.has_focus() {
+                state.help_modal.handle_mouse_up()
+            }
+        }
+        _ => {}
+    }
 
     if gesture.is_some() {
         match gesture {
@@ -46,9 +81,10 @@ pub fn event(app: &mut App, state: &mut State, event: Event) {
                 }
             }
             Some(TouchGesture::SwipeLeft) => {
-                state.max_depth = State::default().max_depth;
+                state.max_depth = 0;
                 log::debug!("state.max_depth reset: {}", state.max_depth);
             }
+            Some(TouchGesture::Tap) => state.help_modal.toggle_touch_help(),
             _ => {}
         }
     }
@@ -71,7 +107,7 @@ pub fn update(app: &mut App, state: &mut State) {
         }
 
         if app.keyboard.was_pressed(KeyCode::R) {
-            state.max_depth = State::default().max_depth;
+            state.max_depth = 0;
             log::debug!("state.max_depth reset: {}", state.max_depth);
         }
     }
