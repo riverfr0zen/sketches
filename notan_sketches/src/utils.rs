@@ -5,6 +5,8 @@ use notan::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use web_sys;
 
+const HELP_PANEL_COLOR: Color = Color::GRAY;
+
 
 /// This returns a projection that keeps the aspect ratio while scaling
 /// and fitting the content in our window
@@ -283,6 +285,158 @@ pub fn modal(
         .v_align_middle();
 
     panel_rect
+}
+
+
+pub struct CommonHelpModal {
+    show_help: bool,
+    show_touch_help: bool,
+    has_shown_help: bool,
+    help_font: Font,
+    help_text: String,
+    touch_help_text: String,
+    info_text: Option<String>,
+}
+
+
+impl CommonHelpModal {
+    pub fn new(
+        gfx: &mut Graphics,
+        help_text: String,
+        touch_help_text: String,
+        info_text: Option<String>,
+    ) -> Self {
+        let help_font = gfx
+            .create_font(include_bytes!(
+                "../examples/assets/fonts/ubuntu/Ubuntu-R.ttf"
+            ))
+            .unwrap();
+
+        Self {
+            show_help: false,
+            show_touch_help: false,
+            has_shown_help: false,
+            help_font,
+            help_text,
+            touch_help_text,
+            info_text,
+        }
+    }
+
+    pub fn handle_mouse_up(&mut self) {
+        if !self.has_shown_help {
+            self.show_help = true;
+            self.has_shown_help = true;
+        } else {
+            self.show_help = !self.show_help;
+        }
+    }
+
+    /// If this is the first touch, set state to show help, and report true.
+    /// Otherwise return false, indicating this is not the first touch.
+    pub fn handle_first_touch_with_help(&mut self) -> bool {
+        if !self.has_shown_help {
+            self.show_touch_help = true;
+            self.has_shown_help = true;
+            return true;
+        }
+        return false;
+    }
+
+    pub fn toggle_touch_help(&mut self) {
+        self.show_touch_help = !self.show_touch_help
+    }
+
+
+    /// Returns font sizes adjusted for portrait vs landscape
+    fn get_font_sizes(work_size: Vec2) -> (f32, f32) {
+        let portrait = work_size.x < work_size.y;
+        if portrait {
+            return (
+                scale_font_fullcomp(36.0, work_size),
+                scale_font_fullcomp(24.0, work_size),
+            );
+        }
+        (
+            scale_font_fullcomp(24.0, work_size),
+            scale_font_fullcomp(16.0, work_size),
+        )
+    }
+
+    pub fn draw_help(&mut self, draw: &mut Draw, work_size: Vec2) {
+        let (help_size, info_size) = Self::get_font_sizes(work_size);
+        let help_bounds = modal(
+            draw,
+            work_size,
+            &self.help_text,
+            self.help_font,
+            help_size,
+            0.04,
+            Color::WHITE,
+            HELP_PANEL_COLOR,
+            None,
+            None,
+        );
+
+        if let Some(info_text) = &self.info_text {
+            modal(
+                draw,
+                work_size,
+                info_text,
+                self.help_font,
+                info_size,
+                0.02,
+                Color::WHITE,
+                HELP_PANEL_COLOR,
+                Some(help_bounds.y + help_bounds.height + work_size.x.max(work_size.y) * 0.02),
+                None,
+            );
+        }
+    }
+
+    pub fn draw_touch_help(&mut self, draw: &mut Draw, work_size: Vec2) {
+        let (help_size, info_size) = Self::get_font_sizes(work_size);
+
+        let help_bounds = modal(
+            draw,
+            work_size,
+            &self.touch_help_text,
+            self.help_font,
+            help_size,
+            0.04,
+            Color::WHITE,
+            HELP_PANEL_COLOR,
+            None,
+            None,
+        );
+
+        if let Some(info_text) = &self.info_text {
+            modal(
+                draw,
+                work_size,
+                info_text,
+                self.help_font,
+                info_size,
+                0.02,
+                Color::WHITE,
+                HELP_PANEL_COLOR,
+                Some(help_bounds.y + help_bounds.height + work_size.x.max(work_size.y) * 0.02),
+                None,
+            );
+        }
+    }
+
+    pub fn draw(&mut self, draw: &mut Draw, work_size: Vec2) {
+        if self.show_help {
+            // log::debug!("Showing help");
+            self.draw_help(draw, work_size);
+        }
+
+        if self.show_touch_help {
+            // log::debug!("Showing touch help");
+            self.draw_touch_help(draw, work_size);
+        }
+    }
 }
 
 

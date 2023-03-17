@@ -4,8 +4,8 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, get_rng, modal, scale_font_fullcomp, set_html_bgcolor,
-    CapturingTexture, EventsFocus, ScreenDimensions,
+    get_common_win_config, get_draw_setup, get_rng, set_html_bgcolor, CapturingTexture,
+    CommonHelpModal, EventsFocus, ScreenDimensions,
 };
 use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
@@ -76,7 +76,6 @@ const PALETTE: [Color; 21] = [
     colors::SCARLET,
     colors::SALMON,
 ];
-const HELP_PANEL_COLOR: Color = Color::GRAY;
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 
 
@@ -293,10 +292,7 @@ pub struct State {
     pub capture_next_draw: bool,
     pub touch: TouchState,
     events_focus: EventsFocus,
-    show_help: bool,
-    show_touch_help: bool,
-    has_shown_help: bool,
-    help_font: Font,
+    help_modal: CommonHelpModal,
 }
 
 
@@ -458,12 +454,32 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         &scratch_brush,
     ];
 
-    let help_font = gfx
-        .create_font(include_bytes!("assets/fonts/ubuntu/Ubuntu-R.ttf"))
-        .unwrap();
-
     let settings = Settings::randomize(&mut rng, &work_size, brushes);
     log::debug!("With settings: {:#?}", settings);
+
+    let help_text = concat!(
+        "Controls:\n\n",
+        "Press 'R' to start a new painting\n\n",
+        "Press 'C' to capture image\n\n",
+        "Press 'S' to view source code\n\n",
+        "Click mouse to close help\n",
+    );
+
+    let touch_help_text = concat!(
+        "Controls:\n\n",
+        // "Swipe left to start a\nnew painting\n\n",
+        "Swipe left to start a new painting\n\n",
+        "Swipe down to save image\n\n",
+        "Swipe up to view source code\n\n",
+        "Tap to close help\n",
+    );
+
+    let info_text = concat!(
+        "\"Radial Pointillist\"\n",
+        "Copyright 2023 Irfan Baig\n",
+        "License: MIT"
+    );
+
     State {
         work_size,
         rng,
@@ -482,10 +498,12 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         capture_next_draw: false,
         touch: TouchState::default(),
         events_focus: EventsFocus(false),
-        show_help: false,
-        show_touch_help: false,
-        has_shown_help: false,
-        help_font,
+        help_modal: CommonHelpModal::new(
+            gfx,
+            help_text.to_string(),
+            touch_help_text.to_string(),
+            Some(info_text.to_string()),
+        ),
     }
 }
 
@@ -566,27 +584,19 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
     match evt {
         Event::MouseUp { .. } => {
             if state.events_focus.has_focus() {
-                if !state.has_shown_help {
-                    state.show_help = true;
-                    state.has_shown_help = true;
-                } else {
-                    state.show_help = !state.show_help;
-                }
+                state.help_modal.handle_mouse_up()
             }
         }
         _ => {}
     }
 
     if gesture.is_some() {
-        if !state.has_shown_help {
-            state.show_touch_help = true;
-            state.has_shown_help = true;
-        } else {
+        if !state.help_modal.handle_first_touch_with_help() {
             match gesture {
                 Some(TouchGesture::SwipeLeft) => state.reinit_next_draw = true,
                 Some(TouchGesture::SwipeDown) => state.capture_next_draw = true,
                 Some(TouchGesture::SwipeUp) => open_source_code(app),
-                Some(TouchGesture::Tap) => state.show_touch_help = !state.show_touch_help,
+                Some(TouchGesture::Tap) => state.help_modal.toggle_touch_help(),
                 _ => {}
             }
         }
@@ -745,108 +755,6 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 }
 
 
-/// Returns font sizes adjusted for portrait vs landscape
-fn get_font_sizes(work_size: Vec2) -> (f32, f32) {
-    let portrait = work_size.x < work_size.y;
-    if portrait {
-        return (
-            scale_font_fullcomp(36.0, work_size),
-            scale_font_fullcomp(24.0, work_size),
-        );
-    }
-    (
-        scale_font_fullcomp(24.0, work_size),
-        scale_font_fullcomp(16.0, work_size),
-    )
-}
-
-
-fn draw_help(draw: &mut Draw, state: &mut State) {
-    let (help_size, info_size) = get_font_sizes(state.work_size);
-    let help_text = concat!(
-        "Controls:\n\n",
-        "Press 'R' to start a new painting\n\n",
-        "Press 'C' to capture image\n\n",
-        "Press 'S' to view source code\n\n",
-        "Click mouse to close help\n",
-    );
-    let help_bounds = modal(
-        draw,
-        state.work_size,
-        help_text,
-        state.help_font,
-        help_size,
-        0.04,
-        Color::WHITE,
-        HELP_PANEL_COLOR,
-        None,
-        None,
-    );
-
-    let info_text = concat!(
-        "\"Radial Pointillist\"\n",
-        "Copyright 2023 Irfan Baig\n",
-        "License: MIT"
-    );
-    modal(
-        draw,
-        state.work_size,
-        info_text,
-        state.help_font,
-        info_size,
-        0.02,
-        Color::WHITE,
-        HELP_PANEL_COLOR,
-        Some(help_bounds.y + help_bounds.height + state.work_size.x.max(state.work_size.y) * 0.02),
-        None,
-    );
-}
-
-
-fn draw_touch_help(draw: &mut Draw, state: &mut State) {
-    let (help_size, info_size) = get_font_sizes(state.work_size);
-
-    let help_text = concat!(
-        "Controls:\n\n",
-        // "Swipe left to start a\nnew painting\n\n",
-        "Swipe left to start a new painting\n\n",
-        "Swipe down to save image\n\n",
-        "Swipe up to view source code\n\n",
-        "Tap to close help\n",
-    );
-    let help_bounds = modal(
-        draw,
-        state.work_size,
-        help_text,
-        state.help_font,
-        help_size,
-        0.04,
-        Color::WHITE,
-        HELP_PANEL_COLOR,
-        None,
-        None,
-    );
-
-    let info_text = concat!(
-        "\"Radial Pointillist\"\n",
-        "Copyright 2023 Irfan Baig\n",
-        "License: MIT"
-    );
-    modal(
-        draw,
-        state.work_size,
-        info_text,
-        state.help_font,
-        info_size,
-        0.02,
-        Color::WHITE,
-        HELP_PANEL_COLOR,
-        Some(help_bounds.y + help_bounds.height + state.work_size.x.max(state.work_size.y) * 0.02),
-        None,
-    );
-}
-
-
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.reinit_next_draw {
         state.reinitialize_drawing(gfx);
@@ -870,15 +778,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let rdraw = &mut get_draw_setup(gfx, state.work_size, true, CLEAR_COLOR);
     rdraw.image(&state.capture.render_texture);
 
-    if state.show_help {
-        // log::debug!("Showing help");
-        draw_help(rdraw, state);
-    }
-
-    if state.show_touch_help {
-        // log::debug!("Showing touch help");
-        draw_touch_help(rdraw, state);
-    }
+    state.help_modal.draw(rdraw, state.work_size);
 
     gfx.render(rdraw);
 }
