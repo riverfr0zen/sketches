@@ -2,16 +2,9 @@
 published: '2023-03-14T13:19:17.673173-04:00'
 ---
 
-A variation on the [Sierpinski Gasket](sierpinski_gasket.html) fractal. 
+To display controls, click or tap on the sketch.
 
-**Controls:**
-* Press the 'Up' Key or Swipe Up to increase number of iterations
-* Press the 'Down' Key or Swipe Down to decrease iterations
-* Press the 'R' Key or Swipe Left to reset
-
-**Variation**
-
-This variation shows how some very simple changes (such as slightly changing the positions of some triangle vertices) can result in this "bushy" outcome after iterating.
+This is a variation on the [Sierpinski Gasket](sierpinski_gasket.html) fractal. This variation shows how some very simple changes (such as slightly changing the positions of some triangle vertices) can result in this "bushy" outcome after iterating.
 
 Here are some code diffs illustrating said changes:
 

@@ -2,16 +2,9 @@
 published: '2023-03-16T11:38:17.885926-04:00'
 ---
 
-A variation on the [Sierpinski Gasket](sierpinski_gasket.html) fractal. 
+To display controls, click or tap on the sketch.
 
-**Controls:**
-* Press the 'Up' Key or Swipe Up to increase number of iterations
-* Press the 'Down' Key or Swipe Down to decrease iterations
-* Press the 'R' Key or Swipe Left to reset
-
-**Variation**
-
-By changing the positions of the triangle vertices in the simple manner shown below, a pretty interesting "spiralling" effect is achieved: 
+This is a variation on the [Sierpinski Gasket](sierpinski_gasket.html) fractal. By changing the positions of the triangle vertices in the simple manner shown below, a pretty interesting "spiralling" effect is achieved: 
 
 ```
 fn vary_triangle(a: Vec2, b: Vec2, c: Vec2) -> (Vec2, Vec2, Vec2) {
