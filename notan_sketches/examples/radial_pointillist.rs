@@ -110,12 +110,18 @@ enum RadialRangeStyle {
     LargeMediumLarge,
     SmallMediumSmall,
     MediumSmallMedium,
+    SwapParentSpawn,
+    SwapParentSpawn2,
+    SwapSpawnSpawn2,
     None,
 }
 
 impl RadialRangeStyle {
     fn random(rng: &mut Random) -> Self {
-        match rng.gen_range(0..=10) {
+        match rng.gen_range(0..=13) {
+            13 => Self::SwapSpawnSpawn2,
+            12 => Self::SwapParentSpawn2,
+            11 => Self::SwapParentSpawn,
             10 => Self::MediumLargeMedium,
             9 => Self::LargeMediumLarge,
             8 => Self::SmallMediumSmall,
@@ -251,6 +257,21 @@ impl Settings {
                 work_size.x * rng.gen_range(PARENT_RADIUS),
                 work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
                 work_size.x * rng.gen_range(SPAWN2_RADIUS),
+            ),
+            RadialRangeStyle::SwapParentSpawn => (
+                work_size.x * rng.gen_range(SPAWN_RADIUS),
+                work_size.x * rng.gen_range(PARENT_RADIUS),
+                work_size.x * rng.gen_range(SPAWN2_RADIUS),
+            ),
+            RadialRangeStyle::SwapParentSpawn2 => (
+                work_size.x * rng.gen_range(SPAWN2_RADIUS),
+                work_size.x * rng.gen_range(SPAWN_RADIUS),
+                work_size.x * rng.gen_range(PARENT_RADIUS),
+            ),
+            RadialRangeStyle::SwapSpawnSpawn2 => (
+                work_size.x * rng.gen_range(PARENT_RADIUS),
+                work_size.x * rng.gen_range(SPAWN2_RADIUS),
+                work_size.x * rng.gen_range(SPAWN_RADIUS),
             ),
             _ => (
                 work_size.x * rng.gen_range(PARENT_RADIUS),
