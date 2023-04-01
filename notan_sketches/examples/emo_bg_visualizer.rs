@@ -10,6 +10,7 @@ use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, scale_font, set_html_bgcolor, CommonHelpModal,
     ScreenDimensions,
 };
+use notan_touchy::{TouchGesture, TouchState};
 // use serde_json::{Result as JsonResult, Value};
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
@@ -80,10 +81,18 @@ struct State {
     visualizer: Box<dyn EmoVisualizerFull>,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
+    touch: TouchState,
     help_modal: CommonHelpModal,
 }
 
 impl State {
+    fn goto_home_view(&mut self) {
+        self.view = View::HOME;
+        self.reading = ReadingViewState::default();
+        self.visualizer
+            .reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+    }
+
     fn goto_read_home(&mut self) {
         self.reading.analysis = 0;
         self.visualizer
@@ -99,22 +108,24 @@ impl State {
 
     fn goto_read_next(&mut self) {
         let emodoc = &self.emodocs[self.reading.doc_index];
-        self.reading.analysis -= 1;
-        if self.reading.analysis > 0 {
-            self.visualizer
-                .update_model(&emodoc.analyses[self.reading.analysis - 1]);
-        } else {
-            self.visualizer
-                .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
-        }
-    }
-
-    fn goto_read_prev(&mut self) {
-        let emodoc = &self.emodocs[self.reading.doc_index];
         if self.reading.analysis < emodoc.analyses.len() {
             self.reading.analysis += 1;
             self.visualizer
                 .update_model(&emodoc.analyses[self.reading.analysis - 1]);
+        }
+    }
+
+    fn goto_read_prev(&mut self) {
+        if self.reading.analysis > 0 {
+            let emodoc = &self.emodocs[self.reading.doc_index];
+            self.reading.analysis -= 1;
+            if self.reading.analysis > 0 {
+                self.visualizer
+                    .update_model(&emodoc.analyses[self.reading.analysis - 1]);
+            } else {
+                self.visualizer
+                    .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+            }
         }
     }
 }
@@ -210,6 +221,7 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         },
         needs_handle_resize: true,
         needs_egui_font_setup: true,
+        touch: TouchState::default(),
         help_modal: CommonHelpModal::new(
             gfx,
             help_text.to_string(),
@@ -225,57 +237,59 @@ fn update_read_view(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
         state.goto_read_home();
-        // state.reading.analysis = 0;
-        // state
-        //     .visualizer
-        //     .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
         state.goto_read_end();
-        // state.reading.analysis = emodoc.analyses.len();
-        // state
-        //     .visualizer
-        //     .update_model(&emodoc.analyses[state.reading.analysis - 1]);
     }
 
-    if app.keyboard.was_pressed(KeyCode::Left) && state.reading.analysis > 0 {
+    if app.keyboard.was_pressed(KeyCode::Left) {
         log::debug!("left");
-        state.goto_read_next();
-        // state.reading.analysis -= 1;
-        // if state.reading.analysis > 0 {
-        //     state
-        //         .visualizer
-        //         .update_model(&emodoc.analyses[state.reading.analysis - 1]);
-        // } else {
-        //     state
-        //         .visualizer
-        //         .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
-        // }
+        state.goto_read_prev();
     }
 
     if app.keyboard.was_pressed(KeyCode::Right) {
         log::debug!("right");
-        state.goto_read_prev();
-        // state.reading.analysis += 1;
-        // state
-        //     .visualizer
-        //     .update_model(&emodoc.analyses[state.reading.analysis - 1]);
+        state.goto_read_next();
     }
 
     state.visualizer.update_visualization();
 }
 
 
+fn handle_read_view_touch_events(app: &mut App, state: &mut State, evt: Event) {
+    let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
+    log::debug!("gesture found: {:?}", gesture);
+
+    if gesture.is_some() {
+        if !state.help_modal.handle_first_touch_with_help() {
+            match gesture {
+                Some(TouchGesture::SwipeLeft) => state.goto_read_next(),
+                Some(TouchGesture::SwipeRight) => state.goto_read_prev(),
+                Some(TouchGesture::SwipeUp) => state.goto_home_view(),
+                Some(TouchGesture::Tap) => state.help_modal.toggle_touch_help(),
+                _ => {}
+            }
+        }
+    } else if state.touch.touch_interface_detected == false {
+        match evt {
+            Event::MouseUp { .. } => {
+                log::debug!("mouse up in read_view_events!");
+                // if state.events_focus.has_focus() {
+                state.help_modal.handle_mouse_up()
+                // }
+            }
+            _ => {}
+        }
+    }
+}
+
+
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::M) {
         log::debug!("m");
-        state.view = View::HOME;
-        state.reading = ReadingViewState::default();
-        state
-            .visualizer
-            .reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+        state.goto_home_view();
     }
 
     if state.selected_visualizer != state.visualizer.get_enum() {
@@ -298,7 +312,6 @@ fn update(app: &mut App, state: &mut State) {
             }
         }
     }
-
 
     match state.view {
         View::READ => update_read_view(app, state),
@@ -330,7 +343,6 @@ fn draw_paragraph(draw: &mut Draw, state: &mut State, work_size: Vec2) {
 }
 
 
-// fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
 fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
 
@@ -455,34 +467,8 @@ fn configure_custom_fonts(ctx: &egui::Context, state: &mut State) {
 }
 
 
-fn handle_read_view_events(state: &mut State, evt: Event) {
-    // let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
-    // log::debug!("gesture found: {:?}", gesture);
-    match evt {
-        Event::MouseUp { .. } => {
-            log::debug!("handle_read_view_events!");
-            // if state.events_focus.has_focus() {
-            state.help_modal.handle_mouse_up()
-            // }
-        }
-        _ => {}
-    }
-
-    // if gesture.is_some() {
-    //     if !state.help_modal.handle_first_touch_with_help() {
-    //         match gesture {
-    //             Some(TouchGesture::SwipeLeft) => state.reinit_next_draw = true,
-    //             Some(TouchGesture::SwipeDown) => state.capture_next_draw = true,
-    //             Some(TouchGesture::SwipeUp) => open_source_code(app),
-    //             Some(TouchGesture::Tap) => state.help_modal.toggle_touch_help(),
-    //             _ => {}
-    //         }
-    //     }
-    // }
-}
-
 // Based on https://github.com/Nazariglez/notan/blob/main/examples/input_mouse_events.rs
-fn event(state: &mut State, evt: Event) {
+fn event(app: &mut App, state: &mut State, evt: Event) {
     match evt {
         Event::WindowResize { width, height } => {
             // state.text = "resize...".to_string();
@@ -493,7 +479,7 @@ fn event(state: &mut State, evt: Event) {
     }
 
     match state.view {
-        View::READ => handle_read_view_events(state, evt),
+        View::READ => handle_read_view_touch_events(app, state, evt),
         _ => (),
     }
 }
@@ -886,7 +872,7 @@ fn main() -> Result<(), String> {
         .add_config(EguiConfig)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .add_plugin(FpsLimit::new(MAX_FPS))
-        .touch_as_mouse(false)
+        // .touch_as_mouse(false)
         .event(event)
         .draw(draw)
         .update(update)
