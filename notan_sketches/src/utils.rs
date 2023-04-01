@@ -289,12 +289,12 @@ pub fn modal(
 
 
 pub struct CommonHelpModal {
-    show_help: bool,
-    show_touch_help: bool,
+    pub show_help: bool,
+    pub show_touch_help: bool,
     has_shown_help: bool,
     help_font: Font,
-    help_text: String,
-    touch_help_text: String,
+    pub help_text: String,
+    pub touch_help_text: String,
     info_text: Option<String>,
 }
 

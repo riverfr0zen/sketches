@@ -3,7 +3,7 @@ use notan::draw::*;
 use notan::egui::{self, *};
 use notan::extra::FpsLimit;
 use notan::log;
-use notan::math::{vec2, Vec2};
+use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{
@@ -33,7 +33,9 @@ const EMOCAT_DOCS: [&'static str; 8] = [
 ];
 const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
-const META_COLOR: Color = Color::GRAY;
+// const HELP_MODAL_TXTCOLOR: Color = Color::BLACK;
+const HELP_MODAL_TXTCOLOR: Color = Color::GRAY;
+const HELP_MODAL_BGCOLOR: Color = Color::from_rgb(0.95, 0.95, 0.9);
 const ANALYSIS_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(128, 97, 0, 128);
 const READ_VIEW_GUI_COLOR: egui::Color32 =
     egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
@@ -160,7 +162,7 @@ fn configure_egui_fonts(title_font_bytes: &'static [u8]) -> FontDefinitions {
 }
 
 
-fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
+fn init(gfx: &mut Graphics) -> State {
     let font_bytes = include_bytes!(
         // "./assets/fonts/Ubuntu-B.ttf"
         // "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
@@ -181,20 +183,16 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         .collect();
 
     let help_text = concat!(
-        "Controls:\n\n",
-        "Press 'R' to start a new painting\n\n",
-        "Press 'C' to capture image\n\n",
-        "Press 'S' to view source code\n\n",
-        "Click mouse to close help\n",
+        "Use \u{00AB} left or right \u{00BB} arrow keys to read poem\n\n",
+        // "Use Left or Right arrow keys to read poem\n\n",
+        "Press 'm' to return to poem listing\n\n",
+        "Click mouse to close this help",
     );
 
     let touch_help_text = concat!(
-        "Controls:\n\n",
-        // "Swipe left to start a\nnew painting\n\n",
-        "Swipe left to start a new painting\n\n",
-        "Swipe down to save image\n\n",
-        "Swipe up to view source code\n\n",
-        "Tap to close help\n",
+        "Swipe \u{00AB} left or right \u{00BB} to read poem\n\n",
+        "Swipe up to return to poem listing\n\n",
+        "Tap to close this help",
     );
 
     let state = State {
@@ -342,6 +340,24 @@ fn draw_paragraph(draw: &mut Draw, state: &mut State, work_size: Vec2) {
     );
 }
 
+fn draw_read_help(draw: &mut Draw, state: &mut State, work_size: Vec2) {
+    // Using a custom help popup instead of state.help_modal.draw()
+    if state.help_modal.show_help || state.help_modal.show_touch_help {
+        let mut help_txt = &state.help_modal.help_text;
+        if state.help_modal.show_touch_help {
+            help_txt = &state.help_modal.touch_help_text;
+        }
+        state.visualizer.draw_read_help(
+            draw,
+            &state.font,
+            help_txt,
+            work_size,
+            HELP_MODAL_TXTCOLOR,
+            HELP_MODAL_BGCOLOR,
+        );
+    }
+}
+
 
 fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
@@ -356,7 +372,7 @@ fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     } else {
         draw_paragraph(draw, state, work_size);
     }
-    state.help_modal.draw(draw, work_size);
+    draw_read_help(draw, state, work_size);
     gfx.render(draw);
 
     let output = plugins.egui(|ctx| {
@@ -601,7 +617,7 @@ fn draw_with_main_panel<F>(
 ) where
     F: Fn(&egui::Context, &mut Ui, &mut State, Vec2),
 {
-    let mut panel_inner_margin_w = work_size.y * 0.02;
+    let panel_inner_margin_w;
     if work_size.x > work_size.y {
         panel_inner_margin_w = work_size.y * 0.1;
     } else {

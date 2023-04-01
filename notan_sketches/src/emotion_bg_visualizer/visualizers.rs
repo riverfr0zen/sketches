@@ -93,6 +93,29 @@ pub trait EmoVisualizer {
             .v_align_middle()
             .h_align_left();
     }
+
+    fn draw_read_help(
+        &mut self,
+        draw: &mut Draw,
+        font: &Font,
+        text: &str,
+        work_size: Vec2,
+        txtcolor: Color,
+        bgcolor: Color,
+    ) {
+        let textbox_width = work_size.x * 0.9;
+        draw.rect((0.0, work_size.y * 0.7), (work_size.x, work_size.y * 0.3))
+            .color(bgcolor);
+        draw.text(&font, &text)
+            .alpha_mode(BlendMode::OVER)
+            .color(txtcolor)
+            // NOTE: These draw.text fonts size differently than font sizes in egui
+            .size(scale_font(24.0, work_size))
+            .max_width(textbox_width)
+            .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.8)
+            .v_align_middle()
+            .h_align_left();
+    }
 }
 
 
