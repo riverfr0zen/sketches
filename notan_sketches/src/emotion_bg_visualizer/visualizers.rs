@@ -104,13 +104,24 @@ pub trait EmoVisualizer {
         bgcolor: Color,
     ) {
         let textbox_width = work_size.x * 0.9;
-        draw.rect((0.0, work_size.y * 0.7), (work_size.x, work_size.y * 0.3))
+        let help_font_size = 18.0;
+        draw.text(&font, &text)
+            .alpha_mode(BlendMode::OVER)
+            .color(Color::TRANSPARENT)
+            // NOTE: These draw.text fonts size differently than font sizes in egui
+            .size(scale_font(help_font_size, work_size))
+            .max_width(textbox_width)
+            .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.8)
+            .v_align_middle()
+            .h_align_left();
+        let help_bounds = draw.last_text_bounds();
+        let rect_ypos = help_bounds.y - work_size.y * 0.02;
+        draw.rect((0.0, rect_ypos), (work_size.x, work_size.y - rect_ypos))
             .color(bgcolor);
         draw.text(&font, &text)
             .alpha_mode(BlendMode::OVER)
             .color(txtcolor)
-            // NOTE: These draw.text fonts size differently than font sizes in egui
-            .size(scale_font(24.0, work_size))
+            .size(scale_font(help_font_size, work_size))
             .max_width(textbox_width)
             .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.8)
             .v_align_middle()

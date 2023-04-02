@@ -184,13 +184,14 @@ fn init(gfx: &mut Graphics) -> State {
 
     let help_text = concat!(
         "Use \u{00AB} left or right \u{00BB} arrow keys to read poem\n\n",
-        // "Use Left or Right arrow keys to read poem\n\n",
+        "Press 'a' to toggle Analysis panel\n\n",
         "Press 'm' to return to poem listing\n\n",
         "Click mouse to close this help",
     );
 
     let touch_help_text = concat!(
-        "Swipe \u{00AB} left or right \u{00BB} to read poem\n\n",
+        "Swipe left or right to read poem\n\n",
+        "Swipe down to toggle Analysis panel\n\n",
         "Swipe up to return to poem listing\n\n",
         "Tap to close this help",
     );
@@ -252,6 +253,11 @@ fn update_read_view(app: &mut App, state: &mut State) {
         state.goto_read_next();
     }
 
+    if app.keyboard.was_pressed(KeyCode::A) {
+        log::debug!("a");
+        state.show_analysis = !state.show_analysis;
+    }
+
     state.visualizer.update_visualization();
 }
 
@@ -266,6 +272,7 @@ fn handle_read_view_touch_events(app: &mut App, state: &mut State, evt: Event) {
                 Some(TouchGesture::SwipeLeft) => state.goto_read_next(),
                 Some(TouchGesture::SwipeRight) => state.goto_read_prev(),
                 Some(TouchGesture::SwipeUp) => state.goto_home_view(),
+                Some(TouchGesture::SwipeDown) => state.show_analysis = !state.show_analysis,
                 Some(TouchGesture::Tap) => state.help_modal.toggle_touch_help(),
                 _ => {}
             }
@@ -591,6 +598,7 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
             // .default_pos(egui::Pos2::new(work_size.x, work_size.y))
             .default_pos(egui::Pos2::new(work_size.x, 0.0))
             .default_width(work_size.x * 0.2)
+            .collapsible(false)
             .frame(egui::Frame::none().fill(panel_color).inner_margin(
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
