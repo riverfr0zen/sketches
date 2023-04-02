@@ -1,11 +1,7 @@
 use super::visualizers::color_transition::ColorTransitionVisualizer;
 use super::visualizers::tile::TilesVisualizer;
 use crate::emotion::TopEmotionsModel;
-use crate::utils::scale_font;
-use notan::draw::*;
 use notan::egui::{self, RichText, TextStyle, Ui};
-use notan::math::Vec2;
-use notan::prelude::*;
 
 
 fn top_emotions_egui_metrics_ui(
