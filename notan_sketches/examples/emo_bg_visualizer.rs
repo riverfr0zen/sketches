@@ -3,12 +3,14 @@ use notan::draw::*;
 use notan::egui::{self, *};
 use notan::extra::FpsLimit;
 use notan::log;
-use notan::math::{vec2, Vec2};
+use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::emotion::*;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, scale_font, set_html_bgcolor, ScreenDimensions,
+    get_common_win_config, get_draw_setup, scale_font, set_html_bgcolor, CommonHelpModal,
+    ScreenDimensions,
 };
+use notan_touchy::{TouchGesture, TouchState};
 // use serde_json::{Result as JsonResult, Value};
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
@@ -31,7 +33,9 @@ const EMOCAT_DOCS: [&'static str; 8] = [
 ];
 const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
-const META_COLOR: Color = Color::GRAY;
+// const HELP_MODAL_TXTCOLOR: Color = Color::BLACK;
+const HELP_MODAL_TXTCOLOR: Color = Color::GRAY;
+const HELP_MODAL_BGCOLOR: Color = Color::from_rgb(0.95, 0.95, 0.9);
 const ANALYSIS_COLOR: egui::Color32 = egui::Color32::from_rgba_premultiplied(128, 97, 0, 128);
 const READ_VIEW_GUI_COLOR: egui::Color32 =
     egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
@@ -79,6 +83,53 @@ struct State {
     visualizer: Box<dyn EmoVisualizerFull>,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
+    touch: TouchState,
+    help_modal: CommonHelpModal,
+}
+
+impl State {
+    fn goto_home_view(&mut self) {
+        self.view = View::HOME;
+        self.reading = ReadingViewState::default();
+        self.visualizer
+            .reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+    }
+
+    fn goto_read_home(&mut self) {
+        self.reading.analysis = 0;
+        self.visualizer
+            .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+    }
+
+    fn goto_read_end(&mut self) {
+        let emodoc = &self.emodocs[self.reading.doc_index];
+        self.reading.analysis = emodoc.analyses.len();
+        self.visualizer
+            .update_model(&emodoc.analyses[self.reading.analysis - 1]);
+    }
+
+    fn goto_read_next(&mut self) {
+        let emodoc = &self.emodocs[self.reading.doc_index];
+        if self.reading.analysis < emodoc.analyses.len() {
+            self.reading.analysis += 1;
+            self.visualizer
+                .update_model(&emodoc.analyses[self.reading.analysis - 1]);
+        }
+    }
+
+    fn goto_read_prev(&mut self) {
+        if self.reading.analysis > 0 {
+            let emodoc = &self.emodocs[self.reading.doc_index];
+            self.reading.analysis -= 1;
+            if self.reading.analysis > 0 {
+                self.visualizer
+                    .update_model(&emodoc.analyses[self.reading.analysis - 1]);
+            } else {
+                self.visualizer
+                    .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+            }
+        }
+    }
 }
 
 
@@ -111,7 +162,7 @@ fn configure_egui_fonts(title_font_bytes: &'static [u8]) -> FontDefinitions {
 }
 
 
-fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
+fn init(gfx: &mut Graphics) -> State {
     let font_bytes = include_bytes!(
         // "./assets/fonts/Ubuntu-B.ttf"
         // "./assets/fonts/libre_baskerville/LibreBaskerville-Regular.ttf"
@@ -131,6 +182,19 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         .map(|&doc| serde_json::from_str(doc).expect("Could not open emocat document"))
         .collect();
 
+    let help_text = concat!(
+        "Use \u{00AB} left or right \u{00BB} arrow keys to read poem\n\n",
+        "Press 'a' to toggle Analysis panel\n\n",
+        "Press 'm' to return to poem listing\n\n",
+        "Click mouse to close this help",
+    );
+
+    let touch_help_text = concat!(
+        "Swipe left or right to read poem\n\n",
+        "Swipe down to toggle Analysis panel\n\n",
+        "Swipe up to return to poem listing\n\n",
+        "Tap to close this help",
+    );
 
     let state = State {
         view: View::HOME,
@@ -156,64 +220,81 @@ fn init(gfx: &mut Graphics, plugins: &mut Plugins) -> State {
         },
         needs_handle_resize: true,
         needs_egui_font_setup: true,
+        touch: TouchState::default(),
+        help_modal: CommonHelpModal::new(
+            gfx,
+            help_text.to_string(),
+            touch_help_text.to_string(),
+            None,
+        ),
     };
     state
 }
 
 
 fn update_read_view(app: &mut App, state: &mut State) {
-    let emodoc = &state.emodocs[state.reading.doc_index];
-
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
-        state.reading.analysis = 0;
-        state
-            .visualizer
-            .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+        state.goto_read_home();
     }
 
     if app.keyboard.was_pressed(KeyCode::End) {
         log::debug!("end");
-        state.reading.analysis = emodoc.analyses.len();
-        state
-            .visualizer
-            .update_model(&emodoc.analyses[state.reading.analysis - 1]);
+        state.goto_read_end();
     }
 
-
-    if app.keyboard.was_pressed(KeyCode::Left) && state.reading.analysis > 0 {
+    if app.keyboard.was_pressed(KeyCode::Left) {
         log::debug!("left");
-        state.reading.analysis -= 1;
-        if state.reading.analysis > 0 {
-            state
-                .visualizer
-                .update_model(&emodoc.analyses[state.reading.analysis - 1]);
-        } else {
-            state
-                .visualizer
-                .gracefully_reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+        state.goto_read_prev();
+    }
+
+    if app.keyboard.was_pressed(KeyCode::Right) {
+        log::debug!("right");
+        state.goto_read_next();
+    }
+
+    if app.keyboard.was_pressed(KeyCode::A) {
+        log::debug!("a");
+        state.show_analysis = !state.show_analysis;
+    }
+
+    state.visualizer.update_visualization();
+}
+
+
+fn handle_read_view_touch_events(app: &mut App, state: &mut State, evt: Event) {
+    let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
+    log::debug!("gesture found: {:?}", gesture);
+
+    if gesture.is_some() {
+        if !state.help_modal.handle_first_touch_with_help() {
+            match gesture {
+                Some(TouchGesture::SwipeLeft) => state.goto_read_next(),
+                Some(TouchGesture::SwipeRight) => state.goto_read_prev(),
+                Some(TouchGesture::SwipeUp) => state.goto_home_view(),
+                Some(TouchGesture::SwipeDown) => state.show_analysis = !state.show_analysis,
+                Some(TouchGesture::Tap) => state.help_modal.toggle_touch_help(),
+                _ => {}
+            }
+        }
+    } else if state.touch.touch_interface_detected == false {
+        match evt {
+            Event::MouseUp { .. } => {
+                log::debug!("mouse up in read_view_events!");
+                // if state.events_focus.has_focus() {
+                state.help_modal.handle_mouse_up()
+                // }
+            }
+            _ => {}
         }
     }
-
-    if app.keyboard.was_pressed(KeyCode::Right) && state.reading.analysis < emodoc.analyses.len() {
-        log::debug!("right");
-        state.reading.analysis += 1;
-        state
-            .visualizer
-            .update_model(&emodoc.analyses[state.reading.analysis - 1]);
-    }
-    state.visualizer.update_visualization();
 }
 
 
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::M) {
         log::debug!("m");
-        state.view = View::HOME;
-        state.reading = ReadingViewState::default();
-        state
-            .visualizer
-            .reset(CLEAR_COLOR, TITLE_COLOR, DYNAMIC_TEXT_COLOR);
+        state.goto_home_view();
     }
 
     if state.selected_visualizer != state.visualizer.get_enum() {
@@ -236,7 +317,6 @@ fn update(app: &mut App, state: &mut State) {
             }
         }
     }
-
 
     match state.view {
         View::READ => update_read_view(app, state),
@@ -267,8 +347,25 @@ fn draw_paragraph(draw: &mut Draw, state: &mut State, work_size: Vec2) {
     );
 }
 
+fn draw_read_help(draw: &mut Draw, state: &mut State, work_size: Vec2) {
+    // Using a custom help popup instead of state.help_modal.draw()
+    if state.help_modal.show_help || state.help_modal.show_touch_help {
+        let mut help_txt = &state.help_modal.help_text;
+        if state.help_modal.show_touch_help {
+            help_txt = &state.help_modal.touch_help_text;
+        }
+        state.visualizer.draw_read_help(
+            draw,
+            &state.font,
+            help_txt,
+            work_size,
+            HELP_MODAL_TXTCOLOR,
+            HELP_MODAL_BGCOLOR,
+        );
+    }
+}
 
-// fn draw_read_view(draw: &mut Draw, state: &State, work_size: Vec2) {
+
 fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
 
@@ -282,6 +379,7 @@ fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     } else {
         draw_paragraph(draw, state, work_size);
     }
+    draw_read_help(draw, state, work_size);
     gfx.render(draw);
 
     let output = plugins.egui(|ctx| {
@@ -393,7 +491,7 @@ fn configure_custom_fonts(ctx: &egui::Context, state: &mut State) {
 
 
 // Based on https://github.com/Nazariglez/notan/blob/main/examples/input_mouse_events.rs
-fn event(state: &mut State, evt: Event) {
+fn event(app: &mut App, state: &mut State, evt: Event) {
     match evt {
         Event::WindowResize { width, height } => {
             // state.text = "resize...".to_string();
@@ -401,6 +499,11 @@ fn event(state: &mut State, evt: Event) {
             state.needs_handle_resize = true
         }
         _ => {}
+    }
+
+    match state.view {
+        View::READ => handle_read_view_touch_events(app, state, evt),
+        _ => (),
     }
 }
 
@@ -495,6 +598,7 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
             // .default_pos(egui::Pos2::new(work_size.x, work_size.y))
             .default_pos(egui::Pos2::new(work_size.x, 0.0))
             .default_width(work_size.x * 0.2)
+            .collapsible(false)
             .frame(egui::Frame::none().fill(panel_color).inner_margin(
                 egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
@@ -521,7 +625,7 @@ fn draw_with_main_panel<F>(
 ) where
     F: Fn(&egui::Context, &mut Ui, &mut State, Vec2),
 {
-    let mut panel_inner_margin_w = work_size.y * 0.02;
+    let panel_inner_margin_w;
     if work_size.x > work_size.y {
         panel_inner_margin_w = work_size.y * 0.1;
     } else {
@@ -792,6 +896,7 @@ fn main() -> Result<(), String> {
         .add_config(EguiConfig)
         .add_config(DrawConfig) // Simple way to add the draw extension
         .add_plugin(FpsLimit::new(MAX_FPS))
+        // .touch_as_mouse(false)
         .event(event)
         .draw(draw)
         .update(update)
