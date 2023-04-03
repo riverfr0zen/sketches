@@ -74,7 +74,7 @@ pub struct TilesVisualizer {
     text_color: Color,
     pub text_shadow_style: String,
     dynamic_text_color: bool,
-    tile_texture: Option<Texture>,
+    tile_texture: Texture,
     tiles: Vec<Tile>,
     layout: TilesLayout,
     refresh_layout: bool,
@@ -142,7 +142,7 @@ impl TilesVisualizer {
             text_color: text_color,
             text_shadow_style: "None".to_string(),
             dynamic_text_color: enable_dynamic_text_color,
-            tile_texture: Some(tile_texture),
+            tile_texture: tile_texture,
             tiles: vec![],
             layout: TilesLayout::none(),
             refresh_layout: false,
@@ -272,7 +272,7 @@ impl TilesVisualizer {
                 // .alpha(TILE_ALPHA)
                 // .fill_color(col.color)
                 // .fill();
-                draw.image(&self.tile_texture.as_ref().unwrap())
+                draw.image(&self.tile_texture.as_ref())
                     .position(
                         col_index as f32 * self.layout.tile_size.x,
                         row_index as f32 * self.layout.tile_size.y,
