@@ -78,13 +78,13 @@ struct State {
     font: Font,
     title_font: Font,
     egui_fonts: FontDefinitions,
-    // visualizer: ColorTransitionVisualizer,
     selected_visualizer: VisualizerSelection,
     visualizer: Box<dyn EmoVisualizerFull>,
     needs_handle_resize: bool,
     needs_egui_font_setup: bool,
     touch: TouchState,
     help_modal: CommonHelpModal,
+    tile_texture: Texture,
 }
 
 impl State {
@@ -196,21 +196,29 @@ fn init(gfx: &mut Graphics) -> State {
         "Tap to close this help",
     );
 
+    let tile_texture = gfx
+        .create_texture()
+        .from_image(include_bytes!("../examples/assets/tiles/tile3_4k.png"))
+        .build()
+        .unwrap();
+
+
     let state = State {
         view: View::HOME,
         // view: View::READ,
         show_analysis: false,
-        emodocs: emodocs,
+        emodocs,
         reading: ReadingViewState::default(),
-        font: font,
-        title_font: title_font,
-        egui_fonts: egui_fonts,
+        font,
+        title_font,
+        egui_fonts,
         selected_visualizer: DEFAULT_VISUALIZER,
         visualizer: match DEFAULT_VISUALIZER {
             VisualizerSelection::Tiles => Box::new(TilesVisualizer::new(
                 CLEAR_COLOR,
                 TITLE_COLOR,
                 DYNAMIC_TEXT_COLOR,
+                tile_texture.clone(),
             )),
             _ => Box::new(ColorTransitionVisualizer::new(
                 CLEAR_COLOR,
@@ -227,6 +235,7 @@ fn init(gfx: &mut Graphics) -> State {
             touch_help_text.to_string(),
             None,
         ),
+        tile_texture,
     };
     state
 }
@@ -264,19 +273,18 @@ fn update_read_view(app: &mut App, state: &mut State) {
 
 fn handle_read_view_touch_events(app: &mut App, state: &mut State, evt: Event) {
     let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
-    log::debug!("gesture found: {:?}", gesture);
 
     if gesture.is_some() {
-        if !state.help_modal.handle_first_touch_with_help() {
-            match gesture {
-                Some(TouchGesture::SwipeLeft) => state.goto_read_next(),
-                Some(TouchGesture::SwipeRight) => state.goto_read_prev(),
-                Some(TouchGesture::SwipeUp) => state.goto_home_view(),
-                Some(TouchGesture::SwipeDown) => state.show_analysis = !state.show_analysis,
-                Some(TouchGesture::Tap) => state.help_modal.toggle_touch_help(),
-                _ => {}
-            }
+        // if !state.help_modal.handle_first_touch_with_help() {
+        match gesture {
+            Some(TouchGesture::SwipeLeft) => state.goto_read_next(),
+            Some(TouchGesture::SwipeRight) => state.goto_read_prev(),
+            Some(TouchGesture::SwipeUp) => state.goto_home_view(),
+            Some(TouchGesture::SwipeDown) => state.show_analysis = !state.show_analysis,
+            Some(TouchGesture::Tap) => state.help_modal.toggle_touch_help(),
+            _ => {}
         }
+        // }
     } else if state.touch.touch_interface_detected == false {
         match evt {
             Event::MouseUp { .. } => {
@@ -305,6 +313,7 @@ fn update(app: &mut App, state: &mut State) {
                     CLEAR_COLOR,
                     TITLE_COLOR,
                     DYNAMIC_TEXT_COLOR,
+                    state.tile_texture.clone(),
                 ));
             }
             _ => {

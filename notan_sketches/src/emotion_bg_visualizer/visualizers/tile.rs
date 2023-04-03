@@ -123,7 +123,12 @@ fn get_sentiment_enhanced_color(
 
 
 impl TilesVisualizer {
-    pub fn new(bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) -> Self {
+    pub fn new(
+        bg_color: Color,
+        text_color: Color,
+        enable_dynamic_text_color: bool,
+        tile_texture: Texture,
+    ) -> Self {
         let (rng, _) = get_rng(None);
         Self {
             rng: rng,
@@ -137,7 +142,7 @@ impl TilesVisualizer {
             text_color: text_color,
             text_shadow_style: "None".to_string(),
             dynamic_text_color: enable_dynamic_text_color,
-            tile_texture: None,
+            tile_texture: Some(tile_texture),
             tiles: vec![],
             layout: TilesLayout::none(),
             refresh_layout: false,
@@ -337,16 +342,6 @@ impl EmoVisualizer for TilesVisualizer {
 
 
     fn draw(&mut self, gfx: &mut Graphics, draw: &mut Draw) {
-        if let None = self.tile_texture {
-            self.tile_texture = Some(
-                gfx.create_texture()
-                    .from_image(include_bytes!(
-                        "../../../examples/assets/tiles/tile3_4k.png"
-                    ))
-                    .build()
-                    .unwrap(),
-            );
-        }
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.transition.color);
         self.draw_tiles_grid(draw);
