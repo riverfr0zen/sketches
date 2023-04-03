@@ -4,6 +4,7 @@ pub mod tile;
 use crate::emotion::EmocatTextAnalysis;
 use crate::utils::{scale_font, ScreenDimensions};
 use notan::draw::*;
+use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 
@@ -81,15 +82,18 @@ pub trait EmoVisualizer {
     }
 
     fn draw_paragraph(&mut self, draw: &mut Draw, font: &Font, text: &str, work_size: Vec2) {
-        let textbox_width = work_size.x * 0.75;
+        let max_width = work_size.x * 0.75;
+        let max_height = work_size.y * 0.75;
 
+        let font_size =
+            get_optimal_text_size(draw, font, text, work_size, 32.0, max_width, max_height);
         draw.text(&font, &text)
             .alpha_mode(BlendMode::OVER)
             .color(self.get_text_color())
             // NOTE: These draw.text fonts size differently than font sizes in egui
-            .size(scale_font(32.0, work_size))
-            .max_width(textbox_width)
-            .position(work_size.x * 0.5 - textbox_width * 0.5, work_size.y * 0.5)
+            .size(scale_font(font_size, work_size))
+            .max_width(max_width)
+            .position(work_size.x * 0.5 - max_width * 0.5, work_size.y * 0.5)
             .v_align_middle()
             .h_align_left();
     }
@@ -129,6 +133,32 @@ pub trait EmoVisualizer {
     }
 }
 
+
+pub fn get_optimal_text_size(
+    draw: &mut Draw,
+    font: &Font,
+    text: &str,
+    work_size: Vec2,
+    font_size: f32,
+    max_width: f32,
+    max_height: f32,
+) -> f32 {
+    draw.text(&font, &text)
+        .alpha_mode(BlendMode::OVER)
+        .color(Color::TRANSPARENT)
+        .size(scale_font(font_size, work_size))
+        .max_width(max_width)
+        .position(work_size.x * 0.5 - max_width * 0.5, work_size.y * 0.5)
+        .v_align_middle()
+        .h_align_left();
+
+    let para_bounds = draw.last_text_bounds();
+    log::debug!("{} > {}", para_bounds.height, max_height);
+    if para_bounds.height > max_height {
+        return font_size * max_height / para_bounds.height;
+    }
+    font_size
+}
 
 /// Return black or white depending on provided background color
 ///

@@ -41,8 +41,8 @@ const READ_VIEW_GUI_COLOR: egui::Color32 =
     egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
-// const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::ColorTransition;
-const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::Tiles;
+const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::ColorTransition;
+// const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::Tiles;
 
 
 #[derive(PartialEq)]

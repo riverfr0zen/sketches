@@ -1,5 +1,5 @@
 use super::color_transition::ColorTransition;
-use super::{get_optimal_text_color, EmoVisualizer, VisualizerSelection};
+use super::{get_optimal_text_color, get_optimal_text_size, EmoVisualizer, VisualizerSelection};
 use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, Sentiment, TopEmotionsModel};
 use crate::utils::{get_rng, scale_font};
 use notan::draw::*;
@@ -354,9 +354,20 @@ impl EmoVisualizer for TilesVisualizer {
 
     fn draw_paragraph(&mut self, draw: &mut Draw, font: &Font, text: &str, work_size: Vec2) {
         let textbox_width = work_size.x * 0.75;
+        let textbox_height = work_size.y * 0.75;
         let text_pos_x = work_size.x * 0.5 - textbox_width * 0.5;
         let text_pos_y = work_size.y * 0.5;
         let text_color = self.get_text_color();
+
+        let font_size = get_optimal_text_size(
+            draw,
+            font,
+            text,
+            work_size,
+            32.0,
+            textbox_width,
+            textbox_height,
+        );
 
         if self.text_shadow_style != "None" {
             let offset = work_size.x * 0.0005;
@@ -367,7 +378,7 @@ impl EmoVisualizer for TilesVisualizer {
                         .alpha(0.25)
                         .color(Color::BLACK)
                         // NOTE: These draw.text fonts size differently than font sizes in egui
-                        .size(scale_font(32.0, work_size))
+                        .size(scale_font(font_size, work_size))
                         .max_width(textbox_width)
                         .position(text_pos_x - offset * 3.0, text_pos_y + offset * 3.0)
                         .v_align_middle()
@@ -378,7 +389,7 @@ impl EmoVisualizer for TilesVisualizer {
                         .alpha_mode(BlendMode::OVER)
                         .color(Color::BLACK)
                         // NOTE: These draw.text fonts size differently than font sizes in egui
-                        .size(scale_font(32.0, work_size))
+                        .size(scale_font(font_size, work_size))
                         .max_width(textbox_width)
                         .position(text_pos_x - offset, text_pos_y + offset)
                         .v_align_middle()
@@ -391,7 +402,7 @@ impl EmoVisualizer for TilesVisualizer {
                         .alpha(0.3)
                         .color(Color::WHITE)
                         // NOTE: These draw.text fonts size differently than font sizes in egui
-                        .size(scale_font(32.0, work_size))
+                        .size(scale_font(font_size, work_size))
                         .max_width(textbox_width)
                         .position(text_pos_x + offset * 3.0, text_pos_y - offset * 3.0)
                         .v_align_middle()
@@ -402,7 +413,7 @@ impl EmoVisualizer for TilesVisualizer {
                         .alpha_mode(BlendMode::OVER)
                         .color(Color::WHITE)
                         // NOTE: These draw.text fonts size differently than font sizes in egui
-                        .size(scale_font(32.0, work_size))
+                        .size(scale_font(font_size, work_size))
                         .max_width(textbox_width)
                         .position(text_pos_x + offset, text_pos_y - offset)
                         .v_align_middle()
@@ -414,7 +425,7 @@ impl EmoVisualizer for TilesVisualizer {
             .alpha_mode(BlendMode::OVER)
             .color(self.get_text_color())
             // NOTE: These draw.text fonts size differently than font sizes in egui
-            .size(scale_font(32.0, work_size))
+            .size(scale_font(font_size, work_size))
             .max_width(textbox_width)
             .position(text_pos_x, text_pos_y)
             .v_align_middle()
