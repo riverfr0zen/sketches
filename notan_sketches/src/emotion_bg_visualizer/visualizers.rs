@@ -10,6 +10,7 @@ use notan::prelude::*;
 
 const TITLE_COLOR: Color = Color::BLACK;
 const META_COLOR: Color = Color::GRAY;
+const FONT_RESIZE_STEP: f32 = 2.0;
 
 
 #[derive(PartialEq)]
@@ -134,6 +135,7 @@ pub trait EmoVisualizer {
 }
 
 
+/// Draw text and check bounds recursively to find nearest fit for oversized text
 pub fn get_optimal_text_size(
     draw: &mut Draw,
     font: &Font,
@@ -153,9 +155,13 @@ pub fn get_optimal_text_size(
         .h_align_left();
 
     let para_bounds = draw.last_text_bounds();
-    log::debug!("{} > {}", para_bounds.height, max_height);
+    // log::debug!("{} > {}?", para_bounds.height, max_height);
     if para_bounds.height > max_height {
-        return font_size * max_height / para_bounds.height;
+        let font_size = font_size - FONT_RESIZE_STEP;
+        // log::debug!("Font resized to {}", font_size);
+        return get_optimal_text_size(
+            draw, font, text, work_size, font_size, max_width, max_height,
+        );
     }
     font_size
 }
