@@ -20,7 +20,7 @@ use FontFamily::{Monospace, Proportional};
 
 
 // See details at https://stackoverflow.com/a/42764117
-const EMOCAT_DOCS: [&'static str; 8] = [
+const EMOCAT_DOCS: [&'static str; 7] = [
     include_str!("assets/lb_bronte01.json"),
     include_str!("assets/lb_dickinson01.json"),
     // include_str!("assets/lb_dickinson02.json"),
@@ -29,7 +29,7 @@ const EMOCAT_DOCS: [&'static str; 8] = [
     include_str!("assets/lb_teasdale01.json"),
     include_str!("assets/wilde01.json"),
     include_str!("assets/lb_whitman01.json"),
-    include_str!("assets/the_stagger.json"),
+    // include_str!("assets/the_stagger.json"),
 ];
 const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
@@ -183,14 +183,15 @@ fn init(gfx: &mut Graphics) -> State {
         .collect();
 
     let help_text = concat!(
-        "Use \u{00AB} left or right \u{00BB} arrow keys to read poem\n\n",
+        // "Use \u{00AB} left or right \u{00BB} arrow keys to read poem\n\n",
+        "Use left or right arrow keys to read through the piece\n\n",
         "Press 'a' to toggle Analysis panel\n\n",
         "Press 'm' to return to poem listing\n\n",
         "Click mouse to close this help",
     );
 
     let touch_help_text = concat!(
-        "Swipe left or right to read poem\n\n",
+        "Swipe left or right to read through the piece\n\n",
         "Swipe down to toggle Analysis panel\n\n",
         "Swipe up to return to poem listing\n\n",
         "Tap to close this help",
