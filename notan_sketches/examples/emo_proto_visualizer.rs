@@ -64,6 +64,15 @@ fn init(gfx: &mut Graphics) -> State {
     let analyses_str = include_str!(EMOCAT_OUTPUT_FILE!());
     let emodoc: EmocatOutputDoc =
         serde_json::from_str(analyses_str).expect("Could not open emocat document");
+
+
+    let tile_texture = gfx
+        .create_texture()
+        .from_image(include_bytes!("../examples/assets/tiles/tile3_4k.png"))
+        .build()
+        .unwrap();
+
+
     let state = State {
         emodoc: emodoc,
         font: font,
@@ -74,6 +83,7 @@ fn init(gfx: &mut Graphics) -> State {
                 CLEAR_COLOR,
                 TITLE_COLOR,
                 DYNAMIC_TEXT_COLOR,
+                tile_texture,
             )),
             _ => Box::new(ColorTransitionVisualizer::new(
                 CLEAR_COLOR,
