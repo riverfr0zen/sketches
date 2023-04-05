@@ -3,9 +3,9 @@ use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
-use palette::named::GREEN;
 
-const WORK_SIZE: Vec2 = Vec2::new(800.0, 600.0);
+// const WORK_SIZE: Vec2 = Vec2::new(800.0, 600.0);
+const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 const RED_VAL: f32 = 1.0;
 const GREEN_VAL: f32 = 0.5;
 
@@ -25,25 +25,42 @@ const FRAGMENT: ShaderSource = notan::fragment_shader! {
 
     layout(set = 0, binding = 2) uniform Common {
         float u_time;
-        vec2 u_resolution;
+        float u_resolution_x;
+        float u_resolution_y;
     };
 
-    void main() {
-        vec2 st = gl_FragCoord.xy / u_resolution;
-        // vec2 st = gl_FragCoord.xy / vec2(1920, 1080);
-        // color = vec4(rVal, gVal, 0.0, 1.0);
-        // color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
-        color = vec4(st.x, st.y, 0.0, 1.0);
+    // Plot a line on Y using a value between 0.0-1.0
+    float plot(vec2 st) {    
+        return smoothstep(0.02, 0.0, abs(st.y - st.x));
     }
+
+    // void main() {
+    //     vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
+    //     // color = vec4(rVal, gVal, 0.0, 1.0);
+    //     // color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
+    //     color = vec4(st.x, st.y, 0.0, 1.0);
+    // }
+
+    void main() {
+        vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
+        float y = st.x;
+        vec3 xcolor = vec3(y);
+        // Plot a line
+        float pct = plot(st);
+        xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
+        color = vec4(xcolor,1.0);
+    }
+
 "#
 };
+
 
 #[derive(AppState)]
 struct State {
     pub pipeline: Pipeline,
     pub clr_ubo: Buffer,
     pub common_ubo: Buffer,
-    pub rect_size: Vec2,
+    pub rt: RenderTexture,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
@@ -62,44 +79,60 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         .build()
         .unwrap();
 
+    let rt = gfx
+        .create_render_texture(WORK_SIZE.x as _, WORK_SIZE.y as _)
+        .build()
+        .unwrap();
+
     State {
         pipeline,
         clr_ubo,
         common_ubo,
-        rect_size: Vec2::new(300.0, 200.0),
+        rt,
     }
 }
 
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
-    let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLACK);
-
+    let rt_draw = &mut state.rt.create_draw();
 
     // add custom pipeline for shapes
-    draw.shape_pipeline()
+    rt_draw
+        .shape_pipeline()
         .pipeline(&state.pipeline)
         .uniform_buffer(&state.clr_ubo)
         .pipeline(&state.pipeline)
         .uniform_buffer(&state.common_ubo);
 
-
-    draw.rect((100.0, 100.0), (state.rect_size.x, state.rect_size.y))
+    rt_draw
+        .rect((0.0, 0.0), (state.rt.width(), state.rt.height()))
         .fill_color(Color::GRAY)
         .fill();
 
-    draw.rect((100.0, 350.0), (300.0, 200.0))
-        .fill_color(Color::GRAY)
-        .fill();
+    rt_draw.shape_pipeline().remove();
 
-    draw.shape_pipeline().remove();
+    gfx.render_to(&state.rt, rt_draw);
+
+
+    let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLUE);
+    draw.image(&state.rt)
+        .position(50.0, 100.0)
+        .size(200.0, 200.0);
+
+    draw.image(&state.rt)
+        .position(300.0, 100.0)
+        .size(300.0, 200.0);
+
+
+    draw.image(&state.rt)
+        .position(650.0, 100.0)
+        .size(600.0, 200.0);
 
 
     gfx.render(draw);
 
     let u_time = app.timer.time_since_init();
-    let (width, height) = gfx.device.size();
-    log::debug!("t {} w {} h {}", u_time, width, height);
-    gfx.set_buffer_data(&state.common_ubo, &[u_time, width as f32, height as f32]);
+    gfx.set_buffer_data(&state.common_ubo, &[u_time, WORK_SIZE.x, WORK_SIZE.y]);
 }
 
 #[notan_main]

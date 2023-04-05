@@ -40,6 +40,9 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 cargo build --release --example radial_pointillist --target wasm32-unknown-unknown
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/radial_pointillist.wasm
 
+cargo build --release --example eg_frag_shader --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/eg_frag_shader.wasm
+
 
 ```
 
