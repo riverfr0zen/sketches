@@ -11,7 +11,51 @@ const GREEN_VAL: f32 = 0.5;
 
 
 // language=glsl
-const FRAGMENT: ShaderSource = notan::fragment_shader! {
+const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
+    r#"
+    #version 450
+    precision mediump float;
+    layout(location = 0) in vec4 v_color;
+    layout(location = 0) out vec4 color;
+
+    layout(set = 0, binding = 1) uniform ColorVals {
+        float rVal;
+        float gVal;
+    };
+
+    layout(set = 0, binding = 2) uniform Common {
+        float u_time;
+        float u_resolution_x;
+        float u_resolution_y;
+    };
+
+    // Plot a line on Y using a value between 0.0-1.0
+    float plot(vec2 st) {    
+        return smoothstep(0.02, 0.0, abs(st.y - st.x));
+    }
+
+    void main() {
+        vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
+        // color = vec4(rVal, gVal, 0.0, 1.0);
+        color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
+        // color = vec4(rVal, gVal, st.y, 1.0);
+    }
+
+    // void main() {
+    //     vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
+    //     float y = st.x;
+    //     vec3 xcolor = vec3(y);
+    //     // Plot a line
+    //     float pct = plot(st);
+    //     xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
+    //     color = vec4(xcolor,1.0);
+    // }
+
+"#
+};
+
+
+const PLOTFRAG: ShaderSource = notan::fragment_shader! {
     r#"
     #version 450
     precision mediump float;
@@ -100,7 +144,7 @@ struct State {
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
-    let pipeline = create_shape_pipeline(gfx, Some(&FRAGMENT)).unwrap();
+    let pipeline = create_shape_pipeline(gfx, Some(&COLOR_FRAG)).unwrap();
     // let pipeline2 = create_shape_pipeline(gfx, Some(&FRAGMENT)).unwrap();
 
     let clr_ubo = gfx
@@ -212,7 +256,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         .srt
         .draw(gfx, &state.pipeline, vec![&state.clr_ubo], |srtdraw| {
             srtdraw
-                .rect((0.0, 0.0), (state.rt2.width(), state.rt2.height()))
+                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
                 .fill_color(Color::GRAY)
                 .fill();
         });
