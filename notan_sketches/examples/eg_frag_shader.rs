@@ -40,22 +40,11 @@ const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
         color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
         // color = vec4(rVal, gVal, st.y, 1.0);
     }
-
-    // void main() {
-    //     vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
-    //     float y = st.x;
-    //     vec3 xcolor = vec3(y);
-    //     // Plot a line
-    //     float pct = plot(st);
-    //     xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
-    //     color = vec4(xcolor,1.0);
-    // }
-
 "#
 };
 
 
-const PLOTFRAG: ShaderSource = notan::fragment_shader! {
+const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
     r#"
     #version 450
     precision mediump float;
@@ -80,21 +69,13 @@ const PLOTFRAG: ShaderSource = notan::fragment_shader! {
 
     void main() {
         vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
-        // color = vec4(rVal, gVal, 0.0, 1.0);
-        color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
-        // color = vec4(rVal, gVal, st.y, 1.0);
+        float y = st.x;
+        vec3 xcolor = vec3(y);
+        // Plot a line
+        float pct = plot(st);
+        xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
+        color = vec4(xcolor,1.0);
     }
-
-    // void main() {
-    //     vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
-    //     float y = st.x;
-    //     vec3 xcolor = vec3(y);
-    //     // Plot a line
-    //     float pct = plot(st);
-    //     xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
-    //     color = vec4(xcolor,1.0);
-    // }
-
 "#
 };
 
@@ -112,17 +93,74 @@ impl ShaderRenderTexture {
         Self { rt }
     }
 
-    fn draw<F>(&mut self, gfx: &mut Graphics, pipeline: &Pipeline, ubos: Vec<&Buffer>, draw_fn: F)
-    where
+    fn draw<F>(
+        &mut self,
+        gfx: &mut Graphics,
+        pipeline: &Pipeline,
+        // Up to 5 uniforms are allowed for now (see hack below)
+        uniforms: Vec<&Buffer>,
+        draw_fn: F,
+    ) where
         F: Fn(&mut Draw),
     {
         let rt_draw = &mut self.rt.create_draw();
 
-        for ubo in ubos.iter() {
-            rt_draw
-                .shape_pipeline()
-                .pipeline(&pipeline)
-                .uniform_buffer(&ubo);
+        // HACKY WAY OF BUILDING CUSTOM PIPELINE for n uniforms. Revisit later.
+        match uniforms.len() {
+            5 => {
+                rt_draw
+                    .shape_pipeline()
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[0])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[1])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[2])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[3])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[4]);
+            }
+            4 => {
+                rt_draw
+                    .shape_pipeline()
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[0])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[1])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[2])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[3]);
+            }
+            3 => {
+                rt_draw
+                    .shape_pipeline()
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[0])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[1])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[2]);
+            }
+            2 => {
+                rt_draw
+                    .shape_pipeline()
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[0])
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[1]);
+            }
+            1 => {
+                rt_draw
+                    .shape_pipeline()
+                    .pipeline(&pipeline)
+                    .uniform_buffer(&uniforms[0]);
+            }
+            _ => panic!(concat!(
+                "Max number of uniforms is 5 due to Irfan's hacky implementation! ",
+                "You can increase this by updating notan_sketches::shaders::ShaderRenderTexture::draw()"
+            )),
         }
         draw_fn(rt_draw);
         rt_draw.shape_pipeline().remove();
@@ -138,14 +176,13 @@ struct State {
     pub clr_ubo: Buffer,
     pub clr_ubo2: Buffer,
     pub common_ubo: Buffer,
-    pub rt: RenderTexture,
-    pub rt2: RenderTexture,
     pub srt: ShaderRenderTexture,
+    pub srt2: ShaderRenderTexture,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let pipeline = create_shape_pipeline(gfx, Some(&COLOR_FRAG)).unwrap();
-    // let pipeline2 = create_shape_pipeline(gfx, Some(&FRAGMENT)).unwrap();
+    // let pipeline2 = create_shape_pipeline(gfx, Some(&PLOT_FRAG)).unwrap();
 
     let clr_ubo = gfx
         .create_uniform_buffer(1, "ColorVals")
@@ -178,6 +215,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         .unwrap();
 
     let srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
+    let srt2 = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
 
     State {
         pipeline,
@@ -185,82 +223,69 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         clr_ubo,
         clr_ubo2,
         common_ubo,
-        rt,
-        rt2,
         srt,
+        srt2,
     }
 }
 
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
-    let rt_draw = &mut state.rt.create_draw();
-
-    // rt with clr_ubo
-    rt_draw
-        .shape_pipeline()
-        .pipeline(&state.pipeline)
-        .uniform_buffer(&state.clr_ubo)
-        .pipeline(&state.pipeline)
-        .uniform_buffer(&state.common_ubo);
-
-    rt_draw
-        .rect((0.0, 0.0), (state.rt.width(), state.rt.height()))
-        .fill_color(Color::GRAY)
-        .fill();
-
-    rt_draw.shape_pipeline().remove();
-
-    gfx.render_to(&state.rt, rt_draw);
-
-
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLUE);
-    draw.image(&state.rt)
-        .position(50.0, 100.0)
-        .size(200.0, 200.0);
 
-    draw.image(&state.rt)
-        .position(300.0, 100.0)
-        .size(300.0, 200.0);
-
-
-    draw.image(&state.rt)
-        .position(650.0, 100.0)
-        .size(600.0, 200.0);
-
-
-    // Switch to rt2 with clr_ubo2
-    let rt_draw = &mut state.rt2.create_draw();
-    rt_draw
-        .shape_pipeline()
-        .pipeline(&state.pipeline)
-        .uniform_buffer(&state.clr_ubo2)
-        .pipeline(&state.pipeline)
-        .uniform_buffer(&state.common_ubo);
-
-    rt_draw
-        .rect((0.0, 0.0), (state.rt2.width(), state.rt2.height()))
-        .fill_color(Color::GRAY)
-        .fill();
-
-    rt_draw.shape_pipeline().remove();
-
-    gfx.render_to(&state.rt2, rt_draw);
-
-
-    draw.image(&state.rt2)
-        .position(50.0, 400.0)
-        .size(200.0, 200.0);
-
-
-    state
-        .srt
-        .draw(gfx, &state.pipeline, vec![&state.clr_ubo], |srtdraw| {
+    state.srt.draw(
+        gfx,
+        &state.pipeline,
+        vec![&state.clr_ubo, &state.common_ubo],
+        |srtdraw| {
             srtdraw
                 .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
                 .fill_color(Color::GRAY)
                 .fill();
-        });
+        },
+    );
 
+    draw.image(&state.srt.rt)
+        .position(50.0, 100.0)
+        .size(200.0, 200.0);
+
+    draw.image(&state.srt.rt)
+        .position(300.0, 100.0)
+        .size(300.0, 200.0);
+
+    draw.image(&state.srt.rt)
+        .position(650.0, 100.0)
+        .size(600.0, 200.0);
+
+
+    // srt2 with clr_ubo2
+    state.srt2.draw(
+        gfx,
+        &state.pipeline,
+        vec![&state.clr_ubo2, &state.common_ubo],
+        |srtdraw| {
+            srtdraw
+                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
+                .fill_color(Color::GRAY)
+                .fill();
+        },
+    );
+
+    draw.image(&state.srt2.rt)
+        .position(50.0, 400.0)
+        .size(200.0, 200.0);
+
+
+    state.srt.draw(
+        gfx,
+        &state.pipeline,
+        vec![&state.clr_ubo, &state.common_ubo],
+        |srtdraw| {
+            srtdraw
+                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
+                .fill_color(Color::GRAY)
+                .fill();
+        },
+    );
 
     draw.image(&state.srt.rt)
         .position(50.0, 700.0)
