@@ -23,14 +23,17 @@ const FRAGMENT: ShaderSource = notan::fragment_shader! {
         float gVal;
     };
 
-    layout(set = 0, binding = 2) uniform Time {
+    layout(set = 0, binding = 2) uniform Common {
         float u_time;
+        vec2 u_resolution;
     };
 
-
     void main() {
+        vec2 st = gl_FragCoord.xy / u_resolution;
+        // vec2 st = gl_FragCoord.xy / vec2(1920, 1080);
         // color = vec4(rVal, gVal, 0.0, 1.0);
-        color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
+        // color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
+        color = vec4(st.x, st.y, 0.0, 1.0);
     }
 "#
 };
@@ -39,7 +42,8 @@ const FRAGMENT: ShaderSource = notan::fragment_shader! {
 struct State {
     pub pipeline: Pipeline,
     pub clr_ubo: Buffer,
-    pub time_ubo: Buffer,
+    pub common_ubo: Buffer,
+    pub rect_size: Vec2,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
@@ -51,16 +55,18 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         .build()
         .unwrap();
 
-    let time_ubo = gfx
-        .create_uniform_buffer(2, "Time")
-        .with_data(&[0.0])
+    let (width, height) = gfx.device.size();
+    let common_ubo = gfx
+        .create_uniform_buffer(2, "Common")
+        .with_data(&[0.0, width as f32, height as f32])
         .build()
         .unwrap();
 
     State {
         pipeline,
         clr_ubo,
-        time_ubo,
+        common_ubo,
+        rect_size: Vec2::new(300.0, 200.0),
     }
 }
 
@@ -68,16 +74,18 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLACK);
 
-    draw.rect((100.0, 100.0), (300.0, 200.0))
-        .fill_color(Color::GRAY)
-        .fill();
 
     // add custom pipeline for shapes
     draw.shape_pipeline()
         .pipeline(&state.pipeline)
         .uniform_buffer(&state.clr_ubo)
         .pipeline(&state.pipeline)
-        .uniform_buffer(&state.time_ubo);
+        .uniform_buffer(&state.common_ubo);
+
+
+    draw.rect((100.0, 100.0), (state.rect_size.x, state.rect_size.y))
+        .fill_color(Color::GRAY)
+        .fill();
 
     draw.rect((100.0, 350.0), (300.0, 200.0))
         .fill_color(Color::GRAY)
@@ -89,8 +97,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     gfx.render(draw);
 
     let u_time = app.timer.time_since_init();
-    log::debug!("{}", u_time);
-    gfx.set_buffer_data(&state.time_ubo, &[u_time]);
+    let (width, height) = gfx.device.size();
+    log::debug!("t {} w {} h {}", u_time, width, height);
+    gfx.set_buffer_data(&state.common_ubo, &[u_time, width as f32, height as f32]);
 }
 
 #[notan_main]
