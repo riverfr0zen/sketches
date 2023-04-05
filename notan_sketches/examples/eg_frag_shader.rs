@@ -51,11 +51,6 @@ const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
     layout(location = 0) in vec4 v_color;
     layout(location = 0) out vec4 color;
 
-    layout(set = 0, binding = 1) uniform ColorVals {
-        float rVal;
-        float gVal;
-    };
-
     layout(set = 0, binding = 2) uniform Common {
         float u_time;
         float u_resolution_x;
@@ -172,17 +167,19 @@ impl ShaderRenderTexture {
 #[derive(AppState)]
 struct State {
     pub pipeline: Pipeline,
-    // pub pipeline2: Pipeline,
+    pub pipeline2: Pipeline,
     pub clr_ubo: Buffer,
     pub clr_ubo2: Buffer,
     pub common_ubo: Buffer,
+    pub common_ubo2: Buffer,
     pub srt: ShaderRenderTexture,
     pub srt2: ShaderRenderTexture,
+    pub srt3: ShaderRenderTexture,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
+    let pipeline2 = create_shape_pipeline(gfx, Some(&PLOT_FRAG)).unwrap();
     let pipeline = create_shape_pipeline(gfx, Some(&COLOR_FRAG)).unwrap();
-    // let pipeline2 = create_shape_pipeline(gfx, Some(&PLOT_FRAG)).unwrap();
 
     let clr_ubo = gfx
         .create_uniform_buffer(1, "ColorVals")
@@ -198,33 +195,33 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
 
     let (width, height) = gfx.device.size();
+
     let common_ubo = gfx
         .create_uniform_buffer(2, "Common")
         .with_data(&[0.0, width as f32, height as f32])
         .build()
         .unwrap();
 
-    let rt = gfx
-        .create_render_texture(WORK_SIZE.x as _, WORK_SIZE.y as _)
-        .build()
-        .unwrap();
-
-    let rt2 = gfx
-        .create_render_texture(WORK_SIZE.x as _, WORK_SIZE.y as _)
+    let common_ubo2 = gfx
+        .create_uniform_buffer(1, "Common")
+        .with_data(&[0.0, width as f32, height as f32])
         .build()
         .unwrap();
 
     let srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
     let srt2 = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
+    let srt3 = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
 
     State {
         pipeline,
-        // pipeline2,
+        pipeline2,
         clr_ubo,
         clr_ubo2,
         common_ubo,
+        common_ubo2,
         srt,
         srt2,
+        srt3,
     }
 }
 
@@ -245,15 +242,15 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     );
 
     draw.image(&state.srt.rt)
-        .position(50.0, 100.0)
+        .position(50.0, 50.0)
         .size(200.0, 200.0);
 
     draw.image(&state.srt.rt)
-        .position(300.0, 100.0)
+        .position(300.0, 50.0)
         .size(300.0, 200.0);
 
     draw.image(&state.srt.rt)
-        .position(650.0, 100.0)
+        .position(650.0, 50.0)
         .size(600.0, 200.0);
 
 
@@ -271,7 +268,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     );
 
     draw.image(&state.srt2.rt)
-        .position(50.0, 400.0)
+        .position(50.0, 350.0)
         .size(200.0, 200.0);
 
 
@@ -288,7 +285,21 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     );
 
     draw.image(&state.srt.rt)
-        .position(50.0, 700.0)
+        .position(50.0, 600.0)
+        .size(200.0, 200.0);
+
+
+    state
+        .srt3
+        .draw(gfx, &state.pipeline2, vec![&state.common_ubo2], |srtdraw| {
+            srtdraw
+                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
+                .fill_color(Color::GRAY)
+                .fill();
+        });
+
+    draw.image(&state.srt3.rt)
+        .position(50.0, 850.0)
         .size(200.0, 200.0);
 
 
@@ -296,6 +307,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     let u_time = app.timer.time_since_init();
     gfx.set_buffer_data(&state.common_ubo, &[u_time, WORK_SIZE.x, WORK_SIZE.y]);
+    gfx.set_buffer_data(&state.common_ubo2, &[u_time, WORK_SIZE.x, WORK_SIZE.y]);
 }
 
 #[notan_main]
