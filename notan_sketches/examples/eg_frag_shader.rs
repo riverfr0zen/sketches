@@ -229,6 +229,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLUE);
 
+    // srt with clr_ubo & common_ubo
     state.srt.draw(
         gfx,
         &state.pipeline,
@@ -254,7 +255,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         .size(600.0, 200.0);
 
 
-    // srt2 with clr_ubo2
+    // srt2 with clr_ubo2 & common_ubo
     state.srt2.draw(
         gfx,
         &state.pipeline,
@@ -272,6 +273,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         .size(200.0, 200.0);
 
 
+    // srt with clr_ubo & common_ubo again
     state.srt.draw(
         gfx,
         &state.pipeline,
@@ -289,6 +291,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         .size(200.0, 200.0);
 
 
+    // srt3 with common_ubo2
     state
         .srt3
         .draw(gfx, &state.pipeline2, vec![&state.common_ubo2], |srtdraw| {
