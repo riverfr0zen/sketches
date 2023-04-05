@@ -4,8 +4,8 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, get_rng, set_html_bgcolor, CapturingTexture,
-    CommonHelpModal, EventsFocus, ScreenDimensions,
+    get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, set_html_bgcolor,
+    CapturingTexture, CommonHelpModal, EventsFocus, ScreenDimensions,
 };
 use notan_touchy::{TouchGesture, TouchState};
 use std::mem::size_of_val;
@@ -483,36 +483,7 @@ fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, Captur
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
-    log::debug!(
-        "Screen size: {:?} Container size: {:?} dpi {} limits {:?}",
-        app.window().screen_size(),
-        app.window().container_size(),
-        app.window().dpi(),
-        gfx.limits(),
-    );
-    let (mut screen_width, mut screen_height) = app.window().screen_size();
-    let mut work_size: Vec2 = vec2(screen_width as f32, screen_height as f32);
-    if gfx.limits().max_texture_size as i32 / screen_width.max(screen_height) > 2 {
-        if (screen_width.max(screen_height) as f32) < ScreenDimensions::RES_1080P.x {
-            screen_width = screen_width * 2;
-            screen_height = screen_height * 2;
-            log::debug!(
-                "Screen 'super sampled' 2x to w {} h {}",
-                screen_width,
-                screen_height,
-            );
-            work_size = vec2(screen_width as f32, screen_height as f32);
-        } else {
-            let screen_width = screen_width as f32 * 1.2;
-            let screen_height = screen_height as f32 * 1.2;
-            log::debug!(
-                "Screen 'super sampled' 1.2x to w {} h {}",
-                screen_width,
-                screen_height,
-            );
-            work_size = vec2(screen_width, screen_height as f32);
-        }
-    }
+    let work_size = get_work_size_for_screen(app, gfx);
 
     let (mut rng, capture) = init_rng_and_capture(gfx, &work_size);
 

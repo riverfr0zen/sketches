@@ -66,6 +66,41 @@ pub fn set_html_bgcolor(clear_color: Color) {
 }
 
 
+pub fn get_work_size_for_screen(app: &mut App, gfx: &mut Graphics) -> Vec2 {
+    log::debug!(
+        "Screen size: {:?} Container size: {:?} dpi {} limits {:?}",
+        app.window().screen_size(),
+        app.window().container_size(),
+        app.window().dpi(),
+        gfx.limits(),
+    );
+    let (mut screen_width, mut screen_height) = app.window().screen_size();
+    let mut work_size: Vec2 = vec2(screen_width as f32, screen_height as f32);
+    if gfx.limits().max_texture_size as i32 / screen_width.max(screen_height) > 2 {
+        if (screen_width.max(screen_height) as f32) < ScreenDimensions::RES_1080P.x {
+            screen_width = screen_width * 2;
+            screen_height = screen_height * 2;
+            log::debug!(
+                "Screen 'super sampled' 2x to w {} h {}",
+                screen_width,
+                screen_height,
+            );
+            work_size = vec2(screen_width as f32, screen_height as f32);
+        } else {
+            let screen_width = screen_width as f32 * 1.2;
+            let screen_height = screen_height as f32 * 1.2;
+            log::debug!(
+                "Screen 'super sampled' 1.2x to w {} h {}",
+                screen_width,
+                screen_height,
+            );
+            work_size = vec2(screen_width, screen_height as f32);
+        }
+    }
+    work_size
+}
+
+
 /// Set up a Draw with some common basics
 pub fn get_draw_setup(
     gfx: &mut Graphics,
