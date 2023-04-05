@@ -34,22 +34,22 @@ const FRAGMENT: ShaderSource = notan::fragment_shader! {
         return smoothstep(0.02, 0.0, abs(st.y - st.x));
     }
 
-    // void main() {
-    //     vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
-    //     // color = vec4(rVal, gVal, 0.0, 1.0);
-    //     // color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
-    //     color = vec4(st.x, st.y, 0.0, 1.0);
-    // }
-
     void main() {
         vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
-        float y = st.x;
-        vec3 xcolor = vec3(y);
-        // Plot a line
-        float pct = plot(st);
-        xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
-        color = vec4(xcolor,1.0);
+        // color = vec4(rVal, gVal, 0.0, 1.0);
+        color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
+        // color = vec4(rVal, gVal, st.y, 1.0);
     }
+
+    // void main() {
+    //     vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
+    //     float y = st.x;
+    //     vec3 xcolor = vec3(y);
+    //     // Plot a line
+    //     float pct = plot(st);
+    //     xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
+    //     color = vec4(xcolor,1.0);
+    // }
 
 "#
 };
@@ -58,19 +58,30 @@ const FRAGMENT: ShaderSource = notan::fragment_shader! {
 #[derive(AppState)]
 struct State {
     pub pipeline: Pipeline,
+    // pub pipeline2: Pipeline,
     pub clr_ubo: Buffer,
+    pub clr_ubo2: Buffer,
     pub common_ubo: Buffer,
     pub rt: RenderTexture,
+    pub rt2: RenderTexture,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let pipeline = create_shape_pipeline(gfx, Some(&FRAGMENT)).unwrap();
+    // let pipeline2 = create_shape_pipeline(gfx, Some(&FRAGMENT)).unwrap();
 
     let clr_ubo = gfx
         .create_uniform_buffer(1, "ColorVals")
         .with_data(&[RED_VAL, GREEN_VAL])
         .build()
         .unwrap();
+
+    let clr_ubo2 = gfx
+        .create_uniform_buffer(1, "ColorVals")
+        .with_data(&[RED_VAL - 0.5, GREEN_VAL + 0.5])
+        .build()
+        .unwrap();
+
 
     let (width, height) = gfx.device.size();
     let common_ubo = gfx
@@ -84,11 +95,19 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         .build()
         .unwrap();
 
+    let rt2 = gfx
+        .create_render_texture(WORK_SIZE.x as _, WORK_SIZE.y as _)
+        .build()
+        .unwrap();
+
     State {
         pipeline,
+        // pipeline2,
         clr_ubo,
+        clr_ubo2,
         common_ubo,
         rt,
+        rt2,
     }
 }
 
@@ -96,7 +115,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let rt_draw = &mut state.rt.create_draw();
 
-    // add custom pipeline for shapes
     rt_draw
         .shape_pipeline()
         .pipeline(&state.pipeline)
@@ -127,6 +145,30 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     draw.image(&state.rt)
         .position(650.0, 100.0)
         .size(600.0, 200.0);
+
+
+    // Switch to clr_ubo2
+    let rt_draw = &mut state.rt2.create_draw();
+    rt_draw
+        .shape_pipeline()
+        .pipeline(&state.pipeline)
+        .uniform_buffer(&state.clr_ubo2)
+        .pipeline(&state.pipeline)
+        .uniform_buffer(&state.common_ubo);
+
+    rt_draw
+        .rect((0.0, 0.0), (state.rt2.width(), state.rt2.height()))
+        .fill_color(Color::GRAY)
+        .fill();
+
+    rt_draw.shape_pipeline().remove();
+
+    gfx.render_to(&state.rt2, rt_draw);
+
+
+    draw.image(&state.rt2)
+        .position(50.0, 400.0)
+        .size(200.0, 200.0);
 
 
     gfx.render(draw);
