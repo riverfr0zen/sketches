@@ -55,6 +55,38 @@ const FRAGMENT: ShaderSource = notan::fragment_shader! {
 };
 
 
+pub struct ShaderRenderTexture {
+    pub rt: RenderTexture,
+}
+
+impl ShaderRenderTexture {
+    fn new(gfx: &mut Graphics, width: f32, height: f32) -> Self {
+        let rt = gfx
+            .create_render_texture(width as _, height as _)
+            .build()
+            .unwrap();
+        Self { rt }
+    }
+
+    fn draw<F>(&mut self, gfx: &mut Graphics, pipeline: &Pipeline, ubos: Vec<&Buffer>, draw_fn: F)
+    where
+        F: Fn(&mut Draw),
+    {
+        let rt_draw = &mut self.rt.create_draw();
+
+        for ubo in ubos.iter() {
+            rt_draw
+                .shape_pipeline()
+                .pipeline(&pipeline)
+                .uniform_buffer(&ubo);
+        }
+        draw_fn(rt_draw);
+        rt_draw.shape_pipeline().remove();
+        gfx.render_to(&self.rt, rt_draw);
+    }
+}
+
+
 #[derive(AppState)]
 struct State {
     pub pipeline: Pipeline,
@@ -64,6 +96,7 @@ struct State {
     pub common_ubo: Buffer,
     pub rt: RenderTexture,
     pub rt2: RenderTexture,
+    pub srt: ShaderRenderTexture,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
@@ -100,6 +133,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         .build()
         .unwrap();
 
+    let srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
+
     State {
         pipeline,
         // pipeline2,
@@ -108,6 +143,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         common_ubo,
         rt,
         rt2,
+        srt,
     }
 }
 
@@ -115,6 +151,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let rt_draw = &mut state.rt.create_draw();
 
+    // rt with clr_ubo
     rt_draw
         .shape_pipeline()
         .pipeline(&state.pipeline)
@@ -147,7 +184,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         .size(600.0, 200.0);
 
 
-    // Switch to clr_ubo2
+    // Switch to rt2 with clr_ubo2
     let rt_draw = &mut state.rt2.create_draw();
     rt_draw
         .shape_pipeline()
@@ -168,6 +205,21 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     draw.image(&state.rt2)
         .position(50.0, 400.0)
+        .size(200.0, 200.0);
+
+
+    state
+        .srt
+        .draw(gfx, &state.pipeline, vec![&state.clr_ubo], |srtdraw| {
+            srtdraw
+                .rect((0.0, 0.0), (state.rt2.width(), state.rt2.height()))
+                .fill_color(Color::GRAY)
+                .fill();
+        });
+
+
+    draw.image(&state.srt.rt)
+        .position(50.0, 700.0)
         .size(200.0, 200.0);
 
 
