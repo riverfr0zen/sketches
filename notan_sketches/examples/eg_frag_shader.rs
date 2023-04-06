@@ -35,7 +35,7 @@ const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
         // color = vec4(rVal, gVal, 0.0, 1.0);
         // color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
         // color = vec4(rVal, gVal, st.y, 1.0);
-        color = vec4(rVal, gVal, st.y, abs(sin(u_time)));
+        color = vec4(rVal, gVal, st.y * 1.5, abs(sin(u_time)));
     }
 "#
 };
@@ -83,6 +83,7 @@ struct State {
     pub red_green_srt: ShaderRenderTexture,
     pub blue_green_srt: ShaderRenderTexture,
     pub plot_srt: ShaderRenderTexture,
+    pub shapes_srt: ShaderRenderTexture,
 }
 
 fn init(gfx: &mut Graphics) -> State {
@@ -119,6 +120,7 @@ fn init(gfx: &mut Graphics) -> State {
     let red_green_srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
     let blue_green_srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
     let plot_srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
+    let shapes_srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
 
     State {
         pipeline,
@@ -130,25 +132,13 @@ fn init(gfx: &mut Graphics) -> State {
         red_green_srt,
         blue_green_srt,
         plot_srt,
+        shapes_srt,
     }
 }
 
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLUE);
-
-    // srt with red_green_ubo & common_ubo
-    // state.red_green_srt.draw(
-    //     gfx,
-    //     &state.pipeline,
-    //     vec![&state.red_green_ubo, &state.common_ubo],
-    //     |srtdraw| {
-    //         srtdraw
-    //             .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
-    //             .fill_color(Color::GRAY)
-    //             .fill();
-    //     },
-    // );
 
     state.red_green_srt.draw_filled(
         gfx,
@@ -202,6 +192,48 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     draw.image(&state.plot_srt.rt)
         .position(1500.0, 50.0)
         .size(100.0, 100.0);
+
+
+    // boxes srt with red_green_ubo & common_ubo
+    state.shapes_srt.draw(
+        gfx,
+        &state.pipeline,
+        vec![&state.red_green_ubo, &state.common_ubo],
+        |srtdraw| {
+            srtdraw
+                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
+                .stroke_color(Color::GRAY)
+                .stroke(10.0)
+                .corner_radius(200.0);
+
+            let width = srtdraw.width();
+            srtdraw
+                .circle(100.0)
+                .position(width * 0.25, 400.0)
+                .fill_color(Color::GRAY)
+                .fill();
+
+            srtdraw
+                .circle(100.0)
+                .position(width * 0.75, 400.0)
+                .fill_color(Color::GRAY)
+                .fill();
+
+            srtdraw
+                .rect((srtdraw.width() * 0.5 - 250.0, 500.0), (500.0, 200.0))
+                .fill_color(Color::GRAY)
+                .fill();
+
+            srtdraw
+                .rect((srtdraw.width() * 0.5 - 450.0, 800.0), (900.0, 50.0))
+                .fill_color(Color::GRAY)
+                .fill();
+        },
+    );
+
+    draw.image(&state.shapes_srt.rt)
+        .position(50.0, 200.0)
+        .size(200.0, 200.0);
 
 
     gfx.render(draw);
