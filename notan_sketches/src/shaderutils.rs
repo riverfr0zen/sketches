@@ -26,6 +26,7 @@ impl ShaderRenderTexture {
         F: Fn(&mut Draw),
     {
         let rt_draw = &mut self.rt.create_draw();
+        rt_draw.clear(Color::TRANSPARENT);
 
         // HACKY WAY OF BUILDING CUSTOM PIPELINE for n uniforms. Revisit later.
         match uniforms.len() {

@@ -33,8 +33,9 @@ const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
     void main() {
         vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
         // color = vec4(rVal, gVal, 0.0, 1.0);
-        color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
+        // color = vec4(rVal, gVal, abs(sin(u_time)), 1.0);
         // color = vec4(rVal, gVal, st.y, 1.0);
+        color = vec4(rVal, gVal, st.y, abs(sin(u_time)));
     }
 "#
 };
