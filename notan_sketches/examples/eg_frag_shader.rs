@@ -30,11 +30,6 @@ const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
         float u_resolution_y;
     };
 
-    // Plot a line on Y using a value between 0.0-1.0
-    float plot(vec2 st) {    
-        return smoothstep(0.02, 0.0, abs(st.y - st.x));
-    }
-
     void main() {
         vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
         // color = vec4(rVal, gVal, 0.0, 1.0);
@@ -80,26 +75,26 @@ const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
 struct State {
     pub pipeline: Pipeline,
     pub pipeline2: Pipeline,
-    pub clr_ubo: Buffer,
-    pub clr_ubo2: Buffer,
+    pub red_green_ubo: Buffer,
+    pub blue_green_ubo: Buffer,
     pub common_ubo: Buffer,
     pub common_ubo2: Buffer,
-    pub srt: ShaderRenderTexture,
-    pub srt2: ShaderRenderTexture,
-    pub srt3: ShaderRenderTexture,
+    pub red_green_srt: ShaderRenderTexture,
+    pub blue_green_srt: ShaderRenderTexture,
+    pub plot_srt: ShaderRenderTexture,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let pipeline2 = create_shape_pipeline(gfx, Some(&PLOT_FRAG)).unwrap();
     let pipeline = create_shape_pipeline(gfx, Some(&COLOR_FRAG)).unwrap();
 
-    let clr_ubo = gfx
+    let red_green_ubo = gfx
         .create_uniform_buffer(1, "ColorVals")
         .with_data(&[RED_VAL, GREEN_VAL])
         .build()
         .unwrap();
 
-    let clr_ubo2 = gfx
+    let blue_green_ubo = gfx
         .create_uniform_buffer(1, "ColorVals")
         .with_data(&[RED_VAL - 0.5, GREEN_VAL + 0.5])
         .build()
@@ -120,20 +115,20 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         .build()
         .unwrap();
 
-    let srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
-    let srt2 = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
-    let srt3 = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
+    let red_green_srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
+    let blue_green_srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
+    let plot_srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
 
     State {
         pipeline,
         pipeline2,
-        clr_ubo,
-        clr_ubo2,
+        red_green_ubo,
+        blue_green_ubo,
         common_ubo,
         common_ubo2,
-        srt,
-        srt2,
-        srt3,
+        red_green_srt,
+        blue_green_srt,
+        plot_srt,
     }
 }
 
@@ -141,11 +136,11 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLUE);
 
-    // srt with clr_ubo & common_ubo
-    state.srt.draw(
+    // srt with red_green_ubo & common_ubo
+    state.red_green_srt.draw(
         gfx,
         &state.pipeline,
-        vec![&state.clr_ubo, &state.common_ubo],
+        vec![&state.red_green_ubo, &state.common_ubo],
         |srtdraw| {
             srtdraw
                 .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
@@ -154,24 +149,24 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         },
     );
 
-    draw.image(&state.srt.rt)
+    draw.image(&state.red_green_srt.rt)
         .position(50.0, 50.0)
         .size(100.0, 100.0);
 
-    draw.image(&state.srt.rt)
+    draw.image(&state.red_green_srt.rt)
         .position(200.0, 50.0)
         .size(300.0, 100.0);
 
-    draw.image(&state.srt.rt)
+    draw.image(&state.red_green_srt.rt)
         .position(550.0, 50.0)
         .size(600.0, 100.0);
 
 
-    // srt2 with clr_ubo2 & common_ubo
-    state.srt2.draw(
+    // blue_green_srt with blue_green_ubo & common_ubo
+    state.blue_green_srt.draw(
         gfx,
         &state.pipeline,
-        vec![&state.clr_ubo2, &state.common_ubo],
+        vec![&state.blue_green_ubo, &state.common_ubo],
         |srtdraw| {
             srtdraw
                 .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
@@ -180,16 +175,16 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         },
     );
 
-    draw.image(&state.srt2.rt)
+    draw.image(&state.blue_green_srt.rt)
         .position(1200.0, 50.0)
         .size(100.0, 100.0);
 
 
-    // srt with clr_ubo & common_ubo again
-    state.srt.draw(
+    // srt with red_green_ubo & common_ubo again
+    state.red_green_srt.draw(
         gfx,
         &state.pipeline,
-        vec![&state.clr_ubo, &state.common_ubo],
+        vec![&state.red_green_ubo, &state.common_ubo],
         |srtdraw| {
             srtdraw
                 .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
@@ -198,14 +193,14 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         },
     );
 
-    draw.image(&state.srt.rt)
+    draw.image(&state.red_green_srt.rt)
         .position(1350.0, 50.0)
         .size(100.0, 100.0);
 
 
-    // srt3 with common_ubo2
+    // plot_srt with common_ubo2
     state
-        .srt3
+        .plot_srt
         .draw(gfx, &state.pipeline2, vec![&state.common_ubo2], |srtdraw| {
             srtdraw
                 .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
@@ -213,7 +208,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 .fill();
         });
 
-    draw.image(&state.srt3.rt)
+    draw.image(&state.plot_srt.rt)
         .position(1500.0, 50.0)
         .size(100.0, 100.0);
 
