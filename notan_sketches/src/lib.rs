@@ -4,6 +4,7 @@ pub mod emotion_bg_visualizer;
 pub mod fractals;
 pub mod mathutils;
 pub mod schotter;
+pub mod shaderutils;
 pub mod utils;
 
 // pub fn add(left: usize, right: usize) -> usize {

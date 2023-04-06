@@ -2,6 +2,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
+use notan_sketches::shaderutils::ShaderRenderTexture;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 
 // const WORK_SIZE: Vec2 = Vec2::new(800.0, 600.0);
@@ -73,95 +74,6 @@ const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
     }
 "#
 };
-
-
-pub struct ShaderRenderTexture {
-    pub rt: RenderTexture,
-}
-
-impl ShaderRenderTexture {
-    fn new(gfx: &mut Graphics, width: f32, height: f32) -> Self {
-        let rt = gfx
-            .create_render_texture(width as _, height as _)
-            .build()
-            .unwrap();
-        Self { rt }
-    }
-
-    fn draw<F>(
-        &mut self,
-        gfx: &mut Graphics,
-        pipeline: &Pipeline,
-        // Up to 5 uniforms are allowed for now (see hack below)
-        uniforms: Vec<&Buffer>,
-        draw_fn: F,
-    ) where
-        F: Fn(&mut Draw),
-    {
-        let rt_draw = &mut self.rt.create_draw();
-
-        // HACKY WAY OF BUILDING CUSTOM PIPELINE for n uniforms. Revisit later.
-        match uniforms.len() {
-            5 => {
-                rt_draw
-                    .shape_pipeline()
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[0])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[1])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[2])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[3])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[4]);
-            }
-            4 => {
-                rt_draw
-                    .shape_pipeline()
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[0])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[1])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[2])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[3]);
-            }
-            3 => {
-                rt_draw
-                    .shape_pipeline()
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[0])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[1])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[2]);
-            }
-            2 => {
-                rt_draw
-                    .shape_pipeline()
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[0])
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[1]);
-            }
-            1 => {
-                rt_draw
-                    .shape_pipeline()
-                    .pipeline(&pipeline)
-                    .uniform_buffer(&uniforms[0]);
-            }
-            _ => panic!(concat!(
-                "Max number of uniforms is 5 due to Irfan's hacky implementation! ",
-                "You can increase this by updating notan_sketches::shaders::ShaderRenderTexture::draw()"
-            )),
-        }
-        draw_fn(rt_draw);
-        rt_draw.shape_pipeline().remove();
-        gfx.render_to(&self.rt, rt_draw);
-    }
-}
 
 
 #[derive(AppState)]
@@ -244,15 +156,15 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     draw.image(&state.srt.rt)
         .position(50.0, 50.0)
-        .size(200.0, 200.0);
+        .size(100.0, 100.0);
 
     draw.image(&state.srt.rt)
-        .position(300.0, 50.0)
-        .size(300.0, 200.0);
+        .position(200.0, 50.0)
+        .size(300.0, 100.0);
 
     draw.image(&state.srt.rt)
-        .position(650.0, 50.0)
-        .size(600.0, 200.0);
+        .position(550.0, 50.0)
+        .size(600.0, 100.0);
 
 
     // srt2 with clr_ubo2 & common_ubo
@@ -269,8 +181,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     );
 
     draw.image(&state.srt2.rt)
-        .position(50.0, 350.0)
-        .size(200.0, 200.0);
+        .position(1200.0, 50.0)
+        .size(100.0, 100.0);
 
 
     // srt with clr_ubo & common_ubo again
@@ -287,8 +199,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     );
 
     draw.image(&state.srt.rt)
-        .position(50.0, 600.0)
-        .size(200.0, 200.0);
+        .position(1350.0, 50.0)
+        .size(100.0, 100.0);
 
 
     // srt3 with common_ubo2
@@ -302,8 +214,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         });
 
     draw.image(&state.srt3.rt)
-        .position(50.0, 850.0)
-        .size(200.0, 200.0);
+        .position(1500.0, 50.0)
+        .size(100.0, 100.0);
 
 
     gfx.render(draw);
