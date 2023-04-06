@@ -88,4 +88,14 @@ impl ShaderRenderTexture {
         rt_draw.shape_pipeline().remove();
         gfx.render_to(&self.rt, rt_draw);
     }
+
+    /// Common draw that sizes the shader to the whole texture
+    pub fn draw_filled(&mut self, gfx: &mut Graphics, pipeline: &Pipeline, uniforms: Vec<&Buffer>) {
+        self.draw(gfx, &pipeline, uniforms, |srtdraw| {
+            srtdraw
+                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
+                .fill_color(Color::GRAY)
+                .fill();
+        });
+    }
 }

@@ -137,17 +137,24 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLUE);
 
     // srt with red_green_ubo & common_ubo
-    state.red_green_srt.draw(
+    // state.red_green_srt.draw(
+    //     gfx,
+    //     &state.pipeline,
+    //     vec![&state.red_green_ubo, &state.common_ubo],
+    //     |srtdraw| {
+    //         srtdraw
+    //             .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
+    //             .fill_color(Color::GRAY)
+    //             .fill();
+    //     },
+    // );
+
+    state.red_green_srt.draw_filled(
         gfx,
         &state.pipeline,
         vec![&state.red_green_ubo, &state.common_ubo],
-        |srtdraw| {
-            srtdraw
-                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
-                .fill_color(Color::GRAY)
-                .fill();
-        },
     );
+
 
     draw.image(&state.red_green_srt.rt)
         .position(50.0, 50.0)
@@ -163,16 +170,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
 
     // blue_green_srt with blue_green_ubo & common_ubo
-    state.blue_green_srt.draw(
+    state.blue_green_srt.draw_filled(
         gfx,
         &state.pipeline,
         vec![&state.blue_green_ubo, &state.common_ubo],
-        |srtdraw| {
-            srtdraw
-                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
-                .fill_color(Color::GRAY)
-                .fill();
-        },
     );
 
     draw.image(&state.blue_green_srt.rt)
@@ -181,16 +182,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
 
     // srt with red_green_ubo & common_ubo again
-    state.red_green_srt.draw(
+    state.red_green_srt.draw_filled(
         gfx,
         &state.pipeline,
         vec![&state.red_green_ubo, &state.common_ubo],
-        |srtdraw| {
-            srtdraw
-                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
-                .fill_color(Color::GRAY)
-                .fill();
-        },
     );
 
     draw.image(&state.red_green_srt.rt)
@@ -201,12 +196,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     // plot_srt with common_ubo2
     state
         .plot_srt
-        .draw(gfx, &state.pipeline2, vec![&state.common_ubo2], |srtdraw| {
-            srtdraw
-                .rect((0.0, 0.0), (srtdraw.width(), srtdraw.height()))
-                .fill_color(Color::GRAY)
-                .fill();
-        });
+        .draw_filled(gfx, &state.pipeline2, vec![&state.common_ubo2]);
 
     draw.image(&state.plot_srt.rt)
         .position(1500.0, 50.0)
