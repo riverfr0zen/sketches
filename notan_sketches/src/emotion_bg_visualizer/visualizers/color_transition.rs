@@ -3,7 +3,7 @@ use super::EmoVisualizer;
 use super::VisualizerSelection;
 use crate::emotion::{EmocatTextAnalysis, TopEmotionsModel};
 use notan::draw::*;
-use notan::log;
+// use notan::log;
 use notan::prelude::*;
 use palette::{FromColor, LinSrgb, Mix, Srgb};
 use std::collections::HashMap;

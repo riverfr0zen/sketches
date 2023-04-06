@@ -1,6 +1,6 @@
 use notan::log;
 use notan::prelude::*;
-use palette::{FromColor, Hsl, Hsv, LinSrgb, Mix, RgbHue, Srgb};
+use palette::{FromColor, Hsv, Mix, RgbHue, Srgb};
 use serde::{Deserialize, Serialize};
 
 

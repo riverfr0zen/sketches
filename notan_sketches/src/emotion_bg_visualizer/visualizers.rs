@@ -2,9 +2,9 @@ pub mod color_transition;
 pub mod tile;
 
 use crate::emotion::EmocatTextAnalysis;
-use crate::utils::{scale_font, ScreenDimensions};
+use crate::utils::scale_font;
 use notan::draw::*;
-use notan::log;
+// use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 

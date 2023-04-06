@@ -85,7 +85,7 @@ struct State {
     pub plot_srt: ShaderRenderTexture,
 }
 
-fn init(app: &mut App, gfx: &mut Graphics) -> State {
+fn init(gfx: &mut Graphics) -> State {
     let pipeline2 = create_shape_pipeline(gfx, Some(&PLOT_FRAG)).unwrap();
     let pipeline = create_shape_pipeline(gfx, Some(&COLOR_FRAG)).unwrap();
 

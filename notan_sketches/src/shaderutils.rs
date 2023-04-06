@@ -26,6 +26,9 @@ impl ShaderRenderTexture {
         F: Fn(&mut Draw),
     {
         let rt_draw = &mut self.rt.create_draw();
+        // Texture should be cleared so that shader alpha changes register.
+        // @TODO: This could be made optional to support situations where draw retention is
+        // actually desired.
         rt_draw.clear(Color::TRANSPARENT);
 
         // HACKY WAY OF BUILDING CUSTOM PIPELINE for n uniforms. Revisit later.

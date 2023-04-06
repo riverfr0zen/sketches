@@ -47,6 +47,7 @@ pub fn get_scaling_projection(win_size: Vec2, work_size: Vec2) -> Mat4 {
 
 
 pub fn set_html_bgcolor(clear_color: Color) {
+    log::debug!("Setting html clear color to {:?}", clear_color);
     #[cfg(target_arch = "wasm32")]
     {
         let window = web_sys::window().expect("global window does not exists");

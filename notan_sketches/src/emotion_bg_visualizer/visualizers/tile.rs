@@ -6,7 +6,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use palette::{FromColor, LinSrgb, Mix, Shade, Srgb};
+use palette::{FromColor, Shade, Srgb};
 use std::collections::HashMap;
 
 
@@ -341,7 +341,7 @@ impl EmoVisualizer for TilesVisualizer {
     }
 
 
-    fn draw(&mut self, gfx: &mut Graphics, draw: &mut Draw) {
+    fn draw(&mut self, _gfx: &mut Graphics, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.transition.color);
         self.draw_tiles_grid(draw);

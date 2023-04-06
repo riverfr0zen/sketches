@@ -345,8 +345,8 @@ pub fn draw_solid(
             for col in 0..state.cols {
                 let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
 
-                let mut xpos = col as f32 * state.tile_size + state.hpadding;
-                let mut ypos = row as f32 * state.tile_size + state.vpadding;
+                let xpos = col as f32 * state.tile_size + state.hpadding;
+                let ypos = row as f32 * state.tile_size + state.vpadding;
 
                 draw.image(&state.box_texture)
                     .position(xpos, ypos)
