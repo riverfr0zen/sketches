@@ -3,11 +3,13 @@ use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::shaderutils::ShaderRenderTexture;
-use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
+use notan_sketches::utils::{
+    get_common_win_config, get_draw_setup, set_html_bgcolor, ScreenDimensions,
+};
 
 // const WORK_SIZE: Vec2 = Vec2::new(800.0, 600.0);
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
-
+// const BGCOLOR: Color = Color::from_rgb(1.0, 0.65, 0.2);
 
 // language=glsl
 const FRAG: ShaderSource = notan::fragment_shader! {
@@ -23,13 +25,13 @@ const FRAG: ShaderSource = notan::fragment_shader! {
         float u_resolution_y;
     };
 
-    // Plot a line on Y using a value between 0.0-1.0
-    float plot_old(vec2 st) {    
-        return smoothstep(0.02, 0.0, abs(st.y - st.x));
+    float plot(vec2 st, float pct, float feather) {
+        return smoothstep(pct + feather, pct, st.y);
     }
 
-    float plot(vec2 st, float pct, float feather) {
-        return smoothstep(pct + feather, pct, 1.0-st.y);
+
+    float plot2(vec2 st, float pct, float top_feather, float bottom_feather) {
+        return smoothstep(pct - bottom_feather, pct, st.y) - smoothstep(pct, pct + top_feather, st.y);
     }
     
 
@@ -45,8 +47,8 @@ const FRAG: ShaderSource = notan::fragment_shader! {
 
     void main() {
         vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
-        vec3 backgroundColor = vec3(1.0, 0.65, 0.2) * (st.y * 4.0);
-        vec3 waveColor = vec3(0.043, 0.525, 0.756) * ((1.0-st.y) * 0.8);
+        vec3 backgroundColor = vec3(1.0, 0.65, 0.2) * ((1-st.y) * 4.0);
+        vec3 waveColor = vec3(0.043, 0.525, 0.756) * (st.y * 0.8);
 
         float wave_height = 0.5;
         float max_y_shrink = 30.0;
@@ -64,11 +66,12 @@ const FRAG: ShaderSource = notan::fragment_shader! {
         if (wave_y_shrink < min_y_shrink) {
             wave_y_shrink = min_y_shrink;
         }
-        //var y: f32 = adjusted_sin(input.uv.x * abs(sin(u.time % 60.0)) * 5.5 + u.time, wave_y_shrink, wave_height);
-        // float y = sin(st.x * abs(sin(mod(u_time, 60.0))) * 5.5 + u_time);
+
         float y = adjusted_sin(st.x * abs(sin(mod(u_time, 60.0))) * 5.5 + u_time, wave_y_shrink, wave_height);
 
-        float pct = plot(st, y, 0.05);
+        // float pct = plot2(st, y, 0.02, 0.02);
+        float pct = plot2(st, y, 0.05, 50.0);
+        // float pct = plot(st, y, 0.05);
 
         waveColor = mix(backgroundColor, waveColor, pct);
         color = vec4(waveColor, 1.0);
@@ -105,7 +108,7 @@ fn init(gfx: &mut Graphics) -> State {
 
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
-    let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLUE);
+    let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLACK);
 
     state
         .srt
@@ -137,6 +140,8 @@ fn main() -> Result<(), String> {
         // ScreenDimensions::DEFAULT.x as i32,
         // ScreenDimensions::DEFAULT.y as i32,
     );
+
+    set_html_bgcolor(Color::BLACK);
 
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
