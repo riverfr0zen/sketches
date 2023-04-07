@@ -692,10 +692,11 @@ fn draw_about_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State,
             // |ctx, ui, state, work_size| {
             |_, ui, _, _| {
                 ui.label("This app explores the presentation of written works with background visualizations driven by emotion analysis of the text.\n");
+                ui.label("(Please note that this is a work in progress -- further details will be added soon.\n");
                 // Add bit about pre-preparing analysis to JSON files to the para below
-                ui.label("For each work, analysis is performed per paragraph (or stanza, in the case of poems) allowing the analysis-driven visualization to change as the reader progresses through the work.\n");
-                ui.label("Describe the analyzer & caveats.\n");
-                ui.label("Currently there is just one visualization model: a \"Simple Color\" model which uses emotion to color associations (based on some different color psychology models) to transition the background color as one goes through  the written piece. The plan is to develop further visualization models in the future.\n");
+                // ui.label("For each work, analysis is performed per paragraph (or stanza, in the case of poems) allowing the analysis-driven visualization to change as the reader progresses through the work.\n");
+                // ui.label("Describe the analyzer & caveats.\n");
+                // ui.label("Currently there is just one visualization model: a \"Simple Color\" model which uses emotion to color associations (based on some different color psychology models) to transition the background color as one goes through  the written piece. The plan is to develop further visualization models in the future.\n");
 
             },
         );

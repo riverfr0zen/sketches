@@ -11,6 +11,7 @@ const RED_VAL: f32 = 1.0;
 const GREEN_VAL: f32 = 0.5;
 
 
+// Based on https://thebookofshaders.com/03/
 // language=glsl
 const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
     r#"
@@ -41,6 +42,8 @@ const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
 };
 
 
+// Based on https://thebookofshaders.com/05/
+// language=glsl
 const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
     r#"
     #version 450
@@ -87,8 +90,8 @@ struct State {
 }
 
 fn init(gfx: &mut Graphics) -> State {
-    let pipeline2 = create_shape_pipeline(gfx, Some(&PLOT_FRAG)).unwrap();
     let pipeline = create_shape_pipeline(gfx, Some(&COLOR_FRAG)).unwrap();
+    let pipeline2 = create_shape_pipeline(gfx, Some(&PLOT_FRAG)).unwrap();
 
     let red_green_ubo = gfx
         .create_uniform_buffer(1, "ColorVals")
