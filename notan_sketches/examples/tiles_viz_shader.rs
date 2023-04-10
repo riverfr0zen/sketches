@@ -21,7 +21,7 @@ const FRAG: ShaderSource = notan::fragment_shader! {
     layout(location = 0) in vec4 v_color;
     layout(location = 0) out vec4 color;
 
-    layout(set = 0, binding = 2) uniform Common {
+    layout(set = 0, binding = 1) uniform Common {
         float u_time;
         float u_resolution_x;
         float u_resolution_y;
@@ -32,24 +32,25 @@ const FRAG: ShaderSource = notan::fragment_shader! {
         return smoothstep(0.02, 0.0, abs(st.y - st.x));
     }
 
-    float plot2(vec2 st, float pct){
-        return  smoothstep( pct-0.02, pct, st.y) -
-                smoothstep( pct, pct+0.02, st.y);
-    }
-
     void main() {
         vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
+        
+        // float pct = distance(st,vec2(0.5));
+        float pct = 1.0-distance(st,vec2(0.5));
 
-        // float y = st.y;
-        float y = pow(st.x,5.0);
+        vec3 tile_clr = vec3(0.043, 0.525, 0.756);
+        vec3 bg_clr = vec3(1.0, 0.0, 0.0);
 
-        vec3 xcolor = vec3(y);
+        // xcolor = vec3(pct);
+        // xcolor = xcolor * pct;
+        // xcolor = xcolor * (pct * abs(sin(u_time)));
+        // vec3 xcolor = vec3(pct * abs(0.5 * sin(u_time)));
+
+        vec3 xcolor = mix(bg_clr, tile_clr, pct);
+        // vec3 xcolor = mix(bg_clr, tile_clr, pct * abs(sin(u_time)));
+
 
         // Plot a line
-        // float pct = plot(st);
-        float pct = plot2(st, y);
-
-        xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
         color = vec4(xcolor,1.0);
     }
 "#

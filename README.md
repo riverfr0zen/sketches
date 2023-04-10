@@ -43,6 +43,9 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 cargo build --release --example eg_frag_shader --target wasm32-unknown-unknown
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/eg_frag_shader.wasm
 
+cargo build --release --example erratic_wave_shader --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/erratic_wave_shader.wasm
+
 
 ```
 
