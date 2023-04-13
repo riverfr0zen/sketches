@@ -80,6 +80,7 @@ fn init(gfx: &mut Graphics) -> State {
         analysis: 0,
         visualizer: match VISUALIZER {
             "TilesVisualizer" => Box::new(TilesVisualizer::new(
+                gfx,
                 CLEAR_COLOR,
                 TITLE_COLOR,
                 DYNAMIC_TEXT_COLOR,
@@ -161,6 +162,7 @@ fn draw_paragraph(draw: &mut Draw, state: &mut State, work_size: Vec2) {
 
 
 fn draw(
+    app: &mut App,
     gfx: &mut Graphics,
     state: &mut State,
     // app: &mut App,
@@ -168,7 +170,7 @@ fn draw(
     let work_size = get_work_size(gfx);
     let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
 
-    state.visualizer.draw(gfx, draw);
+    state.visualizer.draw(app, gfx, draw);
 
     if state.analysis == 0 {
         draw_title(draw, state, work_size);
