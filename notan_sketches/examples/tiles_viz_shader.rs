@@ -56,11 +56,6 @@ const FRAG: ShaderSource = notan::fragment_shader! {
     };
 
 
-    // Plot a line on Y using a value between 0.0-1.0
-    float plot(vec2 st) {    
-        return smoothstep(0.02, 0.0, abs(st.y - st.x));
-    }
-
     void main() {
         vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
         
@@ -127,7 +122,6 @@ fn init(gfx: &mut Graphics) -> State {
                 .unwrap(),
         });
     }
-
     State { pipeline, tiles }
 }
 
