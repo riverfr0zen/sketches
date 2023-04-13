@@ -1,3 +1,5 @@
+pub mod shader;
+
 use super::color_transition::ColorTransition;
 use super::{get_optimal_text_color, get_optimal_text_size, EmoVisualizer, VisualizerSelection};
 use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, Sentiment, TopEmotionsModel};
