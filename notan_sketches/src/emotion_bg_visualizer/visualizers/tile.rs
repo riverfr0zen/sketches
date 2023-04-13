@@ -340,9 +340,21 @@ impl TilesVisualizer {
                     shader_bundle_index,
                 );
 
-                let shader_bundles = &mut self.shader_bundles.bundles;
-                shader_bundles[shader_bundle_index].draw_filled(gfx, &self.shader_pipeline);
-                draw.image(&shader_bundles[shader_bundle_index].srt.rt)
+                let shader_bundle = &mut self.shader_bundles.bundles[shader_bundle_index];
+                gfx.set_buffer_data(
+                    &shader_bundle.tile_colors_ubo,
+                    &[
+                        col.color.r,
+                        col.color.g,
+                        col.color.b,
+                        self.transition.color.r,
+                        self.transition.color.g,
+                        self.transition.color.b,
+                    ],
+                );
+
+                shader_bundle.draw_filled(gfx, &self.shader_pipeline);
+                draw.image(&shader_bundle.srt.rt)
                     .position(
                         col_index as f32 * self.layout.tile_size.x,
                         row_index as f32 * self.layout.tile_size.y,
