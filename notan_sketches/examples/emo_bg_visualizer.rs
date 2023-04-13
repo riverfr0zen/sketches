@@ -377,13 +377,19 @@ fn draw_read_help(draw: &mut Draw, state: &mut State, work_size: Vec2) {
 }
 
 
-fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
+fn draw_read_view(
+    app: &mut App,
+    gfx: &mut Graphics,
+    plugins: &mut Plugins,
+    state: &mut State,
+    work_size: Vec2,
+) {
     let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
 
     // NOTE: If the egui ui seems to be "blocking" the draw, it may be because the visualizer
     // draw() method is not calling `draw.clear()`. If this isn't done, the egui background
     // will block the draw. For an example, see impl method of ColorTransitionVisualizer::draw().
-    state.visualizer.draw(gfx, draw);
+    state.visualizer.draw(app, gfx, draw);
 
     if state.reading.analysis == 0 {
         draw_title(draw, state, work_size);
@@ -864,12 +870,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
 }
 
 
-fn draw(
-    // app: &mut App,
-    gfx: &mut Graphics,
-    plugins: &mut Plugins,
-    state: &mut State,
-) {
+fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
     let work_size = get_work_size(gfx);
 
     if state.selected_visualizer != state.visualizer.get_enum() {
@@ -897,7 +898,7 @@ fn draw(
 
 
     match state.view {
-        View::READ => draw_read_view(gfx, plugins, state, work_size),
+        View::READ => draw_read_view(app, gfx, plugins, state, work_size),
         View::ABOUT => draw_about_view(gfx, plugins, state, work_size),
         View::SETTINGS => draw_settings_view(gfx, plugins, state, work_size),
         _ => draw_home_view(gfx, plugins, state, work_size),

@@ -4,6 +4,7 @@ use super::super::get_work_size;
 use super::color_transition::ColorTransition;
 use super::{get_optimal_text_color, get_optimal_text_size, EmoVisualizer, VisualizerSelection};
 use crate::emotion::{ColorMapping, EmoColor, EmocatTextAnalysis, Sentiment, TopEmotionsModel};
+use crate::mathutils::get_cell_pos_in_grid;
 use crate::utils::{get_rng, scale_font};
 use notan::draw::*;
 use notan::log;
@@ -22,7 +23,6 @@ const TILE_ALPHA: f32 = 0.3;
 // const TILE_ALPHA: f32 = 1.0;
 const MAX_COLS: usize = 5;
 const MAX_ROWS: usize = 5;
-
 
 /// Represents different Tile "baselines/archetypes"
 ///
@@ -66,15 +66,11 @@ impl TilesLayout {
 
 pub struct ShaderBundleStore {
     bundles: Vec<TileShaderBundle>,
-    assigned: usize,
 }
 
 impl Default for ShaderBundleStore {
     fn default() -> Self {
-        Self {
-            bundles: vec![],
-            assigned: 0,
-        }
+        Self { bundles: vec![] }
     }
 }
 
@@ -90,14 +86,7 @@ impl ShaderBundleStore {
                 &Color::GREEN,
             ));
         }
-        Self {
-            bundles,
-            assigned: 0,
-        }
-    }
-
-    fn get_for_cell(cols_per_row: usize, row: usize, col: usize) -> usize {
-        return cols_per_row * row + col;
+        Self { bundles }
     }
 }
 
@@ -280,7 +269,7 @@ impl TilesVisualizer {
         }
     }
 
-    fn draw_tiles_grid(&mut self, gfx: &mut Graphics, draw: &mut Draw) {
+    fn draw_tiles_grid(&mut self, app: &mut App, gfx: &mut Graphics, draw: &mut Draw) {
         if self.tiles.len() < 1 {
             return;
         }
@@ -330,8 +319,7 @@ impl TilesVisualizer {
                 //     .alpha(TILE_ALPHA)
                 //     .color(col.color);
 
-                let shader_bundle_index =
-                    ShaderBundleStore::get_for_cell(row_len, row_index, col_index);
+                let shader_bundle_index = get_cell_pos_in_grid(row_len, row_index, col_index);
                 log::debug!(
                     "row_len {}, row {}, col {}, cellnum {}",
                     row_len,
@@ -341,6 +329,15 @@ impl TilesVisualizer {
                 );
 
                 let shader_bundle = &mut self.shader_bundles.bundles[shader_bundle_index];
+                gfx.set_buffer_data(
+                    &shader_bundle.common_ubo,
+                    &[
+                        app.timer.time_since_init(),
+                        // The resolution needs to be the res. of the rt, not the work_size of the entire app
+                        shader_bundle.srt.rt.width(),
+                        shader_bundle.srt.rt.height(),
+                    ],
+                );
                 gfx.set_buffer_data(
                     &shader_bundle.tile_colors_ubo,
                     &[
@@ -352,7 +349,6 @@ impl TilesVisualizer {
                         self.transition.color.b,
                     ],
                 );
-
                 shader_bundle.draw_filled(gfx, &self.shader_pipeline);
                 draw.image(&shader_bundle.srt.rt)
                     .position(
@@ -360,9 +356,6 @@ impl TilesVisualizer {
                         row_index as f32 * self.layout.tile_size.y,
                     )
                     .size(self.layout.tile_size.x, self.layout.tile_size.y);
-                // .alpha_mode(BlendMode::OVER)
-                // .alpha(TILE_ALPHA)
-                // .color(col.color);
             }
         }
     }
@@ -423,10 +416,10 @@ impl EmoVisualizer for TilesVisualizer {
     }
 
 
-    fn draw(&mut self, gfx: &mut Graphics, draw: &mut Draw) {
+    fn draw(&mut self, app: &mut App, gfx: &mut Graphics, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.transition.color);
-        self.draw_tiles_grid(gfx, draw);
+        self.draw_tiles_grid(app, gfx, draw);
     }
 
     fn get_text_color(&self) -> Color {
