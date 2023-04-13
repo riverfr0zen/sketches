@@ -216,6 +216,7 @@ fn init(gfx: &mut Graphics) -> State {
         selected_visualizer: DEFAULT_VISUALIZER,
         visualizer: match DEFAULT_VISUALIZER {
             VisualizerSelection::Tiles => Box::new(TilesVisualizer::new(
+                gfx,
                 CLEAR_COLOR,
                 TITLE_COLOR,
                 DYNAMIC_TEXT_COLOR,
@@ -306,27 +307,27 @@ fn update(app: &mut App, state: &mut State) {
         state.goto_home_view();
     }
 
-    if state.selected_visualizer != state.visualizer.get_enum() {
-        match state.selected_visualizer {
-            VisualizerSelection::Tiles => {
-                log::debug!("swap to TilesVisualizer");
-                state.visualizer = Box::new(TilesVisualizer::new(
-                    CLEAR_COLOR,
-                    TITLE_COLOR,
-                    DYNAMIC_TEXT_COLOR,
-                    state.tile_texture.clone(),
-                ));
-            }
-            _ => {
-                log::debug!("swap to ColorTransitionVisualizer");
-                state.visualizer = Box::new(ColorTransitionVisualizer::new(
-                    CLEAR_COLOR,
-                    TITLE_COLOR,
-                    DYNAMIC_TEXT_COLOR,
-                ));
-            }
-        }
-    }
+    // if state.selected_visualizer != state.visualizer.get_enum() {
+    //     match state.selected_visualizer {
+    //         VisualizerSelection::Tiles => {
+    //             log::debug!("swap to TilesVisualizer");
+    //             state.visualizer = Box::new(TilesVisualizer::new(
+    //                 CLEAR_COLOR,
+    //                 TITLE_COLOR,
+    //                 DYNAMIC_TEXT_COLOR,
+    //                 state.tile_texture.clone(),
+    //             ));
+    //         }
+    //         _ => {
+    //             log::debug!("swap to ColorTransitionVisualizer");
+    //             state.visualizer = Box::new(ColorTransitionVisualizer::new(
+    //                 CLEAR_COLOR,
+    //                 TITLE_COLOR,
+    //                 DYNAMIC_TEXT_COLOR,
+    //             ));
+    //         }
+    //     }
+    // }
 
     match state.view {
         View::READ => update_read_view(app, state),
@@ -870,6 +871,30 @@ fn draw(
     state: &mut State,
 ) {
     let work_size = get_work_size(gfx);
+
+    if state.selected_visualizer != state.visualizer.get_enum() {
+        match state.selected_visualizer {
+            VisualizerSelection::Tiles => {
+                log::debug!("swap to TilesVisualizer");
+                state.visualizer = Box::new(TilesVisualizer::new(
+                    gfx,
+                    CLEAR_COLOR,
+                    TITLE_COLOR,
+                    DYNAMIC_TEXT_COLOR,
+                    state.tile_texture.clone(),
+                ));
+            }
+            _ => {
+                log::debug!("swap to ColorTransitionVisualizer");
+                state.visualizer = Box::new(ColorTransitionVisualizer::new(
+                    CLEAR_COLOR,
+                    TITLE_COLOR,
+                    DYNAMIC_TEXT_COLOR,
+                ));
+            }
+        }
+    }
+
 
     match state.view {
         View::READ => draw_read_view(gfx, plugins, state, work_size),
