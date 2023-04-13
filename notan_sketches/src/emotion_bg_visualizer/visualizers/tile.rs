@@ -308,7 +308,6 @@ impl TilesVisualizer {
                     col.target_color = fill_color;
                     col.transitioning = true;
                 }
-
                 // draw.rect(
                 //     (
                 //         col_index as f32 * self.layout.tile_size.x,
@@ -343,7 +342,7 @@ impl TilesVisualizer {
 
                 let shader_bundles = &mut self.shader_bundles.bundles;
                 shader_bundles[shader_bundle_index].draw_filled(gfx, &self.shader_pipeline);
-                draw.image(&shader_bundles[row_index * col_index].srt.rt)
+                draw.image(&shader_bundles[shader_bundle_index].srt.rt)
                     .position(
                         col_index as f32 * self.layout.tile_size.x,
                         row_index as f32 * self.layout.tile_size.y,
