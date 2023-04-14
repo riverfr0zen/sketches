@@ -51,8 +51,8 @@ pub const FRAG: ShaderSource = notan::fragment_shader! {
         vec3 tile_color = vec3(tile_color_r, tile_color_g, tile_color_b);
         vec3 bg_color = vec3(bg_color_r, bg_color_g, bg_color_b);
 
-        // vec3 xcolor = mix(bg_color, tile_color, pct);
-        vec3 xcolor = mix(bg_color, tile_color, pct * abs(sin(u_time)));
+        vec3 xcolor = mix(bg_color, tile_color, pct);
+        // vec3 xcolor = mix(bg_color, tile_color, pct * abs(sin(u_time)));
 
         color = vec4(xcolor, 1.0);
     }

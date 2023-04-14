@@ -41,8 +41,8 @@ const READ_VIEW_GUI_COLOR: egui::Color32 =
     egui::Color32::from_rgba_premultiplied(128, 128, 128, 128);
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
-const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::ColorTransition;
-// const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::Tiles;
+// const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::ColorTransition;
+const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::Tiles;
 
 
 #[derive(PartialEq)]
@@ -216,6 +216,7 @@ fn init(gfx: &mut Graphics) -> State {
         selected_visualizer: DEFAULT_VISUALIZER,
         visualizer: match DEFAULT_VISUALIZER {
             VisualizerSelection::Tiles => Box::new(TilesVisualizer::new(
+                gfx,
                 CLEAR_COLOR,
                 TITLE_COLOR,
                 DYNAMIC_TEXT_COLOR,
@@ -306,27 +307,27 @@ fn update(app: &mut App, state: &mut State) {
         state.goto_home_view();
     }
 
-    if state.selected_visualizer != state.visualizer.get_enum() {
-        match state.selected_visualizer {
-            VisualizerSelection::Tiles => {
-                log::debug!("swap to TilesVisualizer");
-                state.visualizer = Box::new(TilesVisualizer::new(
-                    CLEAR_COLOR,
-                    TITLE_COLOR,
-                    DYNAMIC_TEXT_COLOR,
-                    state.tile_texture.clone(),
-                ));
-            }
-            _ => {
-                log::debug!("swap to ColorTransitionVisualizer");
-                state.visualizer = Box::new(ColorTransitionVisualizer::new(
-                    CLEAR_COLOR,
-                    TITLE_COLOR,
-                    DYNAMIC_TEXT_COLOR,
-                ));
-            }
-        }
-    }
+    // if state.selected_visualizer != state.visualizer.get_enum() {
+    //     match state.selected_visualizer {
+    //         VisualizerSelection::Tiles => {
+    //             log::debug!("swap to TilesVisualizer");
+    //             state.visualizer = Box::new(TilesVisualizer::new(
+    //                 CLEAR_COLOR,
+    //                 TITLE_COLOR,
+    //                 DYNAMIC_TEXT_COLOR,
+    //                 state.tile_texture.clone(),
+    //             ));
+    //         }
+    //         _ => {
+    //             log::debug!("swap to ColorTransitionVisualizer");
+    //             state.visualizer = Box::new(ColorTransitionVisualizer::new(
+    //                 CLEAR_COLOR,
+    //                 TITLE_COLOR,
+    //                 DYNAMIC_TEXT_COLOR,
+    //             ));
+    //         }
+    //     }
+    // }
 
     match state.view {
         View::READ => update_read_view(app, state),
@@ -376,13 +377,19 @@ fn draw_read_help(draw: &mut Draw, state: &mut State, work_size: Vec2) {
 }
 
 
-fn draw_read_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
+fn draw_read_view(
+    app: &mut App,
+    gfx: &mut Graphics,
+    plugins: &mut Plugins,
+    state: &mut State,
+    work_size: Vec2,
+) {
     let draw = &mut get_draw_setup(gfx, work_size, true, CLEAR_COLOR);
 
     // NOTE: If the egui ui seems to be "blocking" the draw, it may be because the visualizer
     // draw() method is not calling `draw.clear()`. If this isn't done, the egui background
     // will block the draw. For an example, see impl method of ColorTransitionVisualizer::draw().
-    state.visualizer.draw(gfx, draw);
+    state.visualizer.draw(app, gfx, draw);
 
     if state.reading.analysis == 0 {
         draw_title(draw, state, work_size);
@@ -863,16 +870,35 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
 }
 
 
-fn draw(
-    // app: &mut App,
-    gfx: &mut Graphics,
-    plugins: &mut Plugins,
-    state: &mut State,
-) {
+fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
     let work_size = get_work_size(gfx);
 
+    if state.selected_visualizer != state.visualizer.get_enum() {
+        match state.selected_visualizer {
+            VisualizerSelection::Tiles => {
+                log::debug!("swap to TilesVisualizer");
+                state.visualizer = Box::new(TilesVisualizer::new(
+                    gfx,
+                    CLEAR_COLOR,
+                    TITLE_COLOR,
+                    DYNAMIC_TEXT_COLOR,
+                    state.tile_texture.clone(),
+                ));
+            }
+            _ => {
+                log::debug!("swap to ColorTransitionVisualizer");
+                state.visualizer = Box::new(ColorTransitionVisualizer::new(
+                    CLEAR_COLOR,
+                    TITLE_COLOR,
+                    DYNAMIC_TEXT_COLOR,
+                ));
+            }
+        }
+    }
+
+
     match state.view {
-        View::READ => draw_read_view(gfx, plugins, state, work_size),
+        View::READ => draw_read_view(app, gfx, plugins, state, work_size),
         View::ABOUT => draw_about_view(gfx, plugins, state, work_size),
         View::SETTINGS => draw_settings_view(gfx, plugins, state, work_size),
         _ => draw_home_view(gfx, plugins, state, work_size),
