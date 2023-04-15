@@ -18,7 +18,7 @@ use std::collections::HashMap;
 const VALUE_MODIFIER: f32 = 3.0;
 const MINIMAL_ENHANCEMENT: f32 = 0.05;
 // const MINIMAL_ENHANCEMENT: f32 = 0.1;
-const TILE_ALPHA: f32 = 0.3;
+// const TILE_ALPHA: f32 = 0.3;
 // const TILE_ALPHA: f32 = 0.5;
 // const TILE_ALPHA: f32 = 1.0;
 const MAX_COLS: usize = 5;
@@ -78,7 +78,7 @@ impl ShaderBundleStore {
     fn new(gfx: &mut Graphics, slots: usize) -> Self {
         let work_size = get_work_size(gfx);
         let mut bundles: Vec<TileShaderBundle> = vec![];
-        for slot in 0..slots {
+        for _slot in 0..slots {
             bundles.push(TileShaderBundle::new(
                 gfx,
                 &work_size,
@@ -103,7 +103,6 @@ pub struct TilesVisualizer {
     text_color: Color,
     pub text_shadow_style: String,
     dynamic_text_color: bool,
-    tile_texture: Texture,
     tiles: Vec<Tile>,
     layout: TilesLayout,
     shader_pipeline: Pipeline,
@@ -159,7 +158,6 @@ impl TilesVisualizer {
         bg_color: Color,
         text_color: Color,
         enable_dynamic_text_color: bool,
-        tile_texture: Texture,
     ) -> Self {
         let (rng, _) = get_rng(None);
         let shader_pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
@@ -176,7 +174,6 @@ impl TilesVisualizer {
             text_color: text_color,
             text_shadow_style: "None".to_string(),
             dynamic_text_color: enable_dynamic_text_color,
-            tile_texture: tile_texture,
             tiles: vec![],
             layout: TilesLayout::none(),
             shader_pipeline,
@@ -297,36 +294,15 @@ impl TilesVisualizer {
                     col.target_color = fill_color;
                     col.transitioning = true;
                 }
-                // draw.rect(
-                //     (
-                //         col_index as f32 * self.layout.tile_size.x,
-                //         row_index as f32 * self.layout.tile_size.y,
-                //     ),
-                //     (self.layout.tile_size.x, self.layout.tile_size.y),
-                // )
-                // .alpha_mode(BlendMode::OVER)
-                // .alpha(TILE_ALPHA)
-                // .fill_color(col.color)
-                // .fill();
-
-                // draw.image(&self.tile_texture.as_ref())
-                //     .position(
-                //         col_index as f32 * self.layout.tile_size.x,
-                //         row_index as f32 * self.layout.tile_size.y,
-                //     )
-                //     .size(self.layout.tile_size.x, self.layout.tile_size.y)
-                //     .alpha_mode(BlendMode::OVER)
-                //     .alpha(TILE_ALPHA)
-                //     .color(col.color);
 
                 let shader_bundle_index = get_cell_pos_in_grid(row_len, row_index, col_index);
-                log::debug!(
-                    "row_len {}, row {}, col {}, cellnum {}",
-                    row_len,
-                    row_index,
-                    col_index,
-                    shader_bundle_index,
-                );
+                // log::debug!(
+                //     "row_len {}, row {}, col {}, cellnum {}",
+                //     row_len,
+                //     row_index,
+                //     col_index,
+                //     shader_bundle_index,
+                // );
 
                 let shader_bundle = &mut self.shader_bundles.bundles[shader_bundle_index];
                 gfx.set_buffer_data(
@@ -419,6 +395,7 @@ impl EmoVisualizer for TilesVisualizer {
     fn draw(&mut self, app: &mut App, gfx: &mut Graphics, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.transition.color);
+        // draw.clear(Color::TRANSPARENT);
         self.draw_tiles_grid(app, gfx, draw);
     }
 

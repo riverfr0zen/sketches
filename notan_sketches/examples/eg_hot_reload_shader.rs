@@ -26,7 +26,6 @@ fn init(gfx: &mut Graphics) -> State {
     let pipeline =
         create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl").unwrap();
 
-
     let common_ubo = gfx
         .create_uniform_buffer(1, "Common")
         .with_data(&[0.0, WORK_SIZE.x, WORK_SIZE.y])
@@ -56,6 +55,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         state.pipeline =
             create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl").unwrap();
 
+        // UBOs here need to be updated with the *latest data*, not the initial data we used in init()
         state.common_ubo = gfx
             .create_uniform_buffer(1, "Common")
             .with_data(&[u_time, WORK_SIZE.x, WORK_SIZE.y])

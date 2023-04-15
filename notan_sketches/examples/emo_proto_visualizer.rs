@@ -28,7 +28,7 @@ macro_rules! EMOCAT_OUTPUT_FILE {
 
 const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
-const META_COLOR: Color = Color::GRAY;
+// const META_COLOR: Color = Color::GRAY;
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
 // const VISUALIZER: &str = "ColorTransitionVisualizer";
@@ -66,13 +66,6 @@ fn init(gfx: &mut Graphics) -> State {
         serde_json::from_str(analyses_str).expect("Could not open emocat document");
 
 
-    let tile_texture = gfx
-        .create_texture()
-        .from_image(include_bytes!("../examples/assets/tiles/tile3_4k.png"))
-        .build()
-        .unwrap();
-
-
     let state = State {
         emodoc: emodoc,
         font: font,
@@ -84,7 +77,6 @@ fn init(gfx: &mut Graphics) -> State {
                 CLEAR_COLOR,
                 TITLE_COLOR,
                 DYNAMIC_TEXT_COLOR,
-                tile_texture,
             )),
             _ => Box::new(ColorTransitionVisualizer::new(
                 CLEAR_COLOR,
