@@ -2,7 +2,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
-use notan_sketches::shaderutils::ShaderRenderTexture;
+use notan_sketches::shaderutils::{create_hot_shape_pipeline, ShaderRenderTexture};
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, set_html_bgcolor, ScreenDimensions,
 };
@@ -28,7 +28,7 @@ const FRAG: ShaderSource = notan::fragment_shader! {
     };
 
     // Plot a line on Y using a value between 0.0-1.0
-    float plot(vec2 st) {    
+    float plot(vec2 st) {
         return smoothstep(0.02, 0.0, abs(st.y - st.x));
     }
 
@@ -61,10 +61,14 @@ struct State {
     pub pipeline: Pipeline,
     pub common_ubo: Buffer,
     pub srt: ShaderRenderTexture,
+    pub must_reload_shaders: bool,
+    pub frame_idx: usize,
 }
 
 fn init(gfx: &mut Graphics) -> State {
-    let pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
+    // let pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
+    let pipeline =
+        create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl").unwrap();
 
 
     let common_ubo = gfx
@@ -79,16 +83,43 @@ fn init(gfx: &mut Graphics) -> State {
         pipeline,
         common_ubo,
         srt,
+        must_reload_shaders: false,
+        frame_idx: 0,
     }
 }
 
 
+fn update(app: &mut App, state: &mut State) {
+    if state.frame_idx % 60 == 0 {
+        state.must_reload_shaders = true;
+    }
+    state.frame_idx += 1;
+}
+
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, CLEAR_COLOR);
+
+    if state.must_reload_shaders {
+        state.must_reload_shaders = false;
+        match create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl") {
+            Ok(pipeline) => state.pipeline = pipeline,
+            Err(err) => log::error!("{}", err),
+        }
+
+        state.common_ubo = gfx
+            .create_uniform_buffer(1, "Common")
+            .with_data(&[0.0, WORK_SIZE.x, WORK_SIZE.y])
+            .build()
+            .unwrap();
+
+        // state.pipeline =
+        //     create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl").unwrap();
+    }
 
     state
         .srt
         .draw_filled(gfx, &state.pipeline, vec![&state.common_ubo]);
+    // .draw_filled(gfx, &pipeline, vec![&state.common_ubo]);
 
 
     draw.image(&state.srt.rt)
@@ -128,7 +159,7 @@ fn main() -> Result<(), String> {
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
         // .event(event)
-        // .update(update)
+        .update(update)
         .draw(draw)
         .build()
 }
