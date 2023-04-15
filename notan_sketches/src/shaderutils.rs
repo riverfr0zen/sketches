@@ -1,7 +1,6 @@
 use notan::draw::*;
 use notan::prelude::*;
 
-
 pub struct ShaderRenderTexture {
     pub rt: RenderTexture,
 }
@@ -132,9 +131,33 @@ pub fn create_hot_shape_pipeline(
 }
 
 
-// Provides functionality to manage hot reloading of shaders
-struct HotPipelinesManager {
-    pipelines: Vec<Pipeline>,
-    // TODO
-    //pub fn add_shape_pipeline()
+pub struct ShaderReloadManager {
+    needs_reload: bool,
+    pub frame: usize,
+}
+
+impl Default for ShaderReloadManager {
+    fn default() -> Self {
+        Self {
+            needs_reload: false,
+            frame: 0,
+        }
+    }
+}
+
+impl ShaderReloadManager {
+    pub fn needs_reload(&mut self) -> bool {
+        if self.needs_reload {
+            self.needs_reload = false;
+            return true;
+        }
+        false
+    }
+
+    pub fn update(&mut self) {
+        if self.frame % 60 == 0 {
+            self.needs_reload = true;
+        }
+        self.frame += 1;
+    }
 }

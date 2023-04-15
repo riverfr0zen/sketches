@@ -32,5 +32,6 @@ void main() {
     float pct = plot2(st, y);
 
     xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
-    color = vec4(xcolor, 1.0);
+    // color = vec4(xcolor, 1.0);
+    color = vec4(xcolor, 1.0 * abs(sin(u_time)));
 }

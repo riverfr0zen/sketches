@@ -2,7 +2,9 @@ use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
-use notan_sketches::shaderutils::{create_hot_shape_pipeline, ShaderRenderTexture};
+use notan_sketches::shaderutils::{
+    create_hot_shape_pipeline, ShaderReloadManager, ShaderRenderTexture,
+};
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, set_html_bgcolor, ScreenDimensions,
 };
@@ -12,61 +14,15 @@ const CLEAR_COLOR: Color = Color::BLUE;
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 
 
-// Based on https://thebookofshaders.com/05/
-// language=glsl
-const FRAG: ShaderSource = notan::fragment_shader! {
-    r#"
-    #version 450
-    precision mediump float;
-    layout(location = 0) in vec4 v_color;
-    layout(location = 0) out vec4 color;
-
-    layout(set = 0, binding = 2) uniform Common {
-        float u_time;
-        float u_resolution_x;
-        float u_resolution_y;
-    };
-
-    // Plot a line on Y using a value between 0.0-1.0
-    float plot(vec2 st) {
-        return smoothstep(0.02, 0.0, abs(st.y - st.x));
-    }
-
-    float plot2(vec2 st, float pct){
-        return  smoothstep( pct-0.02, pct, st.y) -
-                smoothstep( pct, pct+0.02, st.y);
-    }
-
-    void main() {
-        vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
-
-        // float y = st.y;
-        float y = pow(st.x,5.0);
-
-        vec3 xcolor = vec3(y);
-
-        // Plot a line
-        // float pct = plot(st);
-        float pct = plot2(st, y);
-
-        xcolor = (1.0-pct)*xcolor+pct*vec3(0.0,1.0,0.0);
-        color = vec4(xcolor,1.0);
-    }
-"#
-};
-
-
 #[derive(AppState)]
 struct State {
     pub pipeline: Pipeline,
     pub common_ubo: Buffer,
     pub srt: ShaderRenderTexture,
-    pub must_reload_shaders: bool,
-    pub frame_idx: usize,
+    pub hot_mgr: ShaderReloadManager,
 }
 
 fn init(gfx: &mut Graphics) -> State {
-    // let pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
     let pipeline =
         create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl").unwrap();
 
@@ -83,43 +39,33 @@ fn init(gfx: &mut Graphics) -> State {
         pipeline,
         common_ubo,
         srt,
-        must_reload_shaders: false,
-        frame_idx: 0,
+        hot_mgr: ShaderReloadManager::default(),
     }
 }
 
 
 fn update(app: &mut App, state: &mut State) {
-    if state.frame_idx % 60 == 0 {
-        state.must_reload_shaders = true;
-    }
-    state.frame_idx += 1;
+    state.hot_mgr.update();
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, CLEAR_COLOR);
+    let u_time = app.timer.time_since_init();
 
-    if state.must_reload_shaders {
-        state.must_reload_shaders = false;
-        match create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl") {
-            Ok(pipeline) => state.pipeline = pipeline,
-            Err(err) => log::error!("{}", err),
-        }
+    if state.hot_mgr.needs_reload() {
+        state.pipeline =
+            create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl").unwrap();
 
         state.common_ubo = gfx
             .create_uniform_buffer(1, "Common")
-            .with_data(&[0.0, WORK_SIZE.x, WORK_SIZE.y])
+            .with_data(&[u_time, WORK_SIZE.x, WORK_SIZE.y])
             .build()
             .unwrap();
-
-        // state.pipeline =
-        //     create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl").unwrap();
     }
 
     state
         .srt
         .draw_filled(gfx, &state.pipeline, vec![&state.common_ubo]);
-    // .draw_filled(gfx, &pipeline, vec![&state.common_ubo]);
 
 
     draw.image(&state.srt.rt)
@@ -129,7 +75,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     gfx.render(draw);
 
-    let u_time = app.timer.time_since_init();
     gfx.set_buffer_data(&state.common_ubo, &[u_time, WORK_SIZE.x, WORK_SIZE.y]);
 }
 
