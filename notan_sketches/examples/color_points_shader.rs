@@ -2,6 +2,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
+use notan_sketches::colors;
 use notan_sketches::shaderutils::{
     create_hot_shape_pipeline, ShaderReloadManager, ShaderRenderTexture,
 };
@@ -18,25 +19,70 @@ const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 struct State {
     pub pipeline: Pipeline,
     pub common_ubo: Buffer,
+    pub bg_color_ubo: Buffer,
+    pub color1_ubo: Buffer,
+    pub color2_ubo: Buffer,
     pub srt: ShaderRenderTexture,
     pub hot_mgr: ShaderReloadManager,
 }
 
-fn init(gfx: &mut Graphics) -> State {
-    let pipeline =
-        create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl").unwrap();
-
+fn prep_ubos(
+    gfx: &mut Graphics,
+    u_time: f32,
+    work_size: &Vec2,
+    bg_color: Color,
+    color1: Color,
+    color2: Color,
+) -> (Buffer, Buffer, Buffer, Buffer) {
     let common_ubo = gfx
         .create_uniform_buffer(1, "Common")
-        .with_data(&[0.0, WORK_SIZE.x, WORK_SIZE.y])
+        .with_data(&[u_time, work_size.x, work_size.y])
         .build()
         .unwrap();
+
+    let bg_color_ubo = gfx
+        .create_uniform_buffer(2, "BgColor")
+        .with_data(&[bg_color.r, bg_color.g, bg_color.b])
+        .build()
+        .unwrap();
+
+    let color1_ubo = gfx
+        .create_uniform_buffer(3, "ColorSource1")
+        .with_data(&[color1.r, color1.g, color1.b])
+        .build()
+        .unwrap();
+
+
+    let color2_ubo = gfx
+        .create_uniform_buffer(4, "ColorSource2")
+        .with_data(&[color2.r, color2.g, color2.b])
+        .build()
+        .unwrap();
+
+    (common_ubo, bg_color_ubo, color1_ubo, color2_ubo)
+}
+
+fn init(gfx: &mut Graphics) -> State {
+    let pipeline =
+        create_hot_shape_pipeline(gfx, "examples/assets/shaders/color_points.frag.glsl").unwrap();
+
+    let (common_ubo, bg_color_ubo, color1_ubo, color2_ubo) = prep_ubos(
+        gfx,
+        0.0,
+        &WORK_SIZE,
+        colors::AEGEAN,
+        colors::BANANA,
+        colors::SALMON,
+    );
 
     let srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
 
     State {
         pipeline,
         common_ubo,
+        bg_color_ubo,
+        color1_ubo,
+        color2_ubo,
         srt,
         hot_mgr: ShaderReloadManager::default(),
     }
@@ -52,22 +98,36 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let u_time = app.timer.time_since_init();
 
     if state.hot_mgr.needs_reload() {
-        match create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl") {
+        match create_hot_shape_pipeline(gfx, "examples/assets/shaders/color_points.frag.glsl") {
             Ok(pipeline) => state.pipeline = pipeline,
             Err(err) => log::error!("{}", err),
         }
 
-        // UBOs here need to be updated with the *latest data*, not the initial data we used in init()
-        state.common_ubo = gfx
-            .create_uniform_buffer(1, "Common")
-            .with_data(&[u_time, WORK_SIZE.x, WORK_SIZE.y])
-            .build()
-            .unwrap();
+        (
+            state.common_ubo,
+            state.bg_color_ubo,
+            state.color1_ubo,
+            state.color2_ubo,
+        ) = prep_ubos(
+            gfx,
+            u_time,
+            &WORK_SIZE,
+            colors::AEGEAN,
+            colors::BANANA,
+            colors::SALMON,
+        );
     }
 
-    state
-        .srt
-        .draw_filled(gfx, &state.pipeline, vec![&state.common_ubo]);
+    state.srt.draw_filled(
+        gfx,
+        &state.pipeline,
+        vec![
+            &state.common_ubo,
+            &state.bg_color_ubo,
+            &state.color1_ubo,
+            &state.color2_ubo,
+        ],
+    );
 
 
     draw.image(&state.srt.rt)
