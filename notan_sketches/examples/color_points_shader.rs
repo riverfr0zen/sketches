@@ -13,17 +13,13 @@ use notan_sketches::utils::{
 const CLEAR_COLOR: Color = Color::BLUE;
 const COLOR1: Color = colors::BANANA;
 const COLOR2: Color = colors::SALMON;
-const COLOR1_DATA: ColorSourceData = ColorSourceData {
-    color: Vec3::new(COLOR1.r, COLOR1.g, COLOR1.b),
-    pos: Vec2::new(0.2, 0.8),
-};
 
 // const WORK_SIZE: Vec2 = Vec2::new(800.0, 600.0);
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 
 #[uniform]
 #[derive(Copy, Clone)]
-struct ColorSourceData {
+struct ColorSource {
     color: Vec3,
     pos: Vec2,
 }
@@ -34,7 +30,9 @@ struct State {
     pub pipeline: Pipeline,
     pub common_ubo: Buffer,
     pub bg_color_ubo: Buffer,
+    pub color1: ColorSource,
     pub color1_ubo: Buffer,
+    pub color2: ColorSource,
     pub color2_ubo: Buffer,
     pub srt: ShaderRenderTexture,
     pub hot_mgr: ShaderReloadManager,
@@ -44,8 +42,8 @@ fn prep_ubos(
     gfx: &mut Graphics,
     common_data: CommonData,
     bg_color: Color,
-    color1_data: ColorSourceData,
-    color2_data: ColorSourceData,
+    color1_data: ColorSource,
+    color2_data: ColorSource,
 ) -> (Buffer, Buffer, Buffer, Buffer) {
     let common_ubo = gfx
         .create_uniform_buffer(1, "Common")
@@ -78,18 +76,18 @@ fn init(gfx: &mut Graphics) -> State {
     let pipeline =
         create_hot_shape_pipeline(gfx, "examples/assets/shaders/color_points.frag.glsl").unwrap();
     let common_data = CommonData::new(0.0, WORK_SIZE);
-    let color1_data = ColorSourceData {
+    let color1 = ColorSource {
         color: Vec3::new(COLOR1.r, COLOR1.g, COLOR1.b),
         pos: Vec2::new(0.2, 0.8),
     };
-    let color2_data = ColorSourceData {
+    let color2 = ColorSource {
         color: Vec3::new(COLOR2.r, COLOR2.g, COLOR2.b),
         pos: Vec2::new(0.5, 0.5),
     };
 
 
     let (common_ubo, bg_color_ubo, color1_ubo, color2_ubo) =
-        prep_ubos(gfx, common_data, colors::AEGEAN, color1_data, color2_data);
+        prep_ubos(gfx, common_data, colors::AEGEAN, color1, color2);
 
     let srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
 
@@ -97,7 +95,9 @@ fn init(gfx: &mut Graphics) -> State {
         pipeline,
         common_ubo,
         bg_color_ubo,
+        color1,
         color1_ubo,
+        color2,
         color2_ubo,
         srt,
         hot_mgr: ShaderReloadManager::default(),
@@ -113,14 +113,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, CLEAR_COLOR);
     let u_time = app.timer.time_since_init();
     let common_data = CommonData::new(u_time, WORK_SIZE);
-    let color1_data = ColorSourceData {
-        color: Vec3::new(COLOR1.r, COLOR1.g, COLOR1.b),
-        pos: Vec2::new(0.2, 0.8),
-    };
-    let color2_data = ColorSourceData {
-        color: Vec3::new(COLOR2.r, COLOR2.g, COLOR2.b),
-        pos: Vec2::new(0.5, 0.5),
-    };
 
     if state.hot_mgr.needs_reload() {
         match create_hot_shape_pipeline(gfx, "examples/assets/shaders/color_points.frag.glsl") {
@@ -133,7 +125,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
             state.bg_color_ubo,
             state.color1_ubo,
             state.color2_ubo,
-        ) = prep_ubos(gfx, common_data, colors::AEGEAN, color1_data, color2_data);
+        ) = prep_ubos(gfx, common_data, colors::AEGEAN, state.color1, state.color2);
     }
 
     state.srt.draw_filled(
