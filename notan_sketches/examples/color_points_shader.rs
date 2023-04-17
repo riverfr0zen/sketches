@@ -7,7 +7,7 @@ use notan_sketches::shaderutils::{
     create_hot_shape_pipeline, CommonData, ShaderReloadManager, ShaderRenderTexture,
 };
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, set_html_bgcolor, ScreenDimensions,
+    get_common_win_config, get_draw_setup, get_rng, set_html_bgcolor, ScreenDimensions,
 };
 
 const CLEAR_COLOR: Color = Color::BLUE;
@@ -30,21 +30,6 @@ struct ColorSource {
     created: f32,
 }
 
-impl ColorSource {
-    fn reset(&mut self, created: f32) {
-        self.created = created;
-    }
-
-    fn update(&mut self, time_since_init: f32) {
-        if time_since_init - self.created > 5.0 {
-            log::debug!("color source update step");
-            self.uniform.pos.x += 0.01;
-            self.uniform.pos.y += 0.01;
-            self.reset(time_since_init);
-        }
-    }
-}
-
 
 #[derive(AppState)]
 struct State {
@@ -55,6 +40,7 @@ struct State {
     pub color2: ColorSource,
     pub srt: ShaderRenderTexture,
     pub hot_mgr: ShaderReloadManager,
+    pub rng: Random,
 }
 
 fn prep_ubos(
@@ -127,6 +113,8 @@ fn init(gfx: &mut Graphics) -> State {
 
     let srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
 
+    let (rng, _seed) = get_rng(None);
+
     State {
         pipeline,
         common_ubo,
@@ -135,13 +123,34 @@ fn init(gfx: &mut Graphics) -> State {
         color2,
         srt,
         hot_mgr: ShaderReloadManager::default(),
+        rng: rng,
+    }
+}
+
+
+fn update_color(color: &mut ColorSource, time_since_init: f32, rng: &mut Random) {
+    if time_since_init - color.created > 5.0 {
+        color.uniform.pos.x = rng.gen_range(0.0..1.0);
+        color.uniform.pos.y = rng.gen_range(0.0..1.0);
+        color.created = time_since_init;
     }
 }
 
 
 fn update(app: &mut App, state: &mut State) {
     state.hot_mgr.update();
-    state.color1.update(app.timer.time_since_init());
+
+    update_color(
+        &mut state.color1,
+        app.timer.time_since_init(),
+        &mut state.rng,
+    );
+
+    update_color(
+        &mut state.color2,
+        app.timer.time_since_init(),
+        &mut state.rng,
+    );
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
@@ -196,8 +205,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
-    let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-        // let win_config = get_common_win_config().high_dpi(true).size(
+    // let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
+    let win_config = get_common_win_config().high_dpi(true).size(
         // ScreenDimensions::RES_4KISH.x as i32,
         // ScreenDimensions::RES_4KISH.y as i32,
         // ScreenDimensions::RES_HDPLUS.x as i32,
