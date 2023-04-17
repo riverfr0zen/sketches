@@ -19,9 +19,30 @@ const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 
 #[uniform]
 #[derive(Copy, Clone)]
-struct ColorSource {
+struct ColorSourceUniform {
     color: Vec3,
     pos: Vec2,
+}
+
+struct ColorSource {
+    uniform: ColorSourceUniform,
+    ubo: Buffer,
+    created: f32,
+}
+
+impl ColorSource {
+    fn reset(&mut self, created: f32) {
+        self.created = created;
+    }
+
+    fn update(&mut self, time_since_init: f32) {
+        if time_since_init - self.created > 5.0 {
+            log::debug!("color source update step");
+            self.uniform.pos.x += 0.01;
+            self.uniform.pos.y += 0.01;
+            self.reset(time_since_init);
+        }
+    }
 }
 
 
@@ -31,9 +52,7 @@ struct State {
     pub common_ubo: Buffer,
     pub bg_color_ubo: Buffer,
     pub color1: ColorSource,
-    pub color1_ubo: Buffer,
     pub color2: ColorSource,
-    pub color2_ubo: Buffer,
     pub srt: ShaderRenderTexture,
     pub hot_mgr: ShaderReloadManager,
 }
@@ -42,8 +61,8 @@ fn prep_ubos(
     gfx: &mut Graphics,
     common_data: CommonData,
     bg_color: Color,
-    color1_data: ColorSource,
-    color2_data: ColorSource,
+    color1_uniform: ColorSourceUniform,
+    color2_uniform: ColorSourceUniform,
 ) -> (Buffer, Buffer, Buffer, Buffer) {
     let common_ubo = gfx
         .create_uniform_buffer(1, "Common")
@@ -59,35 +78,52 @@ fn prep_ubos(
 
     let color1_ubo = gfx
         .create_uniform_buffer(3, "ColorSource1")
-        .with_data(&color1_data)
+        .with_data(&color1_uniform)
         .build()
         .unwrap();
 
     let color2_ubo = gfx
         .create_uniform_buffer(4, "ColorSource2")
-        .with_data(&color2_data)
+        .with_data(&color2_uniform)
         .build()
         .unwrap();
 
     (common_ubo, bg_color_ubo, color1_ubo, color2_ubo)
 }
 
+
 fn init(gfx: &mut Graphics) -> State {
     let pipeline =
         create_hot_shape_pipeline(gfx, "examples/assets/shaders/color_points.frag.glsl").unwrap();
     let common_data = CommonData::new(0.0, WORK_SIZE);
-    let color1 = ColorSource {
+    let color1_uniform = ColorSourceUniform {
         color: Vec3::new(COLOR1.r, COLOR1.g, COLOR1.b),
         pos: Vec2::new(0.2, 0.8),
     };
-    let color2 = ColorSource {
+    let color2_uniform = ColorSourceUniform {
         color: Vec3::new(COLOR2.r, COLOR2.g, COLOR2.b),
         pos: Vec2::new(0.5, 0.5),
     };
 
+    let (common_ubo, bg_color_ubo, color1_ubo, color2_ubo) = prep_ubos(
+        gfx,
+        common_data,
+        colors::AEGEAN,
+        color1_uniform,
+        color2_uniform,
+    );
 
-    let (common_ubo, bg_color_ubo, color1_ubo, color2_ubo) =
-        prep_ubos(gfx, common_data, colors::AEGEAN, color1, color2);
+    let color1 = ColorSource {
+        uniform: color1_uniform,
+        ubo: color1_ubo,
+        created: 0.0,
+    };
+
+    let color2 = ColorSource {
+        uniform: color2_uniform,
+        ubo: color2_ubo,
+        created: 0.0,
+    };
 
     let srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
 
@@ -96,9 +132,7 @@ fn init(gfx: &mut Graphics) -> State {
         common_ubo,
         bg_color_ubo,
         color1,
-        color1_ubo,
         color2,
-        color2_ubo,
         srt,
         hot_mgr: ShaderReloadManager::default(),
     }
@@ -107,6 +141,7 @@ fn init(gfx: &mut Graphics) -> State {
 
 fn update(app: &mut App, state: &mut State) {
     state.hot_mgr.update();
+    state.color1.update(app.timer.time_since_init());
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
@@ -123,9 +158,15 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         (
             state.common_ubo,
             state.bg_color_ubo,
-            state.color1_ubo,
-            state.color2_ubo,
-        ) = prep_ubos(gfx, common_data, colors::AEGEAN, state.color1, state.color2);
+            state.color1.ubo,
+            state.color2.ubo,
+        ) = prep_ubos(
+            gfx,
+            common_data,
+            colors::AEGEAN,
+            state.color1.uniform,
+            state.color2.uniform,
+        );
     }
 
     state.srt.draw_filled(
@@ -134,8 +175,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         vec![
             &state.common_ubo,
             &state.bg_color_ubo,
-            &state.color1_ubo,
-            &state.color2_ubo,
+            &state.color1.ubo,
+            &state.color2.ubo,
         ],
     );
 
@@ -148,6 +189,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     gfx.render(draw);
 
     gfx.set_buffer_data(&state.common_ubo, &common_data);
+    gfx.set_buffer_data(&state.color1.ubo, &state.color1.uniform);
+    gfx.set_buffer_data(&state.color2.ubo, &state.color2.uniform);
 }
 
 #[notan_main]
