@@ -6,8 +6,7 @@ layout(location = 0) out vec4 color;
 
 layout(set = 0, binding = 0) uniform Common {
     float u_time;
-    float u_resolution_x;
-    float u_resolution_y;
+    vec2 u_resolution;
 };
 
 layout(set = 0, binding = 0) uniform BgColor {
@@ -39,7 +38,7 @@ float get_pct(in float distance) {
 }
 
 void main() {
-    vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
+    vec2 st = gl_FragCoord.xy / u_resolution;
     
     float color1_dist = get_distance(st,vec2(0.2, 0.8));
     float color1_pct = get_pct(color1_dist);
