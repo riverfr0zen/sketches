@@ -5,8 +5,7 @@ layout(location = 0) out vec4 color;
 
 layout(set = 0, binding = 2) uniform Common {
     float u_time;
-    float u_resolution_x;
-    float u_resolution_y;
+    vec2 u_resolution;
 };
 
 // Plot a line on Y using a value between 0.0-1.0
@@ -20,7 +19,7 @@ float plot2(vec2 st, float pct){
 }
 
 void main() {
-    vec2 st = gl_FragCoord.xy / vec2(u_resolution_x, u_resolution_y);
+    vec2 st = gl_FragCoord.xy / u_resolution;
 
     // float y = st.y;
     float y = pow(st.x,5.0);

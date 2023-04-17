@@ -1,4 +1,5 @@
 use notan::draw::*;
+use notan::math::Vec2;
 use notan::prelude::*;
 
 pub struct ShaderRenderTexture {
@@ -159,5 +160,21 @@ impl ShaderReloadManager {
             self.needs_reload = true;
         }
         self.frame += 1;
+    }
+}
+
+#[uniform]
+#[derive(Copy, Clone)]
+pub struct CommonData {
+    pub u_time: f32,
+    pub u_resolution: Vec2,
+}
+
+impl CommonData {
+    pub fn new(u_time: f32, u_resolution: Vec2) -> Self {
+        Self {
+            u_time,
+            u_resolution,
+        }
     }
 }

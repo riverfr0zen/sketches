@@ -3,7 +3,7 @@ use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::shaderutils::{
-    create_hot_shape_pipeline, ShaderReloadManager, ShaderRenderTexture,
+    create_hot_shape_pipeline, CommonData, ShaderReloadManager, ShaderRenderTexture,
 };
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, set_html_bgcolor, ScreenDimensions,
@@ -26,9 +26,10 @@ fn init(gfx: &mut Graphics) -> State {
     let pipeline =
         create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl").unwrap();
 
+    let common_data = CommonData::new(0.0, WORK_SIZE);
     let common_ubo = gfx
         .create_uniform_buffer(1, "Common")
-        .with_data(&[0.0, WORK_SIZE.x, WORK_SIZE.y])
+        .with_data(&common_data)
         .build()
         .unwrap();
 
@@ -50,6 +51,7 @@ fn update(app: &mut App, state: &mut State) {
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, CLEAR_COLOR);
     let u_time = app.timer.time_since_init();
+    let common_data = CommonData::new(u_time, WORK_SIZE);
 
     if state.hot_mgr.needs_reload() {
         match create_hot_shape_pipeline(gfx, "examples/assets/shaders/plot.frag.glsl") {
@@ -57,10 +59,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
             Err(err) => log::error!("{}", err),
         }
 
-        // UBOs here need to be updated with the *latest data*, not the initial data we used in init()
+        // UBOs here need to be created with the *latest data*, not the initial data we used in init()
         state.common_ubo = gfx
             .create_uniform_buffer(1, "Common")
-            .with_data(&[u_time, WORK_SIZE.x, WORK_SIZE.y])
+            .with_data(&common_data)
             .build()
             .unwrap();
     }
@@ -77,7 +79,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     gfx.render(draw);
 
-    gfx.set_buffer_data(&state.common_ubo, &[u_time, WORK_SIZE.x, WORK_SIZE.y]);
+    gfx.set_buffer_data(&state.common_ubo, &common_data);
 }
 
 #[notan_main]
