@@ -15,10 +15,12 @@ layout(set = 0, binding = 0) uniform BgColor {
 
 layout(set = 0, binding = 0) uniform ColorSource1 {
     vec3 color1;
+    vec2 color1_pos;
 };
 
 layout(set = 0, binding = 0) uniform ColorSource2 {
     vec3 color2;
+    vec2 color2_pos;
 };
 
 

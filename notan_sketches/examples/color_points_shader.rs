@@ -1,6 +1,6 @@
 use notan::draw::*;
 use notan::log;
-use notan::math::Vec2;
+use notan::math::{Vec2, Vec3};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::shaderutils::{
@@ -13,6 +13,13 @@ use notan_sketches::utils::{
 const CLEAR_COLOR: Color = Color::BLUE;
 // const WORK_SIZE: Vec2 = Vec2::new(800.0, 600.0);
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+
+#[uniform]
+#[derive(Copy, Clone)]
+struct ColorSourceData {
+    color: Vec3,
+    pos: Vec2,
+}
 
 
 #[derive(AppState)]
@@ -31,7 +38,9 @@ fn prep_ubos(
     common_data: CommonData,
     bg_color: Color,
     color1: Color,
+    color1_pos: Vec2,
     color2: Color,
+    color2_pos: Vec2,
 ) -> (Buffer, Buffer, Buffer, Buffer) {
     let common_ubo = gfx
         .create_uniform_buffer(1, "Common")
@@ -45,16 +54,23 @@ fn prep_ubos(
         .build()
         .unwrap();
 
+    let color1_data = ColorSourceData {
+        color: Vec3::new(color1.r, color1.g, color1.b),
+        pos: color1_pos,
+    };
     let color1_ubo = gfx
         .create_uniform_buffer(3, "ColorSource1")
-        .with_data(&[color1.r, color1.g, color1.b])
+        .with_data(&color1_data)
         .build()
         .unwrap();
 
-
+    let color2_data = ColorSourceData {
+        color: Vec3::new(color2.r, color2.g, color2.b),
+        pos: color2_pos,
+    };
     let color2_ubo = gfx
         .create_uniform_buffer(4, "ColorSource2")
-        .with_data(&[color2.r, color2.g, color2.b])
+        .with_data(&color2_data)
         .build()
         .unwrap();
 
@@ -71,7 +87,9 @@ fn init(gfx: &mut Graphics) -> State {
         common_data,
         colors::AEGEAN,
         colors::BANANA,
+        Vec2::new(0.2, 0.8),
         colors::SALMON,
+        Vec2::new(0.5, 0.5),
     );
 
     let srt = ShaderRenderTexture::new(gfx, WORK_SIZE.x, WORK_SIZE.y);
@@ -113,7 +131,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
             common_data,
             colors::AEGEAN,
             colors::BANANA,
+            Vec2::new(0.2, 0.8),
             colors::SALMON,
+            Vec2::new(0.5, 0.5),
         );
     }
 
