@@ -42,10 +42,10 @@ float get_pct(in float distance) {
 void main() {
     vec2 st = gl_FragCoord.xy / u_resolution;
     
-    float color1_dist = get_distance(st,vec2(0.2, 0.8));
+    float color1_dist = get_distance(st, color1_pos);
     float color1_pct = get_pct(color1_dist);
 
-    float color2_dist = get_distance(st,vec2(0.5, 0.5));
+    float color2_dist = get_distance(st, color2_pos);
     float color2_pct = get_pct(color2_dist);
 
     vec3 xcolor = mix(bg_color, color1, color1_pct);
