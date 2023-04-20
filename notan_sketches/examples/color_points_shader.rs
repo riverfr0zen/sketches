@@ -13,9 +13,10 @@ use notan_sketches::utils::{
 const CLEAR_COLOR: Color = Color::BLUE;
 const COLOR1: Color = colors::BANANA;
 const COLOR2: Color = colors::SALMON;
-
 // const WORK_SIZE: Vec2 = Vec2::new(800.0, 600.0);
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
+const UPDATE_STEP: f32 = 5.0;
+
 
 #[uniform]
 #[derive(Copy, Clone)]
@@ -129,7 +130,7 @@ fn init(gfx: &mut Graphics) -> State {
 
 
 fn update_color(color: &mut ColorSource, time_since_init: f32, rng: &mut Random) {
-    if time_since_init - color.created > 5.0 {
+    if time_since_init - color.created > UPDATE_STEP {
         color.uniform.pos.x = rng.gen_range(0.0..1.0);
         color.uniform.pos.y = rng.gen_range(0.0..1.0);
         color.created = time_since_init;

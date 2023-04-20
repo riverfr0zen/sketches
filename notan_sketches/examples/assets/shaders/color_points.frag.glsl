@@ -31,7 +31,8 @@ float get_distance(in vec2 point1, in vec2 point2) {
 
 
 float get_pct(in float distance) {
-    float pct = 0.6-(distance * 1.5);
+    // float pct = 0.6-(distance * 1.5);
+    float pct = (1.0 * abs(sin(0.05 * u_time)))-(distance * 1.5);
     // float pct = abs(sin(u_time))-(distance * (1.0 + abs(sin(u_time))));
     if (pct < 0.0) {
         return 0.0;
