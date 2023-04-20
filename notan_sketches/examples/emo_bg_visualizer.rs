@@ -84,6 +84,7 @@ struct State {
     needs_egui_font_setup: bool,
     touch: TouchState,
     help_modal: CommonHelpModal,
+    tile_texture: Texture,
 }
 
 impl State {
@@ -196,6 +197,13 @@ fn init(gfx: &mut Graphics) -> State {
         "Tap to close this help",
     );
 
+    let tile_texture = gfx
+        .create_texture()
+        .from_image(include_bytes!("../examples/assets/tiles/tile3_4k.png"))
+        .build()
+        .unwrap();
+
+
     let state = State {
         view: View::HOME,
         // view: View::READ,
@@ -207,11 +215,17 @@ fn init(gfx: &mut Graphics) -> State {
         egui_fonts,
         selected_visualizer: DEFAULT_VISUALIZER,
         visualizer: match DEFAULT_VISUALIZER {
+            // "TiledShaderVisualizer" => Box::new(TilesVisualizer::new(
+            //     gfx,
+            //     CLEAR_COLOR,
+            //     TITLE_COLOR,
+            //     DYNAMIC_TEXT_COLOR,
+            // )),
             VisualizerSelection::Tiles => Box::new(TilesVisualizer::new(
-                gfx,
                 CLEAR_COLOR,
                 TITLE_COLOR,
                 DYNAMIC_TEXT_COLOR,
+                tile_texture.clone(),
             )),
             _ => Box::new(ColorTransitionVisualizer::new(
                 CLEAR_COLOR,
@@ -228,6 +242,7 @@ fn init(gfx: &mut Graphics) -> State {
             touch_help_text.to_string(),
             None,
         ),
+        tile_texture,
     };
     state
 }
@@ -846,10 +861,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
             VisualizerSelection::Tiles => {
                 log::debug!("swap to TilesVisualizer");
                 state.visualizer = Box::new(TilesVisualizer::new(
-                    gfx,
                     CLEAR_COLOR,
                     TITLE_COLOR,
                     DYNAMIC_TEXT_COLOR,
+                    state.tile_texture.clone(),
                 ));
             }
             _ => {
