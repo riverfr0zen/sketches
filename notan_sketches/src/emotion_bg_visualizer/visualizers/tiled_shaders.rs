@@ -75,10 +75,20 @@ impl Default for ShaderBundleStore {
 }
 
 impl ShaderBundleStore {
+    fn append_shader_bundle(&mut self, gfx: &mut Graphics) {
+        let work_size = get_work_size(gfx);
+        self.bundles.push(TileShaderBundle::new(
+            gfx,
+            &work_size,
+            &Color::RED,
+            &Color::GREEN,
+        ));
+    }
+
     fn new(gfx: &mut Graphics, slots: usize) -> Self {
         let work_size = get_work_size(gfx);
         let mut bundles: Vec<TileShaderBundle> = vec![];
-        for _slot in 0..slots {
+        for _slot in 0..=slots {
             bundles.push(TileShaderBundle::new(
                 gfx,
                 &work_size,
@@ -90,7 +100,7 @@ impl ShaderBundleStore {
     }
 }
 
-pub struct TiledShaderVisualizer {
+pub struct TiledShadersVisualizer {
     rng: Random,
     pub model: Option<TopEmotionsModel>,
     pub transition: ColorTransition,
@@ -152,7 +162,7 @@ fn get_sentiment_enhanced_color(
 }
 
 
-impl TiledShaderVisualizer {
+impl TiledShadersVisualizer {
     pub fn new(
         gfx: &mut Graphics,
         bg_color: Color,
@@ -241,7 +251,24 @@ impl TiledShaderVisualizer {
         }
     }
 
-    fn prepare_layout(&mut self, draw: &mut Draw) {
+    /// Increases the number of shader bundles if necessary after the layout
+    /// has been altered with .grow_or_shrink_layout()
+    fn grow_shader_bundles(&mut self, gfx: &mut Graphics) {
+        let additional_shader_bundles_needed =
+            (self.layout.rows * self.layout.cols) as i32 - self.shader_bundles.bundles.len() as i32;
+        if additional_shader_bundles_needed > 0 {
+            log::debug!(
+                "Growing shader bundles because {} > {}",
+                self.layout.rows * self.layout.cols,
+                self.shader_bundles.bundles.len(),
+            );
+            for _i in 0..additional_shader_bundles_needed {
+                self.shader_bundles.append_shader_bundle(gfx);
+            }
+        }
+    }
+
+    fn prepare_layout(&mut self, gfx: &mut Graphics, draw: &mut Draw) {
         if self.refresh_layout {
             if self.tiles.len() > MAX_COLS {
                 self.layout.cols = self.tiles.len();
@@ -254,11 +281,12 @@ impl TiledShaderVisualizer {
                 draw.height() / self.layout.rows as f32,
             );
             log::debug!(
-                "refreshed: rows {}, cols {}",
+                "layout refreshed: rows {}, cols {}",
                 self.layout.rows,
                 self.layout.cols
             );
             self.grow_or_shrink_layout();
+            self.grow_shader_bundles(gfx);
             self.refresh_layout = false;
         } else {
             self.layout.cols = (draw.width() / self.layout.tile_size.x).ceil() as usize;
@@ -270,7 +298,7 @@ impl TiledShaderVisualizer {
         if self.tiles.len() < 1 {
             return;
         }
-        self.prepare_layout(draw);
+        self.prepare_layout(gfx, draw);
 
         for (row_index, row) in self.layout.reprs.iter_mut().enumerate() {
             let row_len = row.len();
@@ -338,9 +366,9 @@ impl TiledShaderVisualizer {
 }
 
 
-impl EmoVisualizer for TiledShaderVisualizer {
+impl EmoVisualizer for TiledShadersVisualizer {
     fn get_enum(&self) -> VisualizerSelection {
-        VisualizerSelection::Tiles
+        VisualizerSelection::TiledShaders
     }
 
 

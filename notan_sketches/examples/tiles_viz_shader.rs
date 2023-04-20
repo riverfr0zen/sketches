@@ -3,7 +3,7 @@ use notan::log;
 use notan::math::{Vec2, Vec3};
 use notan::prelude::*;
 use notan_sketches::colors;
-use notan_sketches::emotion_bg_visualizer::visualizers::tile::shader::{
+use notan_sketches::emotion_bg_visualizer::visualizers::tiled_shaders::shader::{
     TileShaderBundle as Tile, FRAG,
 };
 use notan_sketches::utils::{

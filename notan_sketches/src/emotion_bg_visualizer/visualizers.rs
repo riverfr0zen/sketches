@@ -1,5 +1,6 @@
 pub mod color_transition;
 pub mod tile;
+pub mod tiled_shaders;
 
 use crate::emotion::EmocatTextAnalysis;
 use crate::utils::scale_font;
@@ -15,8 +16,9 @@ const FONT_RESIZE_STEP: f32 = 2.0;
 
 #[derive(PartialEq)]
 pub enum VisualizerSelection {
-    Tiles,
     ColorTransition,
+    Tiles,
+    TiledShaders,
 }
 
 pub trait EmoVisualizer {

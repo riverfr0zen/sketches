@@ -7,6 +7,7 @@ use notan_sketches::emotion::*;
 use notan_sketches::emotion_bg_visualizer::get_work_size;
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::tiled_shaders::TiledShadersVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 
@@ -32,7 +33,8 @@ const TITLE_COLOR: Color = Color::BLACK;
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
 // const VISUALIZER: &str = "ColorTransitionVisualizer";
-const VISUALIZER: &str = "TilesVisualizer";
+// const VISUALIZER: &str = "TilesVisualizer";
+const VISUALIZER: &str = "TiledShadersVisualizer";
 
 
 #[derive(AppState)]
@@ -77,12 +79,12 @@ fn init(gfx: &mut Graphics) -> State {
         title_font: title_font,
         analysis: 0,
         visualizer: match VISUALIZER {
-            // "TiledShaderVisualizer" => Box::new(TilesVisualizer::new(
-            //     gfx,
-            //     CLEAR_COLOR,
-            //     TITLE_COLOR,
-            //     DYNAMIC_TEXT_COLOR,
-            // )),
+            "TiledShadersVisualizer" => Box::new(TiledShadersVisualizer::new(
+                gfx,
+                CLEAR_COLOR,
+                TITLE_COLOR,
+                DYNAMIC_TEXT_COLOR,
+            )),
             "TilesVisualizer" => Box::new(TilesVisualizer::new(
                 CLEAR_COLOR,
                 TITLE_COLOR,

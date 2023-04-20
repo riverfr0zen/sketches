@@ -1,5 +1,6 @@
 use super::visualizers::color_transition::ColorTransitionVisualizer;
 use super::visualizers::tile::TilesVisualizer;
+use super::visualizers::tiled_shaders::TiledShadersVisualizer;
 use crate::emotion::TopEmotionsModel;
 use notan::egui::{self, RichText, TextStyle, Ui};
 
@@ -57,6 +58,17 @@ impl DisplayMetrics for TilesVisualizer {
 }
 
 
+impl DisplayMetrics for TiledShadersVisualizer {
+    fn egui_metrics(&self, ui: &mut Ui, title_style: &dyn Fn() -> TextStyle) {
+        if let Some(model) = &self.model {
+            top_emotions_egui_metrics_ui(model, ui, title_style);
+        } else {
+            ui.small("The emotion analysis metrics will appear here when you start reading.");
+        }
+    }
+}
+
+
 pub trait SettingsUi {
     fn egui_settings(&mut self, ui: &mut Ui);
 }
@@ -81,6 +93,29 @@ impl SettingsUi for ColorTransitionVisualizer {
 
 
 impl SettingsUi for TilesVisualizer {
+    fn egui_settings(&mut self, ui: &mut Ui) {
+        ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+            let viz_options = &mut Self::get_options();
+
+            ui.label("Text Shadow");
+            egui::ComboBox::from_id_source("shadow-style")
+                .selected_text(&self.text_shadow_style)
+                .show_ui(ui, |ui| {
+                    ui.style_mut().wrap = Some(false);
+                    for option in viz_options.get_mut("Shadow Style").unwrap().iter() {
+                        ui.selectable_value(
+                            &mut self.text_shadow_style,
+                            option.to_string(),
+                            option,
+                        );
+                    }
+                });
+        });
+    }
+}
+
+
+impl SettingsUi for TiledShadersVisualizer {
     fn egui_settings(&mut self, ui: &mut Ui) {
         ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
             // ui.label("There are no options for the Tiles visualizer.");

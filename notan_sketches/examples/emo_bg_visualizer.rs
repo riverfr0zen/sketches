@@ -14,6 +14,7 @@ use notan_touchy::{TouchGesture, TouchState};
 // use serde_json::{Result as JsonResult, Value};
 use notan_sketches::emotion_bg_visualizer::visualizers::color_transition::ColorTransitionVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::tile::TilesVisualizer;
+use notan_sketches::emotion_bg_visualizer::visualizers::tiled_shaders::TiledShadersVisualizer;
 use notan_sketches::emotion_bg_visualizer::visualizers::VisualizerSelection;
 use notan_sketches::emotion_bg_visualizer::{get_work_size, EmoVisualizerFull};
 use FontFamily::{Monospace, Proportional};
@@ -42,7 +43,8 @@ const READ_VIEW_GUI_COLOR: egui::Color32 =
 const DYNAMIC_TEXT_COLOR: bool = false;
 const MAX_FPS: u8 = 240;
 // const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::ColorTransition;
-const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::Tiles;
+// const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::Tiles;
+const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::TiledShaders;
 
 
 #[derive(PartialEq)]
@@ -215,12 +217,12 @@ fn init(gfx: &mut Graphics) -> State {
         egui_fonts,
         selected_visualizer: DEFAULT_VISUALIZER,
         visualizer: match DEFAULT_VISUALIZER {
-            // "TiledShaderVisualizer" => Box::new(TilesVisualizer::new(
-            //     gfx,
-            //     CLEAR_COLOR,
-            //     TITLE_COLOR,
-            //     DYNAMIC_TEXT_COLOR,
-            // )),
+            VisualizerSelection::TiledShaders => Box::new(TiledShadersVisualizer::new(
+                gfx,
+                CLEAR_COLOR,
+                TITLE_COLOR,
+                DYNAMIC_TEXT_COLOR,
+            )),
             VisualizerSelection::Tiles => Box::new(TilesVisualizer::new(
                 CLEAR_COLOR,
                 TITLE_COLOR,
@@ -734,7 +736,8 @@ fn draw_settings_view(
                     let visualizer_name = match state.selected_visualizer {
                         // Annoying that padding is necessary here, or else it wraps the longer
                         // options uglily
-                        VisualizerSelection::Tiles => "Tiles",
+                        VisualizerSelection::TiledShaders => "Tiled Shaders",
+                        VisualizerSelection::Tiles => "Tiled Texture",
                         _ => "Color Transition",
                     };
                     egui::ComboBox::from_id_source("selected-visualizer")
@@ -750,7 +753,12 @@ fn draw_settings_view(
                             ui.selectable_value(
                                 &mut state.selected_visualizer,
                                 VisualizerSelection::Tiles,
-                                "Tiles",
+                                "Tiled Texture",
+                            );
+                            ui.selectable_value(
+                                &mut state.selected_visualizer,
+                                VisualizerSelection::TiledShaders,
+                                "Tiled Shaders",
                             );
                         });
                 });
@@ -858,6 +866,15 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
 
     if state.selected_visualizer != state.visualizer.get_enum() {
         match state.selected_visualizer {
+            VisualizerSelection::TiledShaders => {
+                log::debug!("swap to TiledShadersVisualizer");
+                state.visualizer = Box::new(TiledShadersVisualizer::new(
+                    gfx,
+                    CLEAR_COLOR,
+                    TITLE_COLOR,
+                    DYNAMIC_TEXT_COLOR,
+                ));
+            }
             VisualizerSelection::Tiles => {
                 log::debug!("swap to TilesVisualizer");
                 state.visualizer = Box::new(TilesVisualizer::new(

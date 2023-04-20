@@ -1,7 +1,7 @@
 use crate::shaderutils::ShaderRenderTexture;
 // use notan::draw::*;
 // use notan::log;
-use notan::math::{Vec2, Vec3};
+use notan::math::Vec2;
 use notan::prelude::*;
 
 // NOTE: You will need to `touch` this file to re-compile if the shader below is changed
