@@ -3,10 +3,7 @@ use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 use notan_sketches::shaderutils::{
-    // create_hot_shape_pipeline,
-    CommonData,
-    // ShaderReloadManager,
-    ShaderRenderTexture,
+    create_hot_shape_pipeline, CommonData, ShaderReloadManager, ShaderRenderTexture,
 };
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, set_html_bgcolor, ScreenDimensions,
@@ -16,6 +13,7 @@ use notan_sketches::utils::{
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 // const BGCOLOR: Color = Color::from_rgb(1.0, 0.65, 0.2);
 
+#[cfg(not(debug_assertions))]
 const FRAG: ShaderSource =
     notan::include_fragment_shader!("examples/assets/shaders/erratic_wave.frag.glsl");
 
@@ -25,15 +23,18 @@ struct State {
     pub pipeline: Pipeline,
     pub common_ubo: Buffer,
     pub srt: ShaderRenderTexture,
-    // pub hot_mgr: ShaderReloadManager,
+    #[cfg(debug_assertions)]
+    pub hot_mgr: ShaderReloadManager,
 }
 
 fn init(gfx: &mut Graphics) -> State {
+    #[cfg(not(debug_assertions))]
     let pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
-    // let pipeline =
-    //     create_hot_shape_pipeline(gfx, "examples/assets/shaders/erratic_wave.frag.glsl").unwrap();
-    let common_data = CommonData::new(0.0, WORK_SIZE);
+    #[cfg(debug_assertions)]
+    let pipeline =
+        create_hot_shape_pipeline(gfx, "examples/assets/shaders/erratic_wave.frag.glsl").unwrap();
 
+    let common_data = CommonData::new(0.0, WORK_SIZE);
     let common_ubo = gfx
         .create_uniform_buffer(1, "Common")
         .with_data(&common_data)
@@ -46,14 +47,15 @@ fn init(gfx: &mut Graphics) -> State {
         pipeline,
         common_ubo,
         srt,
-        // hot_mgr: ShaderReloadManager::default(),
+        #[cfg(debug_assertions)]
+        hot_mgr: ShaderReloadManager::default(),
     }
 }
 
-
-// fn update(state: &mut State) {
-//     state.hot_mgr.update();
-// }
+fn update(state: &mut State) {
+    #[cfg(debug_assertions)]
+    state.hot_mgr.update();
+}
 
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
@@ -62,18 +64,19 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let u_time = app.timer.time_since_init();
     let common_data = CommonData::new(u_time, WORK_SIZE);
 
-    // if state.hot_mgr.needs_reload() {
-    //     match create_hot_shape_pipeline(gfx, "examples/assets/shaders/erratic_wave.frag.glsl") {
-    //         Ok(pipeline) => state.pipeline = pipeline,
-    //         Err(err) => log::error!("{}", err),
-    //     }
+    #[cfg(debug_assertions)]
+    if state.hot_mgr.needs_reload() {
+        match create_hot_shape_pipeline(gfx, "examples/assets/shaders/erratic_wave.frag.glsl") {
+            Ok(pipeline) => state.pipeline = pipeline,
+            Err(err) => log::error!("{}", err),
+        }
 
-    //     state.common_ubo = gfx
-    //         .create_uniform_buffer(1, "Common")
-    //         .with_data(&common_data)
-    //         .build()
-    //         .unwrap();
-    // }
+        state.common_ubo = gfx
+            .create_uniform_buffer(1, "Common")
+            .with_data(&common_data)
+            .build()
+            .unwrap();
+    }
 
     state
         .srt
@@ -113,7 +116,7 @@ fn main() -> Result<(), String> {
         .add_config(win_config)
         .add_config(DrawConfig) // Simple way to add the draw extension
         // .event(event)
-        // .update(update)
+        .update(update)
         .draw(draw)
         .build()
 }
