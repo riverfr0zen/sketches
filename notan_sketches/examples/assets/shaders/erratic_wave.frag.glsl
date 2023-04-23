@@ -37,7 +37,7 @@ void main() {
     float max_y_shrink = 30.0;
     float min_y_shrink = 10.0;
     float wave_y_timeframe = mod(u_time, max_y_shrink);
-    float wave_y_timeframe2x = mod(u_time, (wave_y_timeframe * 2.0));
+    float wave_y_timeframe2x = mod(u_time, (max_y_shrink * 2.0));
     float wave_y_shrink = wave_y_timeframe;
 
     // Using the 2x timeframe to step `wave_y_shrink` "backwards" if we've gone past the
