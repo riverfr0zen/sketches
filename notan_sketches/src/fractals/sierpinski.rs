@@ -1,4 +1,4 @@
-use crate::mathutils::get_vec2_midpoint;
+use crate::mathutils::mid;
 use crate::utils::{CommonHelpModal, EventsFocus};
 use notan::draw::*;
 use notan::log;
@@ -127,8 +127,8 @@ pub fn draw_gasket(
             .color(Color::PURPLE)
             .fill();
     } else {
-        let mid_ab: Vec2 = get_vec2_midpoint(a, b);
-        let mid_ac: Vec2 = get_vec2_midpoint(a, c);
+        let mid_ab: Vec2 = mid(a, b);
+        let mid_ac: Vec2 = mid(a, c);
 
         let a1 = vec2(a.x, a.y);
         let b1 = vec2(mid_ab.x, mid_ab.y);
@@ -175,8 +175,8 @@ pub fn draw_bushy_gasket(
             .color(Color::PINK)
             .fill();
     } else {
-        let mid_ab: Vec2 = get_vec2_midpoint(a, b);
-        let mid_ac: Vec2 = get_vec2_midpoint(a, c);
+        let mid_ab: Vec2 = mid(a, b);
+        let mid_ac: Vec2 = mid(a, c);
 
         let a1 = vec2(a.x, a.y);
         let b1 = vec2(mid_ab.x, mid_ab.y);
@@ -234,8 +234,8 @@ pub fn draw_varied_gasket(
             .color(Color::PINK)
             .fill();
     } else {
-        let mid_ab: Vec2 = get_vec2_midpoint(a, b);
-        let mid_ac: Vec2 = get_vec2_midpoint(a, c);
+        let mid_ab: Vec2 = mid(a, b);
+        let mid_ac: Vec2 = mid(a, c);
 
         let mut a1 = vec2(a.x, a.y);
         let mut b1 = vec2(mid_ab.x, mid_ab.y);

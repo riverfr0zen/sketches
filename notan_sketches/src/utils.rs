@@ -67,6 +67,12 @@ pub fn set_html_bgcolor(clear_color: Color) {
 }
 
 
+/// Return an appropriate work-size based on the device screen.
+///
+/// Also does a sort of "supersampling" (return a higher work-size) based on a
+/// conservative (I think?) test against the device's `max_texture_size`.
+/// If supersampling, a 2x size is returned for sub-1080p screens, while
+/// a 1.2x size is returned for larger resolutions.
 pub fn get_work_size_for_screen(app: &mut App, gfx: &mut Graphics) -> Vec2 {
     log::debug!(
         "Screen size: {:?} Container size: {:?} dpi {} limits {:?}",
