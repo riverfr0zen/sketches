@@ -2,6 +2,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
+use notan_sketches::enums;
 use notan_sketches::mathutils::mid;
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, set_html_bgcolor,
@@ -11,6 +12,7 @@ use notan_sketches::utils::{
 const CLEAR_COLOR: Color = Color::WHITE;
 const STRIP_HEIGHT: f32 = 0.05;
 const SEG_WIDTH: f32 = 0.02;
+const DISPLACEMENT_POS_STEP: f32 = 10.0;
 
 struct Segment {
     from: Vec2,
@@ -27,6 +29,7 @@ struct State {
     pub cursor: Vec2,
     pub strips: Vec<Vec<Segment>>,
     pub displacement_pos: f32,
+    pub displacement_dir: enums::Direction,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
@@ -47,6 +50,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         cursor,
         strips: vec![],
         displacement_pos: 0.0,
+        displacement_dir: enums::Direction::Down,
     }
 }
 
@@ -59,17 +63,7 @@ fn add_strip(state: &mut State) {
         state.cursor.x += state.seg_width;
         let to = vec2(state.cursor.x, state.cursor.y);
 
-        // TODO: experiment with moving this around
-        let y_displacement_factor = calc_displacement_factor(state);
-        let y_displacement = state.strip_height * 0.5 * y_displacement_factor;
-        let ctrl = vec2(
-            state
-                .rng
-                .gen_range(state.cursor.x - state.seg_width..state.cursor.x),
-            state
-                .rng
-                .gen_range(state.cursor.y - y_displacement..state.cursor.y + y_displacement),
-        );
+        let ctrl = mid(from, to);
         strip.push(Segment { from, to, ctrl });
     }
     state.strips.push(strip);
@@ -77,19 +71,22 @@ fn add_strip(state: &mut State) {
 }
 
 
-fn calc_displacement_factor(state: &mut State) -> f32 {
-    // Return a displacement factor that gets larger as we go down the screen
-    // 0.001 + state.cursor.y / state.work_size.y
-
-    // Return a displacement factor based on the distance of `state.cursor.y` from `state.displacement_pos`
-    0.001 + (state.cursor.y - state.displacement_pos).abs() / state.work_size.y
+fn calc_displacement_factor(seg_y_pos: &f32, displacement_pos: &f32, work_size: &Vec2) -> f32 {
+    // Return a displacement factor based on the vertical distance of the segment from displacement_pos
+    // TODO: revisit this logic to confirm what I'm doing is right with rgds to handling
+    // rng sampling exception
+    if seg_y_pos > &0.0 {
+        return 1.0 - (seg_y_pos - displacement_pos).abs() / work_size.y;
+    }
+    0.00001
 }
+
 
 fn move_displacement(state: &mut State) {
     if state.displacement_pos > state.work_size.y {
         state.displacement_pos = 0.0;
     } else {
-        state.displacement_pos += 1.0;
+        state.displacement_pos += DISPLACEMENT_POS_STEP;
         // An interesting setting
         // state.displacement_pos += 500.0;
     }
@@ -104,10 +101,42 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         state.cursor.y += state.strip_height;
     }
 
-    for strip in state.strips.iter() {
+    // let y_displacement_factor = calc_displacement_factor(state);
+    for strip in state.strips.iter_mut() {
+        let mut y_displacement_factor: f32 = -0.1;
+        let mut y_displacement: f32 = 0.0;
         for seg in strip {
             // TODO NEXT: I think the seg.ctrl should be displaced here. Move ctrl rng code from
             // `add_strip` to here, I think.
+            if y_displacement_factor < 0.0 {
+                y_displacement_factor = calc_displacement_factor(
+                    &seg.from.y,
+                    &state.displacement_pos,
+                    &state.work_size,
+                );
+                y_displacement = state.strip_height * 0.5 * y_displacement_factor;
+                log::debug!(
+                    "dpos: {}, y {}, ydf {}, yd {}",
+                    state.displacement_pos,
+                    seg.from.y,
+                    y_displacement_factor,
+                    y_displacement,
+                );
+            }
+            let y_displacement = state.strip_height * 0.5 * y_displacement_factor;
+            seg.ctrl = vec2(
+                state
+                    .rng
+                    .gen_range(seg.from.x.min(seg.to.x)..seg.from.x.max(seg.to.x)),
+                state
+                    .rng
+                    .gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement),
+            );
+            // seg.ctrl.y = state
+            //     .rng
+            //     .gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+
+
             draw.path()
                 .move_to(seg.from.x, seg.from.y)
                 // .line_to(seg.to.x, seg.to.y)
