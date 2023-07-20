@@ -83,10 +83,18 @@ fn calc_displacement_factor(seg_y_pos: &f32, displacement_pos: &f32, work_size: 
 
 
 fn move_displacement(state: &mut State) {
+    if state.displacement_pos <= 0.0 {
+        state.displacement_dir = enums::Direction::Down;
+    }
+
     if state.displacement_pos > state.work_size.y {
-        state.displacement_pos = 0.0;
-    } else {
-        state.displacement_pos += DISPLACEMENT_POS_STEP;
+        state.displacement_dir = enums::Direction::Up;
+    }
+
+    match state.displacement_dir {
+        enums::Direction::Up => state.displacement_pos -= DISPLACEMENT_POS_STEP,
+        enums::Direction::Down => state.displacement_pos += DISPLACEMENT_POS_STEP,
+        _ => (),
         // An interesting setting
         // state.displacement_pos += 500.0;
     }
