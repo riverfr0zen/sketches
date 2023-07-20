@@ -73,11 +73,12 @@ fn add_strip(state: &mut State) {
 
 fn calc_displacement_factor(seg_y_pos: &f32, displacement_pos: &f32, work_size: &Vec2) -> f32 {
     // Return a displacement factor based on the vertical distance of the segment from displacement_pos
-    // TODO: revisit this logic to confirm what I'm doing is right with rgds to handling
-    // rng sampling exception
-    if seg_y_pos > &0.0 {
-        return 1.0 - (seg_y_pos - displacement_pos).abs() / work_size.y;
+    let distance = (seg_y_pos - displacement_pos).abs() / work_size.y;
+    if distance > 0.0 && distance < 0.5 {
+        return 1.0 - distance;
     }
+    // @TODO: Returning zero breaks rng so return a very small value instead.
+    // Revisit on whether there's a better approach
     0.00001
 }
 
@@ -95,8 +96,6 @@ fn move_displacement(state: &mut State) {
         enums::Direction::Up => state.displacement_pos -= DISPLACEMENT_POS_STEP,
         enums::Direction::Down => state.displacement_pos += DISPLACEMENT_POS_STEP,
         _ => (),
-        // An interesting setting
-        // state.displacement_pos += 500.0;
     }
 }
 
