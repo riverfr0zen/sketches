@@ -26,6 +26,7 @@ struct State {
     pub strip_height: f32,
     pub cursor: Vec2,
     pub strips: Vec<Vec<Segment>>,
+    pub displacement_pos: f32,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
@@ -45,6 +46,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         strip_height,
         cursor,
         strips: vec![],
+        displacement_pos: 0.0,
     }
 }
 
@@ -57,9 +59,8 @@ fn add_strip(state: &mut State) {
         state.cursor.x += state.seg_width;
         let to = vec2(state.cursor.x, state.cursor.y);
 
-        // Displacement factor gets larger as we go down the screen
         // TODO: experiment with moving this around
-        let y_displacement_factor = 0.001 + state.cursor.y / state.work_size.y;
+        let y_displacement_factor = calc_displacement_factor(state);
         let y_displacement = state.strip_height * 0.5 * y_displacement_factor;
         let ctrl = vec2(
             state
@@ -73,6 +74,23 @@ fn add_strip(state: &mut State) {
     }
     state.strips.push(strip);
     state.cursor.x = 0.0;
+}
+
+
+fn calc_displacement_factor(state: &mut State) -> f32 {
+    // Return a displacement factor that gets larger as we go down the screen
+    // 0.001 + state.cursor.y / state.work_size.y
+
+    // Return a displacement factor based on the distance of `state.cursor.y` from `state.displacement_pos`
+    0.001 + (state.cursor.y - state.displacement_pos).abs() / state.work_size.y
+}
+
+fn move_displacement(state: &mut State) {
+    if state.displacement_pos > state.work_size.y {
+        state.displacement_pos = 0.0;
+    } else {
+        state.displacement_pos += 1.0;
+    }
 }
 
 
@@ -94,6 +112,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 .stroke(10.0);
         }
     }
+
+    move_displacement(state);
 
     gfx.render(draw);
 }
