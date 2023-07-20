@@ -114,8 +114,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         let mut y_displacement_factor: f32 = -0.1;
         let mut y_displacement: f32 = 0.0;
         for seg in strip {
-            // TODO NEXT: I think the seg.ctrl should be displaced here. Move ctrl rng code from
-            // `add_strip` to here, I think.
             if y_displacement_factor < 0.0 {
                 y_displacement_factor = calc_displacement_factor(
                     &seg.from.y,
@@ -132,18 +130,12 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 //     y_displacement,
                 // );
             }
-            let y_displacement = state.strip_height * 0.5 * y_displacement_factor;
-            seg.ctrl = vec2(
-                state
-                    .rng
-                    .gen_range(seg.from.x.min(seg.to.x)..seg.from.x.max(seg.to.x)),
-                state
-                    .rng
-                    .gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement),
-            );
-            // seg.ctrl.y = state
-            //     .rng
-            //     .gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+            seg.ctrl.x = state
+                .rng
+                .gen_range(seg.from.x.min(seg.to.x)..seg.from.x.max(seg.to.x));
+            seg.ctrl.y = state
+                .rng
+                .gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
 
 
             draw.path()
