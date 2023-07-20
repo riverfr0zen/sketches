@@ -30,7 +30,7 @@ struct State {
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
-    let (mut rng, seed) = get_rng(None);
+    let (rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
     let work_size = get_work_size_for_screen(app, gfx);
 

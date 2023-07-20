@@ -13,6 +13,7 @@ const CLEAR_COLOR: Color = Color::WHITE;
 const STRIP_HEIGHT: f32 = 0.05;
 const SEG_WIDTH: f32 = 0.02;
 const DISPLACEMENT_POS_STEP: f32 = 10.0;
+const DISPLACEMENT_RANGE: f32 = 0.6;
 
 struct Segment {
     from: Vec2,
@@ -33,7 +34,7 @@ struct State {
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
-    let (mut rng, seed) = get_rng(None);
+    let (rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
     let work_size = get_work_size_for_screen(app, gfx);
 
@@ -74,7 +75,7 @@ fn add_strip(state: &mut State) {
 fn calc_displacement_factor(seg_y_pos: &f32, displacement_pos: &f32, work_size: &Vec2) -> f32 {
     // Return a displacement factor based on the vertical distance of the segment from displacement_pos
     let distance = (seg_y_pos - displacement_pos).abs() / work_size.y;
-    if distance > 0.0 && distance < 0.5 {
+    if distance > 0.0 && distance < DISPLACEMENT_RANGE {
         return 1.0 - distance;
     }
     // @TODO: Returning zero breaks rng so return a very small value instead.
@@ -121,14 +122,15 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                     &state.displacement_pos,
                     &state.work_size,
                 );
-                y_displacement = state.strip_height * 0.5 * y_displacement_factor;
-                log::debug!(
-                    "dpos: {}, y {}, ydf {}, yd {}",
-                    state.displacement_pos,
-                    seg.from.y,
-                    y_displacement_factor,
-                    y_displacement,
-                );
+                // y_displacement = state.strip_height * 0.5 * y_displacement_factor;
+                y_displacement = state.strip_height * y_displacement_factor;
+                // log::debug!(
+                //     "dpos: {}, y {}, ydf {}, yd {}",
+                //     state.displacement_pos,
+                //     seg.from.y,
+                //     y_displacement_factor,
+                //     y_displacement,
+                // );
             }
             let y_displacement = state.strip_height * 0.5 * y_displacement_factor;
             seg.ctrl = vec2(
@@ -148,7 +150,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 .move_to(seg.from.x, seg.from.y)
                 // .line_to(seg.to.x, seg.to.y)
                 .quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
-                .color(Color::ORANGE)
+                .color(Color::BLACK)
                 .stroke(10.0);
         }
     }
@@ -177,6 +179,7 @@ fn main() -> Result<(), String> {
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
 
+    let win_config = win_config.title("hilo_strips.displacement");
     set_html_bgcolor(CLEAR_COLOR);
 
     // notan::init()
