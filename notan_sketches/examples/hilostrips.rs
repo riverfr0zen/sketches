@@ -57,7 +57,10 @@ fn add_strip(state: &mut State) {
         state.cursor.x += state.seg_width;
         let to = vec2(state.cursor.x, state.cursor.y);
 
-        let y_displacement = state.strip_height * 0.5;
+        // Displacement factor gets larger as we go down the screen
+        // TODO: experiment with moving this around
+        let y_displacement_factor = 0.001 + state.cursor.y / state.work_size.y;
+        let y_displacement = state.strip_height * 0.5 * y_displacement_factor;
         let ctrl = vec2(
             state
                 .rng
@@ -76,7 +79,7 @@ fn add_strip(state: &mut State) {
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
 
-    if state.cursor.y <= state.work_size.y {
+    if state.cursor.y < state.work_size.y {
         add_strip(state);
         state.cursor.y += state.strip_height;
     }
