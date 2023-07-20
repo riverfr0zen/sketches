@@ -90,6 +90,8 @@ fn move_displacement(state: &mut State) {
         state.displacement_pos = 0.0;
     } else {
         state.displacement_pos += 1.0;
+        // An interesting setting
+        // state.displacement_pos += 500.0;
     }
 }
 
