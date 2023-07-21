@@ -43,11 +43,19 @@ const PALETTE: [Color; 21] = [
     colors::SALMON,
 ];
 
+
 struct Segment {
     from: Vec2,
     to: Vec2,
     ctrl: Vec2,
 }
+
+
+struct Strip {
+    segs: Vec<Segment>,
+    color: Color,
+}
+
 
 #[derive(AppState)]
 struct State {
@@ -56,10 +64,11 @@ struct State {
     pub seg_width: f32,
     pub strip_height: f32,
     pub cursor: Vec2,
-    pub strips: Vec<Vec<Segment>>,
+    pub strips: Vec<Strip>,
     pub displacement_pos: f32,
     pub displacement_dir: enums::Direction,
 }
+
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (rng, seed) = get_rng(None);
@@ -85,7 +94,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
 
 fn add_strip(state: &mut State) {
-    let mut strip: Vec<Segment> = vec![];
+    let mut strip = Strip {
+        segs: vec![],
+        color: choose_color(),
+    };
     while state.cursor.x < state.work_size.x {
         let from = vec2(state.cursor.x, state.cursor.y);
 
@@ -93,7 +105,7 @@ fn add_strip(state: &mut State) {
         let to = vec2(state.cursor.x, state.cursor.y);
 
         let ctrl = mid(from, to);
-        strip.push(Segment { from, to, ctrl });
+        strip.segs.push(Segment { from, to, ctrl });
     }
     state.strips.push(strip);
     state.cursor.x = 0.0;
@@ -140,7 +152,7 @@ fn choose_color() -> Color {
 }
 
 
-fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
 
     if state.cursor.y < state.work_size.y + state.strip_height {
@@ -148,14 +160,13 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         state.cursor.y += state.strip_height;
     }
 
-    // let y_displacement_factor = calc_displacement_factor(state);
     for strip in state.strips.iter_mut() {
         let mut path = draw.path();
-        path.move_to(0.0, strip[0].from.y);
+        path.move_to(0.0, strip.segs[0].from.y);
 
         let mut y_displacement_factor: f32 = -0.1;
         let mut y_displacement: f32 = 0.0;
-        for seg in strip {
+        for seg in strip.segs.iter_mut() {
             if y_displacement_factor < 0.0 {
                 y_displacement_factor = calc_displacement_factor(
                     &seg.from.y,
@@ -181,7 +192,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
 
             path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
-                .color(choose_color())
+                .color(strip.color)
                 .stroke(STRIP_STROKE);
         }
     }
