@@ -11,6 +11,7 @@ use notan_sketches::utils::{
 
 const CLEAR_COLOR: Color = Color::WHITE;
 const STRIP_HEIGHT: f32 = 0.05;
+const STRIP_STROKE: f32 = 10.0;
 const SEG_WIDTH: f32 = 0.02;
 const DISPLACEMENT_POS_STEP: f32 = 10.0;
 const DISPLACEMENT_RANGE: f32 = 0.6;
@@ -143,7 +144,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
             path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
                 .color(Color::BLACK)
-                .stroke(10.0);
+                .stroke(STRIP_STROKE);
         }
     }
 
