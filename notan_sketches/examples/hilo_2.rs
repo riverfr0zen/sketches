@@ -2,6 +2,9 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
+use notan::random::rand::prelude::SliceRandom;
+use notan::random::rand::thread_rng;
+use notan_sketches::colors;
 use notan_sketches::enums;
 use notan_sketches::mathutils::mid;
 use notan_sketches::utils::{
@@ -15,6 +18,30 @@ const STRIP_HEIGHT: f32 = 0.05;
 const SEG_WIDTH: f32 = 0.02;
 const DISPLACEMENT_POS_STEP: f32 = 10.0;
 const DISPLACEMENT_RANGE: f32 = 0.6;
+const MONOCHROME: bool = false;
+const PALETTE: [Color; 21] = [
+    colors::PEACOCK,
+    colors::AEGEAN,
+    colors::AZURE,
+    colors::CERULEAN,
+    colors::STONE,
+    colors::OCHRE,
+    colors::OLIVE,
+    colors::SAFFRON,
+    colors::BANANA,
+    colors::LAGUNA,
+    colors::SACRAMENTO,
+    colors::SEAWEED,
+    colors::PICKLE,
+    colors::LIME,
+    colors::EMERALD,
+    colors::PICKLE,
+    colors::GRAYPURP,
+    colors::MAHOGANY,
+    colors::CARMINE,
+    colors::SCARLET,
+    colors::SALMON,
+];
 
 struct Segment {
     from: Vec2,
@@ -102,6 +129,17 @@ fn move_displacement(state: &mut State) {
 }
 
 
+fn choose_color() -> Color {
+    if !MONOCHROME {
+        let mut rng = thread_rng();
+        if let Some(color) = PALETTE.choose(&mut rng) {
+            return *color;
+        }
+    }
+    Color::BLACK
+}
+
+
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
 
@@ -143,7 +181,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
 
             path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
-                .color(Color::BLACK)
+                .color(choose_color())
                 .stroke(STRIP_STROKE);
         }
     }
