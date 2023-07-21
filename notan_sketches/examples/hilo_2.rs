@@ -10,8 +10,8 @@ use notan_sketches::utils::{
 };
 
 const CLEAR_COLOR: Color = Color::WHITE;
-const STRIP_HEIGHT: f32 = 0.05;
 const STRIP_STROKE: f32 = 10.0;
+const STRIP_HEIGHT: f32 = 0.05;
 const SEG_WIDTH: f32 = 0.02;
 const DISPLACEMENT_POS_STEP: f32 = 10.0;
 const DISPLACEMENT_RANGE: f32 = 0.6;
@@ -105,7 +105,7 @@ fn move_displacement(state: &mut State) {
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
 
-    if state.cursor.y < state.work_size.y {
+    if state.cursor.y < state.work_size.y + state.strip_height {
         add_strip(state);
         state.cursor.y += state.strip_height;
     }

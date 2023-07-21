@@ -99,7 +99,7 @@ fn move_displacement(state: &mut State) {
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
 
-    if state.cursor.y < state.work_size.y {
+    if state.cursor.y < state.work_size.y + state.strip_height {
         add_strip(state);
         state.cursor.y += state.strip_height;
     }
