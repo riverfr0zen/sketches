@@ -111,6 +111,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     // let y_displacement_factor = calc_displacement_factor(state);
     for strip in state.strips.iter_mut() {
+        let mut path = draw.path();
+        path.move_to(0.0, strip[0].from.y);
+
         let mut y_displacement_factor: f32 = -0.1;
         let mut y_displacement: f32 = 0.0;
         for seg in strip {
@@ -138,10 +141,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 .gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
 
 
-            draw.path()
-                .move_to(seg.from.x, seg.from.y)
-                // .line_to(seg.to.x, seg.to.y)
-                .quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
+            path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
                 .color(Color::BLACK)
                 .stroke(10.0);
         }

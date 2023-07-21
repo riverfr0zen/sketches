@@ -105,11 +105,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     }
 
     for strip in state.strips.iter() {
+        let mut path = draw.path();
+        path.move_to(0.0, strip[0].from.y);
         for seg in strip {
-            draw.path()
-                .move_to(seg.from.x, seg.from.y)
-                // .line_to(seg.to.x, seg.to.y)
-                .quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
+            path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
                 .color(Color::ORANGE)
                 .stroke(10.0);
         }
