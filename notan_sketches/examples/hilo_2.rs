@@ -12,36 +12,42 @@ use notan_sketches::utils::{
     ScreenDimensions,
 };
 
-const CLEAR_COLOR: Color = Color::WHITE;
-const STRIP_STROKE: f32 = 10.0;
+const CLEAR_COLOR: Color = Color::BLACK;
+const STRIP_STROKE: f32 = 100.0;
 const STRIP_HEIGHT: f32 = 0.05;
-const SEG_WIDTH: f32 = 0.02;
+const SEG_WIDTH: f32 = 0.2;
 const DISPLACEMENT_POS_STEP: f32 = 10.0;
-const DISPLACEMENT_RANGE: f32 = 0.6;
+const DISPLACEMENT_RANGE: f32 = 0.2;
 const MONOCHROME: bool = false;
-const PALETTE: [Color; 21] = [
-    colors::PEACOCK,
-    colors::AEGEAN,
-    colors::AZURE,
-    colors::CERULEAN,
-    colors::STONE,
-    colors::OCHRE,
-    colors::OLIVE,
-    colors::SAFFRON,
-    colors::BANANA,
-    colors::LAGUNA,
-    colors::SACRAMENTO,
-    colors::SEAWEED,
-    colors::PICKLE,
-    colors::LIME,
-    colors::EMERALD,
-    colors::PICKLE,
-    colors::GRAYPURP,
-    colors::MAHOGANY,
-    colors::CARMINE,
-    colors::SCARLET,
-    colors::SALMON,
-];
+// const PALETTE: [Color; 21] = [
+//     colors::PEACOCK,
+//     colors::AEGEAN,
+//     colors::AZURE,
+//     colors::CERULEAN,
+//     colors::STONE,
+//     colors::OCHRE,
+//     colors::OLIVE,
+//     colors::SAFFRON,
+//     colors::BANANA,
+//     colors::LAGUNA,
+//     colors::SACRAMENTO,
+//     colors::SEAWEED,
+//     colors::PICKLE,
+//     colors::LIME,
+//     colors::EMERALD,
+//     colors::PICKLE,
+//     colors::GRAYPURP,
+//     colors::MAHOGANY,
+//     colors::CARMINE,
+//     colors::SCARLET,
+//     colors::SALMON,
+// ];
+// const PALETTE: [Color; 3] = [
+//     colors::PEACOCK,
+//     colors::LIME,
+//     colors::SALMON,
+// ];
+const PALETTE: [Color; 3] = [colors::PEACOCK, colors::SEAWEED, colors::MAHOGANY];
 
 
 struct Segment {
