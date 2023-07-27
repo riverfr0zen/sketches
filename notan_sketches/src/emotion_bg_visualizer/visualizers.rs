@@ -5,7 +5,7 @@ pub mod tiled_shaders;
 use crate::emotion::EmocatTextAnalysis;
 use crate::utils::scale_font;
 use notan::draw::*;
-// use notan::log;
+use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 
@@ -173,10 +173,15 @@ pub fn get_optimal_text_size(
 /// Based on this algorithm:
 /// https://stackoverflow.com/a/1855903/4655636
 ///
+/// NOTE: There is a follow-up that seems to propose a more "correct" calculation.
+/// Investigate if necessary:
+/// https://stackoverflow.com/a/69869976/4655636
+///
 pub fn get_optimal_text_color(bgcolor: &Color) -> Color {
     let luminance: f32;
-    luminance = 0.299 * bgcolor.r + 0.587 * bgcolor.g + 0.114 * bgcolor.b / 255.0;
-
+    luminance =
+        (0.299 * (bgcolor.r * 255.0) + 0.587 * (bgcolor.g * 255.0) + 0.114 * (bgcolor.b * 255.0))
+            / 255.0;
     // log::debug!("Luminance {}", luminance);
     if luminance < 0.5 {
         return Color::WHITE;
