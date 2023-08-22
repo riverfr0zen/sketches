@@ -12,11 +12,11 @@ use notan_sketches::utils::{
     ScreenDimensions,
 };
 
-const CLEAR_COLOR: Color = Color::BLACK;
+const CLEAR_COLOR: Color = Color::WHITE;
 // const STRIP_STROKE: f32 = 10.0;
 const STRIP_STROKE: f32 = 100.0;
-// const STRIP_HEIGHT: f32 = 0.1;
-const STRIP_HEIGHT: f32 = 0.05;
+const STRIP_INTERVAL: f32 = 0.1;
+// const STRIP_INTERVAL: f32 = 0.05;
 const SEG_WIDTH: f32 = 0.2;
 const DISPLACEMENT_POS_STEP: f32 = 10.0;
 const DISPLACEMENT_RANGE: f32 = 0.2;
@@ -76,7 +76,7 @@ struct State {
     pub rng: Random,
     pub work_size: Vec2,
     pub seg_width: f32,
-    pub strip_height: f32,
+    pub strip_interval: f32,
     pub cursor: Vec2,
     pub strips: Vec<Strip>,
     pub displacement_pos: f32,
@@ -93,13 +93,13 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let cursor = Vec2::new(0.0, 0.0);
 
     let seg_width = SEG_WIDTH * work_size.x;
-    let strip_height = STRIP_HEIGHT * work_size.y;
+    let strip_interval = STRIP_INTERVAL * work_size.y;
 
     State {
         rng,
         work_size,
         seg_width,
-        strip_height,
+        strip_interval,
         cursor,
         strips: vec![],
         displacement_pos: 0.0,
@@ -178,7 +178,7 @@ fn update(app: &mut App, state: &mut State) {
 fn update_strip(
     strip: &mut Strip,
     displacement_pos: f32,
-    strip_height: f32,
+    strip_interval: f32,
     work_size: &Vec2,
     rng: &mut Random,
 ) {
@@ -188,8 +188,8 @@ fn update_strip(
         if y_displacement_factor < 0.0 {
             y_displacement_factor =
                 calc_displacement_factor(&seg.from.y, &displacement_pos, &work_size);
-            // y_displacement = strip_height * 0.5 * y_displacement_factor;
-            y_displacement = strip_height * y_displacement_factor;
+            // y_displacement = strip_interval * 0.5 * y_displacement_factor;
+            y_displacement = strip_interval * y_displacement_factor;
             // log::debug!(
             //     "dpos: {}, y {}, ydf {}, yd {}",
             //     state.displacement_pos,
@@ -208,9 +208,9 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
 
 
-    if state.cursor.y < state.work_size.y + state.strip_height {
+    if state.cursor.y < state.work_size.y + state.strip_interval {
         add_strip(state);
-        state.cursor.y += state.strip_height;
+        state.cursor.y += state.strip_interval;
     }
 
     for strip in state.strips.iter_mut() {
@@ -218,7 +218,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
             update_strip(
                 strip,
                 state.displacement_pos,
-                state.strip_height,
+                state.strip_interval,
                 &state.work_size,
                 &mut state.rng,
             );
@@ -266,15 +266,15 @@ fn draw_strip_bottom(draw: &mut Draw, strip: &mut Strip, ypos: f32, work_size: &
     let path = &mut draw.path();
     // let ymod = 15.0;
     // let ymod = work_size.y * 0.035;
-    let ymod = STRIP_STROKE * 0.5;
+    let ymod = STRIP_STROKE * 0.4;
     path.move_to(0.0, ypos - ymod);
 
 
     for seg in strip.segs.iter_mut() {
         path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y - ymod), (seg.to.x, seg.to.y - ymod))
             // .color(Color::GREEN)
-            .color(Color::new(0.0, 0.0, 0.0, 0.2))
-            .stroke(STRIP_STROKE * 0.3);
+            .color(Color::new(0.5, 0.5, 0.5, 0.2))
+            .stroke(STRIP_STROKE * 0.1);
     }
 }
 
