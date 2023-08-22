@@ -81,6 +81,7 @@ struct State {
     pub strips: Vec<Strip>,
     pub displacement_pos: f32,
     pub displacement_dir: enums::Direction,
+    pub paused: bool,
 }
 
 
@@ -103,6 +104,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         strips: vec![],
         displacement_pos: 0.0,
         displacement_dir: enums::Direction::Down,
+        paused: false,
     }
 }
 
@@ -166,55 +168,20 @@ fn choose_color() -> Color {
 }
 
 
-fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
-    let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
-
-    if state.cursor.y < state.work_size.y + state.strip_height {
-        add_strip(state);
-        state.cursor.y += state.strip_height;
+fn update(app: &mut App, state: &mut State) {
+    if app.keyboard.was_pressed(KeyCode::P) {
+        state.paused = !state.paused;
+        log::debug!("pause toggled");
     }
-
-    for strip in state.strips.iter_mut() {
-        draw_strip(
-            draw,
-            strip,
-            strip.segs[0].from.y,
-            state.displacement_pos,
-            state.strip_height,
-            &state.work_size,
-            &mut state.rng,
-        );
-
-        draw_strip(
-            draw,
-            strip,
-            strip.segs[0].from.y,
-            state.displacement_pos,
-            state.strip_height,
-            &state.work_size,
-            &mut state.rng,
-        );
-    }
-
-    move_displacement(state);
-
-    gfx.render(draw);
 }
 
-
-fn draw_strip(
-    draw: &mut Draw,
+fn update_strip(
     strip: &mut Strip,
-    ypos: f32,
     displacement_pos: f32,
     strip_height: f32,
-    // strip_stroke: f32,
     work_size: &Vec2,
     rng: &mut Random,
 ) {
-    let mut path = draw.path();
-    path.move_to(0.0, ypos);
-
     let mut y_displacement_factor: f32 = -0.1;
     let mut y_displacement: f32 = 0.0;
     for seg in strip.segs.iter_mut() {
@@ -233,12 +200,84 @@ fn draw_strip(
         }
         seg.ctrl.x = rng.gen_range(seg.from.x.min(seg.to.x)..seg.from.x.max(seg.to.x));
         seg.ctrl.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+    }
+}
 
+
+fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
+
+
+    if state.cursor.y < state.work_size.y + state.strip_height {
+        add_strip(state);
+        state.cursor.y += state.strip_height;
+    }
+
+    for strip in state.strips.iter_mut() {
+        if !state.paused {
+            update_strip(
+                strip,
+                state.displacement_pos,
+                state.strip_height,
+                &state.work_size,
+                &mut state.rng,
+            );
+        }
+
+        draw_strip(draw, strip, strip.segs[0].from.y);
+        // draw_strip_top(draw, strip, strip.segs[0].from.y, &state.work_size);
+        draw_strip_bottom(draw, strip, strip.segs[0].from.y, &state.work_size);
+    }
+
+    move_displacement(state);
+
+    gfx.render(draw);
+}
+
+
+fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32) {
+    let path = &mut draw.path();
+    path.move_to(0.0, ypos);
+
+
+    for seg in strip.segs.iter_mut() {
         path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
             .color(strip.color)
             .stroke(STRIP_STROKE);
     }
 }
+
+
+fn draw_strip_top(draw: &mut Draw, strip: &mut Strip, ypos: f32, work_size: &Vec2) {
+    let path = &mut draw.path();
+    // let ymod = 15.0;
+    let ymod = work_size.y * 0.01;
+    path.move_to(0.0, ypos + ymod);
+
+
+    for seg in strip.segs.iter_mut() {
+        path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y + ymod), (seg.to.x, seg.to.y + ymod))
+            .color(Color::RED)
+            .stroke(STRIP_STROKE * 0.1);
+    }
+}
+
+fn draw_strip_bottom(draw: &mut Draw, strip: &mut Strip, ypos: f32, work_size: &Vec2) {
+    let path = &mut draw.path();
+    // let ymod = 15.0;
+    // let ymod = work_size.y * 0.035;
+    let ymod = STRIP_STROKE * 0.5;
+    path.move_to(0.0, ypos - ymod);
+
+
+    for seg in strip.segs.iter_mut() {
+        path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y - ymod), (seg.to.x, seg.to.y - ymod))
+            // .color(Color::GREEN)
+            .color(Color::new(0.0, 0.0, 0.0, 0.2))
+            .stroke(STRIP_STROKE * 0.3);
+    }
+}
+
 
 #[notan_main]
 fn main() -> Result<(), String> {
@@ -268,7 +307,7 @@ fn main() -> Result<(), String> {
         .add_config(DrawConfig) // Simple way to add the draw extension
         .touch_as_mouse(false)
         // .event(event)
-        // .update(update)
+        .update(update)
         .draw(draw)
         .build()
 }
