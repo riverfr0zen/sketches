@@ -139,7 +139,6 @@ fn add_strip(state: &mut State) {
     let mut strip = Strip {
         segs: vec![],
         color: color,
-        // stroke_color: Color::BLACK,
         stroke_color: Color::new(stroke_color.red, stroke_color.green, stroke_color.blue, 1.0),
     };
     while state.cursor.x < state.work_size.x {
