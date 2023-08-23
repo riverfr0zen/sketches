@@ -1,5 +1,17 @@
 initial
 
+# Local configuration
+
+Local configuration can be added to `notan_sketches/.cargo/config.toml`. 
+
+For example, I have added it on my weak laptop to limit the number of jobs. 
+
+I could have done this in `$CARGO_HOME/config.toml` too, but I didn't want to forget about it, and this seemed more visible. Might change that in the future.
+
+See: https://doc.rust-lang.org/cargo/reference/config.html
+
+For this repo, `.cargo/config.toml`` is ignored in `sketches/.gitignore`
+
 
 # Build commands
 
