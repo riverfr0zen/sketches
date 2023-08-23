@@ -11,15 +11,21 @@ use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, set_html_bgcolor,
     ScreenDimensions,
 };
+use palette::{FromColor, Hsv, Shade, Srgb};
+
 
 const CLEAR_COLOR: Color = Color::WHITE;
-// const STRIP_STROKE: f32 = 10.0;
-const STRIP_STROKE: f32 = 100.0;
-const STRIP_INTERVAL: f32 = 0.1;
+// const CLEAR_COLOR: Color = Color::BLACK;
+// const STRIP_STROKE: f32 = 2.0;
+const STRIP_STROKE: f32 = 5.0;
+// The vertical interval between each strip. If the STRIP_HEIGHT is greater than STRIP_INTERVAL, then strips will overlap
 // const STRIP_INTERVAL: f32 = 0.05;
+const STRIP_INTERVAL: f32 = 0.1;
+// const STRIP_HEIGHT: f32 = 0.05;
+const STRIP_HEIGHT: f32 = 0.08;
 const SEG_WIDTH: f32 = 0.2;
 const DISPLACEMENT_POS_STEP: f32 = 10.0;
-const DISPLACEMENT_RANGE: f32 = 0.2;
+const DISPLACEMENT_RANGE: f32 = 0.4;
 const MONOCHROME: bool = false;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -68,6 +74,7 @@ struct Segment {
 struct Strip {
     segs: Vec<Segment>,
     color: Color,
+    stroke_color: Color,
 }
 
 
@@ -77,6 +84,7 @@ struct State {
     pub work_size: Vec2,
     pub seg_width: f32,
     pub strip_interval: f32,
+    pub strip_height: f32,
     pub cursor: Vec2,
     pub strips: Vec<Strip>,
     pub displacement_pos: f32,
@@ -94,12 +102,14 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
     let seg_width = SEG_WIDTH * work_size.x;
     let strip_interval = STRIP_INTERVAL * work_size.y;
+    let strip_height = STRIP_HEIGHT * work_size.y;
 
     State {
         rng,
         work_size,
         seg_width,
         strip_interval,
+        strip_height,
         cursor,
         strips: vec![],
         displacement_pos: 0.0,
@@ -110,9 +120,27 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
 
 fn add_strip(state: &mut State) {
+    let color = choose_color();
+    let stroke_color = Srgb::new(color.r, color.g, color.b);
+    let mut stroke_color = Hsv::from_color(stroke_color);
+    match state.rng.gen_bool(0.5) {
+        true => {
+            // log::info!("darken");
+            stroke_color = stroke_color.darken(0.5);
+        }
+        false => {
+            // log::info!("lighten");
+            // Lighten factor intentionally more than darken above
+            stroke_color = stroke_color.lighten(0.9);
+        }
+    }
+    let stroke_color = Srgb::from_color(stroke_color);
+
     let mut strip = Strip {
         segs: vec![],
-        color: choose_color(),
+        color: color,
+        // stroke_color: Color::BLACK,
+        stroke_color: Color::new(stroke_color.red, stroke_color.green, stroke_color.blue, 1.0),
     };
     while state.cursor.x < state.work_size.x {
         let from = vec2(state.cursor.x, state.cursor.y);
@@ -209,15 +237,15 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
 
     // Cursor for testing  w/ a single line
-    if state.strips.len() == 0 {
-        state.cursor.y = 300.0;
-        add_strip(state);
-    }
-    // Multi-lines cursor
-    // if state.cursor.y < state.work_size.y + state.strip_interval {
+    // if state.strips.len() == 0 {
+    //     state.cursor.y = 300.0;
     //     add_strip(state);
-    //     state.cursor.y += state.strip_interval;
     // }
+    // Cursor for all lines
+    if state.cursor.y < state.work_size.y + state.strip_interval {
+        add_strip(state);
+        state.cursor.y += state.strip_interval;
+    }
 
 
     for strip in state.strips.iter_mut() {
@@ -231,9 +259,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
             );
         }
 
-        draw_strip(draw, strip, strip.segs[0].from.y);
-        // draw_strip_top(draw, strip, strip.segs[0].from.y, &state.work_size);
-        draw_strip_bottom(draw, strip, strip.segs[0].from.y, &state.work_size);
+        draw_strip(draw, strip, strip.segs[0].from.y, state.strip_height);
     }
 
     move_displacement(state);
@@ -242,47 +268,29 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
 }
 
 
-fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32) {
+fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) {
     let path = &mut draw.path();
     path.move_to(0.0, ypos);
 
 
     for seg in strip.segs.iter_mut() {
         path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
-            .color(strip.color)
+            .stroke_color(Color::BLACK)
             .stroke(STRIP_STROKE);
     }
-}
-
-
-fn draw_strip_top(draw: &mut Draw, strip: &mut Strip, ypos: f32, work_size: &Vec2) {
-    let path = &mut draw.path();
-    // let ymod = 15.0;
-    let ymod = work_size.y * 0.01;
-    path.move_to(0.0, ypos + ymod);
-
-
-    for seg in strip.segs.iter_mut() {
-        path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y + ymod), (seg.to.x, seg.to.y + ymod))
-            .color(Color::RED)
-            .stroke(STRIP_STROKE * 0.1);
+    path.line_to(
+        strip.segs.last().unwrap().to.x,
+        strip.segs.last().unwrap().to.y + strip_height,
+    );
+    for seg in strip.segs.iter_mut().rev() {
+        path.quadratic_bezier_to(
+            (seg.ctrl.x, seg.ctrl.y + strip_height),
+            (seg.from.x, seg.from.y + strip_height),
+        )
+        .stroke_color(strip.stroke_color)
+        .stroke(STRIP_STROKE);
     }
-}
-
-fn draw_strip_bottom(draw: &mut Draw, strip: &mut Strip, ypos: f32, work_size: &Vec2) {
-    let path = &mut draw.path();
-    // let ymod = 15.0;
-    // let ymod = work_size.y * 0.035;
-    let ymod = STRIP_STROKE * 0.4;
-    path.move_to(0.0, ypos - ymod);
-
-
-    for seg in strip.segs.iter_mut() {
-        path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y - ymod), (seg.to.x, seg.to.y - ymod))
-            // .color(Color::GREEN)
-            .color(Color::new(0.5, 0.5, 0.5, 0.2))
-            .stroke(STRIP_STROKE * 0.1);
-    }
+    path.fill_color(strip.color).fill().close();
 }
 
 
