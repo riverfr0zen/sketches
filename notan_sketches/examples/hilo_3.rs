@@ -208,10 +208,17 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
 
 
-    if state.cursor.y < state.work_size.y + state.strip_interval {
+    // Cursor for testing  w/ a single line
+    if state.strips.len() == 0 {
+        state.cursor.y = 300.0;
         add_strip(state);
-        state.cursor.y += state.strip_interval;
     }
+    // Multi-lines cursor
+    // if state.cursor.y < state.work_size.y + state.strip_interval {
+    //     add_strip(state);
+    //     state.cursor.y += state.strip_interval;
+    // }
+
 
     for strip in state.strips.iter_mut() {
         if !state.paused {
