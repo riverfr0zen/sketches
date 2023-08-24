@@ -25,7 +25,7 @@ const STRIP_INTERVAL: f32 = 0.1;
 const STRIP_HEIGHT: f32 = 0.08;
 const SEG_WIDTH: f32 = 0.2;
 const DISPLACEMENT_POS_STEP: f32 = 10.0;
-const DISPLACEMENT_RANGE: f32 = 0.4;
+const DISPLACEMENT_RANGE: f32 = 0.5;
 const MONOCHROME: bool = false;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -159,7 +159,8 @@ fn calc_displacement_factor(seg_y_pos: &f32, displacement_pos: &f32, work_size: 
     // Return a displacement factor based on the vertical distance of the segment from displacement_pos
     let distance = (seg_y_pos - displacement_pos).abs() / work_size.y;
     if distance > 0.0 && distance < DISPLACEMENT_RANGE {
-        return 1.0 - distance;
+        // return 1.0 - distance;
+        return (1.0 - distance.log(4.0)) * 0.5;
     }
     // @TODO: Returning zero breaks rng so return a very small value instead.
     // Revisit on whether there's a better approach
