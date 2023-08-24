@@ -14,8 +14,8 @@ use notan_sketches::utils::{
 use palette::{FromColor, Hsv, Shade, Srgb};
 
 
-const CLEAR_COLOR: Color = Color::WHITE;
-// const CLEAR_COLOR: Color = Color::BLACK;
+// const CLEAR_COLOR: Color = Color::WHITE;
+const CLEAR_COLOR: Color = Color::BLACK;
 // const STRIP_STROKE: f32 = 2.0;
 const STRIP_STROKE: f32 = 5.0;
 // The vertical interval between each strip. If the STRIP_HEIGHT is greater than STRIP_INTERVAL, then strips will overlap
