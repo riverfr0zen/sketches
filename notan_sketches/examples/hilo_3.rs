@@ -14,8 +14,8 @@ use notan_sketches::utils::{
 use palette::{FromColor, Hsv, Shade, Srgb};
 
 
-const CLEAR_COLOR: Color = Color::WHITE;
-// const CLEAR_COLOR: Color = Color::BLACK;
+// const CLEAR_COLOR: Color = Color::WHITE;
+const CLEAR_COLOR: Color = Color::BLACK;
 // const STRIP_STROKE: f32 = 2.0;
 const STRIP_STROKE: f32 = 5.0;
 // The vertical interval between each strip. If the STRIP_HEIGHT is greater than STRIP_INTERVAL, then strips will overlap
@@ -58,9 +58,9 @@ const PALETTE: [Color; 21] = [
 // const PALETTE: [Color; 3] = [colors::PEACOCK, colors::SEAWEED, colors::MAHOGANY];
 // Neon
 // const PALETTE: [Color; 3] = [
-//     Color::new(1.0, 1.0, 0.8, 1.0),
-//     Color::new(0.8, 1.0, 1.0, 1.0),
-//     Color::new(0.8, 0.8, 1.0, 1.0),
+//     Color::new(1.0, 0.37, 0.0, 1.0),
+//     Color::new(0.8, 1.0, 0.0, 1.0),
+//     Color::new(0.74, 0.07, 1.0, 1.0),
 // ];
 
 
@@ -253,35 +253,28 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
 
 
     for seg in strip.segs.iter_mut() {
-        // path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
-        //     .stroke_color(Color::BLACK)
-        //     .stroke(STRIP_STROKE);
         path.cubic_bezier_to(
             (seg.ctrl.x, seg.ctrl.y),
             (seg.ctrl2.x, seg.ctrl2.y),
             (seg.to.x, seg.to.y),
-        )
-        .stroke_color(strip.stroke_color)
-        .stroke(STRIP_STROKE);
+        );
     }
     path.line_to(
         strip.segs.last().unwrap().to.x,
         strip.segs.last().unwrap().to.y + strip_height,
     );
     for seg in strip.segs.iter_mut().rev() {
-        // path.quadratic_bezier_to(
-        //     (seg.ctrl.x, seg.ctrl.y + strip_height),
-        //     (seg.from.x, seg.from.y + strip_height),
-        // )
         path.cubic_bezier_to(
             (seg.ctrl2.x, seg.ctrl2.y + strip_height),
             (seg.ctrl.x, seg.ctrl.y + strip_height),
             (seg.from.x, seg.from.y + strip_height),
-        )
-        .stroke_color(strip.stroke_color)
-        .stroke(STRIP_STROKE);
+        );
     }
-    path.fill_color(strip.color).fill().close();
+    path.stroke_color(strip.stroke_color)
+        .stroke(STRIP_STROKE)
+        .fill_color(strip.color)
+        .fill()
+        .close();
 }
 
 
@@ -290,15 +283,15 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
 
     // Cursor for testing  w/ a single line
-    if state.strips.len() == 0 {
-        state.cursor.y = 300.0;
-        add_strip(state);
-    }
-    // Cursor for all lines
-    // if state.cursor.y < state.work_size.y + state.strip_interval {
+    // if state.strips.len() == 0 {
+    //     state.cursor.y = 300.0;
     //     add_strip(state);
-    //     state.cursor.y += state.strip_interval;
     // }
+    // Cursor for all lines
+    if state.cursor.y < state.work_size.y + state.strip_interval {
+        add_strip(state);
+        state.cursor.y += state.strip_interval;
+    }
 
 
     for strip in state.strips.iter_mut() {
