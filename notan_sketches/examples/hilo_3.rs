@@ -25,7 +25,7 @@ const STRIP_INTERVAL: RangeInclusive<f32> = 0.02..=0.4;
 // const STRIP_HEIGHT: f32 = 0.05;
 const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
 const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
-const DISPLACEMENT_POS_STEP: f32 = 10.0;
+const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
 const DISPLACEMENT_RANGE: f32 = 0.5;
 const MONOCHROME: bool = false;
 const PALETTE: [Color; 21] = [
@@ -85,6 +85,7 @@ pub struct GenSettings {
     pub seg_width: f32,
     pub strip_interval: f32,
     pub strip_height: f32,
+    pub displacement_pos_step: f32,
 }
 
 impl GenSettings {
@@ -92,11 +93,13 @@ impl GenSettings {
         let seg_width = 0.2 * work_size.x;
         let strip_interval = 0.1 * work_size.y;
         let strip_height = 0.08 * work_size.y;
+        let displacement_pos_step: f32 = 10.0;
 
         Self {
             seg_width,
             strip_interval,
             strip_height,
+            displacement_pos_step,
         }
     }
 
@@ -105,11 +108,12 @@ impl GenSettings {
         let seg_width = rng.gen_range(SEG_WIDTH) * work_size.x;
         let strip_interval = rng.gen_range(STRIP_INTERVAL) * work_size.y;
         let strip_height = rng.gen_range(STRIP_HEIGHT) * work_size.y;
-
+        let displacement_pos_step = rng.gen_range(DISPLACEMENT_POS_STEP);
         Self {
             seg_width,
             strip_interval,
             strip_height,
+            displacement_pos_step,
         }
     }
 }
@@ -215,8 +219,8 @@ fn move_displacement(state: &mut State) {
     }
 
     match state.displacement_dir {
-        enums::Direction::Up => state.displacement_pos -= DISPLACEMENT_POS_STEP,
-        enums::Direction::Down => state.displacement_pos += DISPLACEMENT_POS_STEP,
+        enums::Direction::Up => state.displacement_pos -= state.gen.displacement_pos_step,
+        enums::Direction::Down => state.displacement_pos += state.gen.displacement_pos_step,
         _ => (),
     }
 }
