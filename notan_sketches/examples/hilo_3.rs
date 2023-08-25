@@ -233,6 +233,25 @@ fn choose_color() -> Color {
 }
 
 
+fn generate_strips(state: &mut State, refresh: bool) {
+    if refresh {
+        state.strips = vec![];
+        state.cursor = Vec2::new(0.0, 0.0);
+    }
+
+    // Cursor for testing  w/ a single line
+    // if state.strips.len() == 0 {
+    //     state.cursor.y = 300.0;
+    //     add_strip(state);
+    // }
+    // Cursor for all lines
+    if state.cursor.y < state.work_size.y + state.gen.strip_interval {
+        add_strip(state);
+        state.cursor.y += state.gen.strip_interval;
+    }
+}
+
+
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::P) {
         state.paused = !state.paused;
@@ -242,6 +261,7 @@ fn update(app: &mut App, state: &mut State) {
 
     if app.keyboard.was_pressed(KeyCode::R) {
         state.gen = GenSettings::randomize(&mut state.rng, &state.work_size);
+        generate_strips(state, true);
         log::debug!("{:?}", state.gen);
     }
 }
@@ -316,18 +336,7 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
 fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
 
-
-    // Cursor for testing  w/ a single line
-    // if state.strips.len() == 0 {
-    //     state.cursor.y = 300.0;
-    //     add_strip(state);
-    // }
-    // Cursor for all lines
-    if state.cursor.y < state.work_size.y + state.gen.strip_interval {
-        add_strip(state);
-        state.cursor.y += state.gen.strip_interval;
-    }
-
+    generate_strips(state, false);
 
     for strip in state.strips.iter_mut() {
         if !state.paused {
