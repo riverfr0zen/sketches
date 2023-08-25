@@ -1,6 +1,10 @@
 use notan::app::Color;
-use notan::random::rand::prelude::SliceRandom;
-use notan::random::rand::thread_rng;
+use notan::random::rand::{
+    distributions::{Distribution, Standard},
+    prelude::SliceRandom,
+    thread_rng, Rng,
+};
+
 
 // Blues
 pub const PEACOCK: Color = Color::new(0.01, 0.18, 0.21, 1.0);
@@ -35,6 +39,25 @@ pub enum PalettesSelection {
     All,
     Neon,
     PurpleFade,
+}
+
+//
+// Implement random selection from Enum based on:
+// https://stackoverflow.com/a/48491021
+//
+// Usage example with Notan rng:
+// let palette: PalettesSelection = rng.gen();
+//
+impl Distribution<PalettesSelection> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> PalettesSelection {
+        // match rng.gen_range(0, 3) { // rand 0.5, 0.6, 0.7
+        match rng.gen_range(0..=2) {
+            // rand 0.8
+            0 => PalettesSelection::Neon,
+            1 => PalettesSelection::PurpleFade,
+            _ => PalettesSelection::All,
+        }
+    }
 }
 
 pub struct Palettes {

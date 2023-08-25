@@ -3,6 +3,7 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
+use notan_sketches::colors::PalettesSelection;
 use notan_sketches::enums;
 use notan_sketches::mathutils::mid;
 use notan_sketches::utils::{
@@ -78,11 +79,7 @@ impl GenSettings {
         let strip_height = rng.gen_range(STRIP_HEIGHT) * work_size.y;
         let displacement_pos_step = rng.gen_range(DISPLACEMENT_POS_STEP);
         let displacement_range = rng.gen_range(DISPLACEMENT_RANGE);
-        let palette = match rng.gen_range(0..=2) {
-            2 => colors::PalettesSelection::PurpleFade,
-            1 => colors::PalettesSelection::Neon,
-            _ => colors::PalettesSelection::All,
-        };
+        let palette: PalettesSelection = rng.gen();
 
         Self {
             seg_width,
