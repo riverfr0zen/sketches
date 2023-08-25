@@ -14,8 +14,8 @@ use notan_sketches::utils::{
 use palette::{FromColor, Hsv, Shade, Srgb};
 
 
-// const CLEAR_COLOR: Color = Color::WHITE;
-const CLEAR_COLOR: Color = Color::BLACK;
+const CLEAR_COLOR: Color = Color::WHITE;
+// const CLEAR_COLOR: Color = Color::BLACK;
 // const STRIP_STROKE: f32 = 2.0;
 const STRIP_STROKE: f32 = 5.0;
 // The vertical interval between each strip. If the STRIP_HEIGHT is greater than STRIP_INTERVAL, then strips will overlap
@@ -68,6 +68,7 @@ struct Segment {
     from: Vec2,
     to: Vec2,
     ctrl: Vec2,
+    ctrl2: Vec2,
 }
 
 
@@ -147,8 +148,15 @@ fn add_strip(state: &mut State) {
         state.cursor.x += state.seg_width;
         let to = vec2(state.cursor.x, state.cursor.y);
 
-        let ctrl = mid(from, to);
-        strip.segs.push(Segment { from, to, ctrl });
+        let middle = mid(from, to);
+        let ctrl = mid(from, middle);
+        let ctrl2 = mid(middle, to);
+        strip.segs.push(Segment {
+            from,
+            to,
+            ctrl,
+            ctrl2,
+        });
     }
     state.strips.push(strip);
     state.cursor.x = 0.0;
@@ -203,6 +211,7 @@ fn update(app: &mut App, state: &mut State) {
     }
 }
 
+
 fn update_strip(
     strip: &mut Strip,
     displacement_pos: f32,
@@ -226,9 +235,53 @@ fn update_strip(
             //     y_displacement,
             // );
         }
-        seg.ctrl.x = rng.gen_range(seg.from.x.min(seg.to.x)..seg.from.x.max(seg.to.x));
+        let middle = mid(seg.from, seg.to);
+        // seg.ctrl.x = rng.gen_range(seg.from.x.min(seg.to.x)..seg.from.x.max(seg.to.x));
+        // seg.ctrl.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+        seg.ctrl.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
         seg.ctrl.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+
+        seg.ctrl2.x = rng.gen_range(middle.x.min(seg.to.x)..middle.x.max(seg.to.x));
+        seg.ctrl2.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
     }
+}
+
+
+fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) {
+    let path = &mut draw.path();
+    path.move_to(0.0, ypos);
+
+
+    for seg in strip.segs.iter_mut() {
+        // path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
+        //     .stroke_color(Color::BLACK)
+        //     .stroke(STRIP_STROKE);
+        path.cubic_bezier_to(
+            (seg.ctrl.x, seg.ctrl.y),
+            (seg.ctrl2.x, seg.ctrl2.y),
+            (seg.to.x, seg.to.y),
+        )
+        .stroke_color(strip.stroke_color)
+        .stroke(STRIP_STROKE);
+    }
+    path.line_to(
+        strip.segs.last().unwrap().to.x,
+        strip.segs.last().unwrap().to.y + strip_height,
+    );
+    for seg in strip.segs.iter_mut().rev() {
+        // path.quadratic_bezier_to(
+        //     (seg.ctrl.x, seg.ctrl.y + strip_height),
+        //     (seg.from.x, seg.from.y + strip_height),
+        // )
+        path.cubic_bezier_to(
+            (seg.ctrl2.x, seg.ctrl2.y + strip_height),
+            (seg.ctrl.x, seg.ctrl.y + strip_height),
+            (seg.from.x, seg.from.y + strip_height),
+        )
+        .stroke_color(strip.stroke_color)
+        .stroke(STRIP_STROKE);
+    }
+    path.fill_color(strip.color).fill().close();
 }
 
 
@@ -237,15 +290,15 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
 
     // Cursor for testing  w/ a single line
-    // if state.strips.len() == 0 {
-    //     state.cursor.y = 300.0;
-    //     add_strip(state);
-    // }
-    // Cursor for all lines
-    if state.cursor.y < state.work_size.y + state.strip_interval {
+    if state.strips.len() == 0 {
+        state.cursor.y = 300.0;
         add_strip(state);
-        state.cursor.y += state.strip_interval;
     }
+    // Cursor for all lines
+    // if state.cursor.y < state.work_size.y + state.strip_interval {
+    //     add_strip(state);
+    //     state.cursor.y += state.strip_interval;
+    // }
 
 
     for strip in state.strips.iter_mut() {
@@ -265,32 +318,6 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     move_displacement(state);
 
     gfx.render(draw);
-}
-
-
-fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) {
-    let path = &mut draw.path();
-    path.move_to(0.0, ypos);
-
-
-    for seg in strip.segs.iter_mut() {
-        path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
-            .stroke_color(Color::BLACK)
-            .stroke(STRIP_STROKE);
-    }
-    path.line_to(
-        strip.segs.last().unwrap().to.x,
-        strip.segs.last().unwrap().to.y + strip_height,
-    );
-    for seg in strip.segs.iter_mut().rev() {
-        path.quadratic_bezier_to(
-            (seg.ctrl.x, seg.ctrl.y + strip_height),
-            (seg.from.x, seg.from.y + strip_height),
-        )
-        .stroke_color(strip.stroke_color)
-        .stroke(STRIP_STROKE);
-    }
-    path.fill_color(strip.color).fill().close();
 }
 
 
