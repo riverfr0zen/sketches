@@ -34,11 +34,13 @@ pub const EMERALD: Color = Color::new(0.31, 0.79, 0.47, 1.0);
 pub enum PalettesSelection {
     All,
     Neon,
+    PurpleFade,
 }
 
 pub struct Palettes {
     pub all: Vec<Color>,
     pub neon: Vec<Color>,
+    pub purple_fade: Vec<Color>,
 }
 
 impl Default for Palettes {
@@ -54,6 +56,15 @@ impl Default for Palettes {
                 Color::new(0.8, 1.0, 0.0, 1.0),
                 Color::new(0.74, 0.07, 1.0, 1.0),
             ],
+            purple_fade: vec![
+                Color::new(0.58, 0.0, 1.0, 1.0),
+                Color::new(0.69, 0.26, 1.0, 1.0),
+                Color::new(0.76, 0.46, 1.0, 1.0),
+                Color::new(0.79, 0.55, 0.99, 1.0),
+                Color::new(0.88, 0.69, 0.99, 1.0),
+                Color::new(0.94, 0.81, 1.0, 1.0),
+                Color::WHITE,
+            ],
         }
     }
 }
@@ -64,6 +75,7 @@ impl Palettes {
         let palette = match palette_selection {
             PalettesSelection::All => palettes.all,
             PalettesSelection::Neon => palettes.neon,
+            PalettesSelection::PurpleFade => palettes.purple_fade,
         };
         let mut rng = thread_rng();
         if let Some(color) = palette.choose(&mut rng) {

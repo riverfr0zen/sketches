@@ -25,7 +25,6 @@ const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
 const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
 const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
 const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.3..=0.99;
-const MONOCHROME: bool = false;
 
 
 pub struct Segment {
@@ -79,7 +78,8 @@ impl GenSettings {
         let strip_height = rng.gen_range(STRIP_HEIGHT) * work_size.y;
         let displacement_pos_step = rng.gen_range(DISPLACEMENT_POS_STEP);
         let displacement_range = rng.gen_range(DISPLACEMENT_RANGE);
-        let palette = match rng.gen_range(0..=1) {
+        let palette = match rng.gen_range(0..=2) {
+            2 => colors::PalettesSelection::PurpleFade,
             1 => colors::PalettesSelection::Neon,
             _ => colors::PalettesSelection::All,
         };
