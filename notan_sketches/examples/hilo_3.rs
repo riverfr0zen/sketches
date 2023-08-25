@@ -304,11 +304,12 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 &mut state.rng,
             );
         }
-
         draw_strip(draw, strip, strip.segs[0].from.y, state.strip_height);
     }
 
-    move_displacement(state);
+    if !state.paused {
+        move_displacement(state);
+    }
 
     gfx.render(draw);
 }
