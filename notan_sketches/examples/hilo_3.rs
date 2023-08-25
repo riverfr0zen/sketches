@@ -28,41 +28,53 @@ const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
 const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
 const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.3..=0.99;
 const MONOCHROME: bool = false;
-const PALETTE: [Color; 21] = [
-    colors::PEACOCK,
-    colors::AEGEAN,
-    colors::AZURE,
-    colors::CERULEAN,
-    colors::STONE,
-    colors::OCHRE,
-    colors::OLIVE,
-    colors::SAFFRON,
-    colors::BANANA,
-    colors::LAGUNA,
-    colors::SACRAMENTO,
-    colors::SEAWEED,
-    colors::PICKLE,
-    colors::LIME,
-    colors::EMERALD,
-    colors::PICKLE,
-    colors::GRAYPURP,
-    colors::MAHOGANY,
-    colors::CARMINE,
-    colors::SCARLET,
-    colors::SALMON,
-];
-// const PALETTE: [Color; 3] = [
-//     colors::PEACOCK,
-//     colors::LIME,
-//     colors::SALMON,
-// ];
-// const PALETTE: [Color; 3] = [colors::PEACOCK, colors::SEAWEED, colors::MAHOGANY];
-// Neon
-// const PALETTE: [Color; 3] = [
-//     Color::new(1.0, 0.37, 0.0, 1.0),
-//     Color::new(0.8, 1.0, 0.0, 1.0),
-//     Color::new(0.74, 0.07, 1.0, 1.0),
-// ];
+
+
+#[derive(Debug)]
+pub enum PalettesSelection {
+    All,
+    Neon,
+}
+
+pub struct Palettes {
+    pub all: Vec<Color>,
+    pub neon: Vec<Color>,
+}
+
+impl Default for Palettes {
+    fn default() -> Self {
+        Self {
+            all: vec![
+                colors::PEACOCK,
+                colors::AEGEAN,
+                colors::AZURE,
+                colors::CERULEAN,
+                colors::STONE,
+                colors::OCHRE,
+                colors::OLIVE,
+                colors::SAFFRON,
+                colors::BANANA,
+                colors::LAGUNA,
+                colors::SACRAMENTO,
+                colors::SEAWEED,
+                colors::PICKLE,
+                colors::LIME,
+                colors::EMERALD,
+                colors::PICKLE,
+                colors::GRAYPURP,
+                colors::MAHOGANY,
+                colors::CARMINE,
+                colors::SCARLET,
+                colors::SALMON,
+            ],
+            neon: vec![
+                Color::new(1.0, 0.37, 0.0, 1.0),
+                Color::new(0.8, 1.0, 0.0, 1.0),
+                Color::new(0.74, 0.07, 1.0, 1.0),
+            ],
+        }
+    }
+}
 
 
 pub struct Segment {
@@ -87,6 +99,7 @@ pub struct GenSettings {
     pub strip_height: f32,
     pub displacement_pos_step: f32,
     pub displacement_range: f32,
+    pub palette: PalettesSelection,
 }
 
 impl GenSettings {
@@ -96,6 +109,7 @@ impl GenSettings {
         let strip_height = 0.08 * work_size.y;
         let displacement_pos_step: f32 = 10.0;
         let displacement_range: f32 = 0.5;
+        let palette = PalettesSelection::All;
 
         Self {
             seg_width,
@@ -103,6 +117,7 @@ impl GenSettings {
             strip_height,
             displacement_pos_step,
             displacement_range,
+            palette,
         }
     }
 
@@ -113,6 +128,10 @@ impl GenSettings {
         let strip_height = rng.gen_range(STRIP_HEIGHT) * work_size.y;
         let displacement_pos_step = rng.gen_range(DISPLACEMENT_POS_STEP);
         let displacement_range = rng.gen_range(DISPLACEMENT_RANGE);
+        let palette = match rng.gen_range(0..=1) {
+            1 => PalettesSelection::Neon,
+            _ => PalettesSelection::All,
+        };
 
         Self {
             seg_width,
@@ -120,6 +139,7 @@ impl GenSettings {
             strip_height,
             displacement_pos_step,
             displacement_range,
+            palette,
         }
     }
 }
@@ -160,7 +180,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
 
 fn add_strip(state: &mut State) {
-    let color = choose_color();
+    let color = choose_color(&state.gen.palette);
     let stroke_color = Srgb::new(color.r, color.g, color.b);
     let mut stroke_color = Hsv::from_color(stroke_color);
     match state.rng.gen_bool(0.5) {
@@ -237,10 +257,15 @@ fn move_displacement(state: &mut State) {
 }
 
 
-fn choose_color() -> Color {
+fn choose_color(palette_selection: &PalettesSelection) -> Color {
+    let palettes = Palettes::default();
+    let palette = match palette_selection {
+        PalettesSelection::All => palettes.all,
+        PalettesSelection::Neon => palettes.neon,
+    };
     if !MONOCHROME {
         let mut rng = thread_rng();
-        if let Some(color) = PALETTE.choose(&mut rng) {
+        if let Some(color) = palette.choose(&mut rng) {
             return *color;
         }
     }
@@ -277,7 +302,7 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::R) {
         state.gen = GenSettings::randomize(&mut state.rng, &state.work_size);
         generate_strips(state, true);
-        log::debug!("{:?}", state.gen);
+        log::debug!("{:#?}", state.gen);
     }
 }
 
