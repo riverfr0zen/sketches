@@ -26,7 +26,7 @@ const STRIP_INTERVAL: RangeInclusive<f32> = 0.02..=0.4;
 const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
 const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
 const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
-const DISPLACEMENT_RANGE: f32 = 0.5;
+const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.3..=0.99;
 const MONOCHROME: bool = false;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -86,6 +86,7 @@ pub struct GenSettings {
     pub strip_interval: f32,
     pub strip_height: f32,
     pub displacement_pos_step: f32,
+    pub displacement_range: f32,
 }
 
 impl GenSettings {
@@ -94,12 +95,14 @@ impl GenSettings {
         let strip_interval = 0.1 * work_size.y;
         let strip_height = 0.08 * work_size.y;
         let displacement_pos_step: f32 = 10.0;
+        let displacement_range: f32 = 0.5;
 
         Self {
             seg_width,
             strip_interval,
             strip_height,
             displacement_pos_step,
+            displacement_range,
         }
     }
 
@@ -109,11 +112,14 @@ impl GenSettings {
         let strip_interval = rng.gen_range(STRIP_INTERVAL) * work_size.y;
         let strip_height = rng.gen_range(STRIP_HEIGHT) * work_size.y;
         let displacement_pos_step = rng.gen_range(DISPLACEMENT_POS_STEP);
+        let displacement_range = rng.gen_range(DISPLACEMENT_RANGE);
+
         Self {
             seg_width,
             strip_interval,
             strip_height,
             displacement_pos_step,
+            displacement_range,
         }
     }
 }
@@ -196,10 +202,15 @@ fn add_strip(state: &mut State) {
 }
 
 
-fn calc_displacement_factor(seg_y_pos: &f32, displacement_pos: &f32, work_size: &Vec2) -> f32 {
+fn calc_displacement_factor(
+    seg_y_pos: &f32,
+    displacement_pos: &f32,
+    displacement_range: &f32,
+    work_size: &Vec2,
+) -> f32 {
     // Return a displacement factor based on the vertical distance of the segment from displacement_pos
     let distance = (seg_y_pos - displacement_pos).abs() / work_size.y;
-    if distance > 0.0 && distance < DISPLACEMENT_RANGE {
+    if distance > 0.0 && distance < *displacement_range {
         // return 1.0 - distance;
         return (1.0 - distance.log(4.0)) * 0.5;
     }
@@ -274,6 +285,7 @@ fn update(app: &mut App, state: &mut State) {
 fn update_strip(
     strip: &mut Strip,
     displacement_pos: f32,
+    displacement_range: f32,
     strip_interval: f32,
     work_size: &Vec2,
     rng: &mut Random,
@@ -282,8 +294,12 @@ fn update_strip(
     let mut y_displacement: f32 = 0.0;
     for seg in strip.segs.iter_mut() {
         if y_displacement_factor < 0.0 {
-            y_displacement_factor =
-                calc_displacement_factor(&seg.from.y, &displacement_pos, &work_size);
+            y_displacement_factor = calc_displacement_factor(
+                &seg.from.y,
+                &displacement_pos,
+                &displacement_range,
+                &work_size,
+            );
             // y_displacement = strip_interval * 0.5 * y_displacement_factor;
             y_displacement = strip_interval * y_displacement_factor;
             // log::debug!(
@@ -295,8 +311,6 @@ fn update_strip(
             // );
         }
         let middle = mid(seg.from, seg.to);
-        // seg.ctrl.x = rng.gen_range(seg.from.x.min(seg.to.x)..seg.from.x.max(seg.to.x));
-        // seg.ctrl.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
         seg.ctrl.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
         seg.ctrl.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
 
@@ -347,6 +361,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
             update_strip(
                 strip,
                 state.displacement_pos,
+                state.gen.displacement_range,
                 state.gen.strip_interval,
                 &state.work_size,
                 &mut state.rng,
@@ -381,7 +396,7 @@ fn main() -> Result<(), String> {
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
 
-    let win_config = win_config.title("hilo_strips.displacement");
+    let win_config = win_config.title("hilo_strips.glitchy");
     set_html_bgcolor(CLEAR_COLOR);
 
     // notan::init()
