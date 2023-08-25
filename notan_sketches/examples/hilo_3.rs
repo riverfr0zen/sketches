@@ -2,8 +2,6 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan::random::rand::prelude::SliceRandom;
-use notan::random::rand::thread_rng;
 use notan_sketches::colors;
 use notan_sketches::enums;
 use notan_sketches::mathutils::mid;
@@ -30,53 +28,6 @@ const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.3..=0.99;
 const MONOCHROME: bool = false;
 
 
-#[derive(Debug)]
-pub enum PalettesSelection {
-    All,
-    Neon,
-}
-
-pub struct Palettes {
-    pub all: Vec<Color>,
-    pub neon: Vec<Color>,
-}
-
-impl Default for Palettes {
-    fn default() -> Self {
-        Self {
-            all: vec![
-                colors::PEACOCK,
-                colors::AEGEAN,
-                colors::AZURE,
-                colors::CERULEAN,
-                colors::STONE,
-                colors::OCHRE,
-                colors::OLIVE,
-                colors::SAFFRON,
-                colors::BANANA,
-                colors::LAGUNA,
-                colors::SACRAMENTO,
-                colors::SEAWEED,
-                colors::PICKLE,
-                colors::LIME,
-                colors::EMERALD,
-                colors::PICKLE,
-                colors::GRAYPURP,
-                colors::MAHOGANY,
-                colors::CARMINE,
-                colors::SCARLET,
-                colors::SALMON,
-            ],
-            neon: vec![
-                Color::new(1.0, 0.37, 0.0, 1.0),
-                Color::new(0.8, 1.0, 0.0, 1.0),
-                Color::new(0.74, 0.07, 1.0, 1.0),
-            ],
-        }
-    }
-}
-
-
 pub struct Segment {
     from: Vec2,
     to: Vec2,
@@ -99,7 +50,7 @@ pub struct GenSettings {
     pub strip_height: f32,
     pub displacement_pos_step: f32,
     pub displacement_range: f32,
-    pub palette: PalettesSelection,
+    pub palette: colors::PalettesSelection,
 }
 
 impl GenSettings {
@@ -109,7 +60,7 @@ impl GenSettings {
         let strip_height = 0.08 * work_size.y;
         let displacement_pos_step: f32 = 10.0;
         let displacement_range: f32 = 0.5;
-        let palette = PalettesSelection::All;
+        let palette = colors::PalettesSelection::All;
 
         Self {
             seg_width,
@@ -129,8 +80,8 @@ impl GenSettings {
         let displacement_pos_step = rng.gen_range(DISPLACEMENT_POS_STEP);
         let displacement_range = rng.gen_range(DISPLACEMENT_RANGE);
         let palette = match rng.gen_range(0..=1) {
-            1 => PalettesSelection::Neon,
-            _ => PalettesSelection::All,
+            1 => colors::PalettesSelection::Neon,
+            _ => colors::PalettesSelection::All,
         };
 
         Self {
@@ -180,7 +131,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
 
 fn add_strip(state: &mut State) {
-    let color = choose_color(&state.gen.palette);
+    let color = colors::Palettes::choose_color(&state.gen.palette);
     let stroke_color = Srgb::new(color.r, color.g, color.b);
     let mut stroke_color = Hsv::from_color(stroke_color);
     match state.rng.gen_bool(0.5) {
@@ -254,22 +205,6 @@ fn move_displacement(state: &mut State) {
         enums::Direction::Down => state.displacement_pos += state.gen.displacement_pos_step,
         _ => (),
     }
-}
-
-
-fn choose_color(palette_selection: &PalettesSelection) -> Color {
-    let palettes = Palettes::default();
-    let palette = match palette_selection {
-        PalettesSelection::All => palettes.all,
-        PalettesSelection::Neon => palettes.neon,
-    };
-    if !MONOCHROME {
-        let mut rng = thread_rng();
-        if let Some(color) = palette.choose(&mut rng) {
-            return *color;
-        }
-    }
-    Color::BLACK
 }
 
 
