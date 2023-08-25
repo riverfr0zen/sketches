@@ -12,6 +12,7 @@ use notan_sketches::utils::{
     ScreenDimensions,
 };
 use palette::{FromColor, Hsv, Shade, Srgb};
+use std::ops::RangeInclusive;
 
 
 // const CLEAR_COLOR: Color = Color::WHITE;
@@ -20,10 +21,10 @@ const CLEAR_COLOR: Color = Color::BLACK;
 const STRIP_STROKE: f32 = 5.0;
 // The vertical interval between each strip. If the STRIP_HEIGHT is greater than STRIP_INTERVAL, then strips will overlap
 // const STRIP_INTERVAL: f32 = 0.05;
-const STRIP_INTERVAL: f32 = 0.1;
+const STRIP_INTERVAL: RangeInclusive<f32> = 0.02..=0.4;
 // const STRIP_HEIGHT: f32 = 0.05;
-const STRIP_HEIGHT: f32 = 0.08;
-const SEG_WIDTH: f32 = 0.2;
+const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
+const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
 const DISPLACEMENT_POS_STEP: f32 = 10.0;
 const DISPLACEMENT_RANGE: f32 = 0.5;
 const MONOCHROME: bool = false;
@@ -64,7 +65,7 @@ const PALETTE: [Color; 21] = [
 // ];
 
 
-struct Segment {
+pub struct Segment {
     from: Vec2,
     to: Vec2,
     ctrl: Vec2,
@@ -72,10 +73,45 @@ struct Segment {
 }
 
 
-struct Strip {
+pub struct Strip {
     segs: Vec<Segment>,
     color: Color,
     stroke_color: Color,
+}
+
+
+#[derive(Debug)]
+pub struct GenSettings {
+    pub seg_width: f32,
+    pub strip_interval: f32,
+    pub strip_height: f32,
+}
+
+impl GenSettings {
+    fn default(work_size: &Vec2) -> Self {
+        let seg_width = 0.2 * work_size.x;
+        let strip_interval = 0.1 * work_size.y;
+        let strip_height = 0.08 * work_size.y;
+
+        Self {
+            seg_width,
+            strip_interval,
+            strip_height,
+        }
+    }
+
+    fn randomize(rng: &mut Random, work_size: &Vec2) -> Self {
+        // default = Self::default(&work_size)
+        let seg_width = rng.gen_range(SEG_WIDTH) * work_size.x;
+        let strip_interval = rng.gen_range(STRIP_INTERVAL) * work_size.y;
+        let strip_height = rng.gen_range(STRIP_HEIGHT) * work_size.y;
+
+        Self {
+            seg_width,
+            strip_interval,
+            strip_height,
+        }
+    }
 }
 
 
@@ -83,14 +119,12 @@ struct Strip {
 struct State {
     pub rng: Random,
     pub work_size: Vec2,
-    pub seg_width: f32,
-    pub strip_interval: f32,
-    pub strip_height: f32,
     pub cursor: Vec2,
     pub strips: Vec<Strip>,
     pub displacement_pos: f32,
     pub displacement_dir: enums::Direction,
     pub paused: bool,
+    pub gen: GenSettings,
 }
 
 
@@ -101,21 +135,16 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
     let cursor = Vec2::new(0.0, 0.0);
 
-    let seg_width = SEG_WIDTH * work_size.x;
-    let strip_interval = STRIP_INTERVAL * work_size.y;
-    let strip_height = STRIP_HEIGHT * work_size.y;
 
     State {
         rng,
         work_size,
-        seg_width,
-        strip_interval,
-        strip_height,
         cursor,
         strips: vec![],
         displacement_pos: 0.0,
         displacement_dir: enums::Direction::Down,
         paused: false,
+        gen: GenSettings::default(&work_size),
     }
 }
 
@@ -145,7 +174,7 @@ fn add_strip(state: &mut State) {
     while state.cursor.x < state.work_size.x {
         let from = vec2(state.cursor.x, state.cursor.y);
 
-        state.cursor.x += state.seg_width;
+        state.cursor.x += state.gen.seg_width;
         let to = vec2(state.cursor.x, state.cursor.y);
 
         let middle = mid(from, to);
@@ -208,6 +237,12 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::P) {
         state.paused = !state.paused;
         log::debug!("pause toggled");
+    }
+
+
+    if app.keyboard.was_pressed(KeyCode::R) {
+        state.gen = GenSettings::randomize(&mut state.rng, &state.work_size);
+        log::debug!("{:?}", state.gen);
     }
 }
 
@@ -288,9 +323,9 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     //     add_strip(state);
     // }
     // Cursor for all lines
-    if state.cursor.y < state.work_size.y + state.strip_interval {
+    if state.cursor.y < state.work_size.y + state.gen.strip_interval {
         add_strip(state);
-        state.cursor.y += state.strip_interval;
+        state.cursor.y += state.gen.strip_interval;
     }
 
 
@@ -299,12 +334,12 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
             update_strip(
                 strip,
                 state.displacement_pos,
-                state.strip_interval,
+                state.gen.strip_interval,
                 &state.work_size,
                 &mut state.rng,
             );
         }
-        draw_strip(draw, strip, strip.segs[0].from.y, state.strip_height);
+        draw_strip(draw, strip, strip.segs[0].from.y, state.gen.strip_height);
     }
 
     if !state.paused {
