@@ -24,8 +24,8 @@ const STRIP_INTERVAL: RangeInclusive<f32> = 0.02..=0.4;
 // const STRIP_HEIGHT: f32 = 0.05;
 const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
 const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
-const SEG_CTRL_STEP: f32 = 5.0;
-const SEG_CTRL_BSTEP: f32 = 1.0;
+const SEG_CTRL_STEP: f32 = 0.01;
+const SEG_CTRL_BSTEP: f32 = 0.005;
 const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
 const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.1..=0.5;
 
@@ -190,24 +190,6 @@ fn add_strip(state: &mut State) {
 }
 
 
-fn calc_displacement_factor(
-    seg_y_pos: &f32,
-    displacement_pos: &f32,
-    displacement_range: &f32,
-    work_size: &Vec2,
-) -> f32 {
-    // Return a displacement factor based on the vertical distance of the segment from displacement_pos
-    let distance = (seg_y_pos - displacement_pos).abs() / work_size.y;
-    if distance > 0.0 && distance < *displacement_range {
-        // return 1.0 - distance;
-        return (1.0 - distance.log(4.0)) * 0.5;
-    }
-    // @TODO: Returning zero breaks rng so return a very small value instead.
-    // Revisit on whether there's a better approach
-    0.00001
-}
-
-
 fn move_displacement(state: &mut State) {
     if state.displacement_pos <= 0.0 {
         state.displacement_dir = enums::Direction::Down;
@@ -273,15 +255,17 @@ fn update_strip(
     let distance = get_displacement_distance(strip, &displacement_pos, &work_size);
     let mut do_displacement: bool = false;
     let mut do_return: bool = false;
-    let mut ctrl_step = SEG_CTRL_STEP;
+    let mut ctrl_step = SEG_CTRL_STEP * work_size.y;
     if distance <= displacement_range && !strip.displaced {
         do_displacement = true;
         strip.displaced = true;
     }
-    if distance > displacement_range && strip.displaced {
-        do_return = true;
-        strip.displaced = false;
-        ctrl_step = SEG_CTRL_BSTEP;
+    if distance > displacement_range {
+        ctrl_step = SEG_CTRL_BSTEP * work_size.y;
+        if strip.displaced {
+            do_return = true;
+            strip.displaced = false;
+        }
     }
     for seg in strip.segs.iter_mut() {
         // Update ctrl targets (ctrl_to)
