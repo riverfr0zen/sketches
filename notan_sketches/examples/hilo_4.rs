@@ -283,37 +283,37 @@ fn update_strip(
     }
     // log::debug!("{}", approaching);
 
-    let mut y_displacement_factor: f32 = -0.1;
-    let mut y_displacement: f32 = 0.0;
+    // let mut y_displacement_factor: f32 = -0.1;
+    // let mut y_displacement: f32 = 0.0;
     for seg in strip.segs.iter_mut() {
         // Update ctrl targets (ctrl_to)
         if do_displacement {
             log::debug!("approaching & needs new target");
 
-            if y_displacement_factor < 0.0 {
-                y_displacement_factor = calc_displacement_factor(
-                    &seg.from.y,
-                    &displacement_pos,
-                    &displacement_range,
-                    &work_size,
-                );
-                // y_displacement = strip_interval * 0.5 * y_displacement_factor;
-                y_displacement = strip_interval * y_displacement_factor;
-                // log::debug!(
-                //     "dpos: {}, y {}, ydf {}, yd {}",
-                //     state.displacement_pos,
-                //     seg.from.y,
-                //     y_displacement_factor,
-                //     y_displacement,
-                // );
-            }
+            // if y_displacement_factor < 0.0 {
+            //     y_displacement_factor = calc_displacement_factor(
+            //         &seg.from.y,
+            //         &displacement_pos,
+            //         &displacement_range,
+            //         &work_size,
+            //     );
+            //     // y_displacement = strip_interval * 0.5 * y_displacement_factor;
+            //     y_displacement = strip_interval * y_displacement_factor;
+            //     // log::debug!(
+            //     //     "dpos: {}, y {}, ydf {}, yd {}",
+            //     //     state.displacement_pos,
+            //     //     seg.from.y,
+            //     //     y_displacement_factor,
+            //     //     y_displacement,
+            //     // );
+            // }
             let middle = mid(seg.from, seg.to);
             seg.ctrl_to.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
-            seg.ctrl_to.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+            seg.ctrl_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
 
             seg.ctrl2_to.x = rng.gen_range(middle.x.min(seg.to.x)..middle.x.max(seg.to.x));
             seg.ctrl2_to.y =
-                rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+                rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
         }
         if do_return {
             log::debug!("receeding & needs new target");
