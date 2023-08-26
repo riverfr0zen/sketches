@@ -24,7 +24,8 @@ const STRIP_INTERVAL: RangeInclusive<f32> = 0.02..=0.4;
 // const STRIP_HEIGHT: f32 = 0.05;
 const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
 const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
-const SEG_CTRL_STEP: f32 = 10.0;
+const SEG_CTRL_STEP: f32 = 5.0;
+const SEG_CTRL_BSTEP: f32 = 1.0;
 const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
 const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.1..=0.5;
 
@@ -272,6 +273,7 @@ fn update_strip(
     let distance = get_displacement_distance(strip, &displacement_pos, &work_size);
     let mut do_displacement: bool = false;
     let mut do_return: bool = false;
+    let mut ctrl_step = SEG_CTRL_STEP;
     if distance <= displacement_range && !strip.displaced {
         do_displacement = true;
         strip.displaced = true;
@@ -279,6 +281,7 @@ fn update_strip(
     if distance > displacement_range && strip.displaced {
         do_return = true;
         strip.displaced = false;
+        ctrl_step = SEG_CTRL_BSTEP;
     }
     for seg in strip.segs.iter_mut() {
         // Update ctrl targets (ctrl_to)
@@ -298,29 +301,29 @@ fn update_strip(
         }
         // Update ctrl
         if seg.ctrl.x < seg.ctrl_to.x {
-            seg.ctrl.x += SEG_CTRL_STEP;
+            seg.ctrl.x += ctrl_step;
         }
         if seg.ctrl.x > seg.ctrl_to.x {
-            seg.ctrl.x -= SEG_CTRL_STEP;
+            seg.ctrl.x -= ctrl_step;
         }
         if seg.ctrl.y < seg.ctrl_to.y {
-            seg.ctrl.y += SEG_CTRL_STEP;
+            seg.ctrl.y += ctrl_step;
         }
         if seg.ctrl.y > seg.ctrl_to.y {
-            seg.ctrl.y -= SEG_CTRL_STEP;
+            seg.ctrl.y -= ctrl_step;
         }
 
         if seg.ctrl2.x < seg.ctrl2_to.x {
-            seg.ctrl2.x += SEG_CTRL_STEP;
+            seg.ctrl2.x += ctrl_step;
         }
         if seg.ctrl2.x > seg.ctrl2_to.x {
-            seg.ctrl2.x -= SEG_CTRL_STEP;
+            seg.ctrl2.x -= ctrl_step;
         }
         if seg.ctrl2.y < seg.ctrl2_to.y {
-            seg.ctrl2.y += SEG_CTRL_STEP;
+            seg.ctrl2.y += ctrl_step;
         }
         if seg.ctrl2.y > seg.ctrl2_to.y {
-            seg.ctrl2.y -= SEG_CTRL_STEP;
+            seg.ctrl2.y -= ctrl_step;
         }
     }
 }
