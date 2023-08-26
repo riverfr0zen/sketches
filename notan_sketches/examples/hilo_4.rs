@@ -106,6 +106,7 @@ struct State {
     pub strips: Vec<Strip>,
     pub displacement_pos: f32,
     pub displacement_dir: enums::Direction,
+    pub show_displacement_pos: bool,
     pub paused: bool,
     pub gen: GenSettings,
 }
@@ -126,6 +127,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         strips: vec![],
         displacement_pos: 0.0,
         displacement_dir: enums::Direction::Down,
+        show_displacement_pos: false,
         paused: false,
         gen: GenSettings::default(&work_size),
     }
@@ -247,11 +249,14 @@ fn update(app: &mut App, state: &mut State) {
         log::debug!("pause toggled");
     }
 
-
     if app.keyboard.was_pressed(KeyCode::R) {
         state.gen = GenSettings::randomize(&mut state.rng, &state.work_size);
         generate_strips(state, true);
         log::debug!("{:#?}", state.gen);
+    }
+
+    if app.keyboard.was_pressed(KeyCode::D) {
+        state.show_displacement_pos = !state.show_displacement_pos;
     }
 }
 
@@ -283,30 +288,10 @@ fn update_strip(
     }
     // log::debug!("{}", approaching);
 
-    // let mut y_displacement_factor: f32 = -0.1;
-    // let mut y_displacement: f32 = 0.0;
     for seg in strip.segs.iter_mut() {
         // Update ctrl targets (ctrl_to)
         if do_displacement {
             log::debug!("approaching & needs new target");
-
-            // if y_displacement_factor < 0.0 {
-            //     y_displacement_factor = calc_displacement_factor(
-            //         &seg.from.y,
-            //         &displacement_pos,
-            //         &displacement_range,
-            //         &work_size,
-            //     );
-            //     // y_displacement = strip_interval * 0.5 * y_displacement_factor;
-            //     y_displacement = strip_interval * y_displacement_factor;
-            //     // log::debug!(
-            //     //     "dpos: {}, y {}, ydf {}, yd {}",
-            //     //     state.displacement_pos,
-            //     //     seg.from.y,
-            //     //     y_displacement_factor,
-            //     //     y_displacement,
-            //     // );
-            // }
             let middle = mid(seg.from, seg.to);
             seg.ctrl_to.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
             seg.ctrl_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
@@ -399,6 +384,14 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
             );
         }
         draw_strip(draw, strip, strip.segs[0].from.y, state.gen.strip_height);
+    }
+
+    if state.show_displacement_pos {
+        draw.path()
+            .move_to(0.0, state.displacement_pos)
+            .line_to(state.work_size.x, state.displacement_pos)
+            .stroke_color(Color::RED)
+            .stroke(1.0);
     }
 
     if !state.paused {
