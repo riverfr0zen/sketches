@@ -26,7 +26,7 @@ const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
 const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
 const SEG_CTRL_STEP: f32 = 10.0;
 const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
-const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.3..=0.99;
+const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.1..=0.5;
 
 
 pub struct Segment {
@@ -64,7 +64,7 @@ impl GenSettings {
         let strip_interval = 0.1 * work_size.y;
         let strip_height = 0.08 * work_size.y;
         let displacement_pos_step: f32 = 10.0;
-        let displacement_range: f32 = 0.5;
+        let displacement_range: f32 = 0.3;
         let palette = colors::PalettesSelection::All;
 
         Self {
@@ -272,26 +272,17 @@ fn update_strip(
     let distance = get_displacement_distance(strip, &displacement_pos, &work_size);
     let mut do_displacement: bool = false;
     let mut do_return: bool = false;
-    let approaching = if distance <= strip.last_distance {
-        true
-    } else {
-        false
-    };
-    if approaching && !strip.displaced {
+    if distance <= displacement_range && !strip.displaced {
         do_displacement = true;
-        // pre-emptive, but should be ok
         strip.displaced = true;
     }
-    if !approaching && strip.displaced {
+    if distance > displacement_range && strip.displaced {
         do_return = true;
         strip.displaced = false;
     }
-    // log::debug!("{}", approaching);
-
     for seg in strip.segs.iter_mut() {
         // Update ctrl targets (ctrl_to)
         if do_displacement {
-            log::debug!("approaching & needs new target");
             let middle = mid(seg.from, seg.to);
             seg.ctrl_to.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
             seg.ctrl_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
@@ -301,7 +292,6 @@ fn update_strip(
                 rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
         }
         if do_return {
-            log::debug!("receeding & needs new target");
             let middle = mid(seg.from, seg.to);
             seg.ctrl_to = mid(seg.from, middle);
             seg.ctrl2_to = mid(middle, seg.to);
@@ -420,7 +410,7 @@ fn main() -> Result<(), String> {
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
 
-    let win_config = win_config.title("hilo_strips.glitchy");
+    let win_config = win_config.title("hilo_strips.smoove");
     set_html_bgcolor(CLEAR_COLOR);
 
     // notan::init()
