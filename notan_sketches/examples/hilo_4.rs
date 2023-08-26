@@ -24,6 +24,7 @@ const STRIP_INTERVAL: RangeInclusive<f32> = 0.02..=0.4;
 // const STRIP_HEIGHT: f32 = 0.05;
 const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
 const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
+const SEG_CTRL_STEP: f32 = 10.0;
 const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
 const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.3..=0.99;
 
@@ -32,7 +33,9 @@ pub struct Segment {
     from: Vec2,
     to: Vec2,
     ctrl: Vec2,
+    ctrl_to: Vec2,
     ctrl2: Vec2,
+    ctrl2_to: Vec2,
 }
 
 
@@ -40,6 +43,8 @@ pub struct Strip {
     segs: Vec<Segment>,
     color: Color,
     stroke_color: Color,
+    last_distance: f32,
+    displaced: bool,
 }
 
 
@@ -127,6 +132,12 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 }
 
 
+/// Get the distance of the strip from the displacement
+fn get_displacement_distance(strip: &Strip, displacement_pos: &f32, work_size: &Vec2) -> f32 {
+    (strip.segs[0].from.y - displacement_pos).abs() / work_size.y
+}
+
+
 fn add_strip(state: &mut State) {
     let color = colors::Palettes::choose_color(&state.gen.palette);
     let stroke_color = Srgb::new(color.r, color.g, color.b);
@@ -148,6 +159,8 @@ fn add_strip(state: &mut State) {
         segs: vec![],
         color: color,
         stroke_color: Color::new(stroke_color.red, stroke_color.green, stroke_color.blue, 1.0),
+        last_distance: 0.0,
+        displaced: false,
     };
     while state.cursor.x < state.work_size.x {
         let from = vec2(state.cursor.x, state.cursor.y);
@@ -162,9 +175,13 @@ fn add_strip(state: &mut State) {
             from,
             to,
             ctrl,
+            ctrl_to: ctrl,
             ctrl2,
+            ctrl2_to: ctrl2,
         });
     }
+    strip.last_distance =
+        get_displacement_distance(&strip, &state.displacement_pos, &state.work_size);
     state.strips.push(strip);
     state.cursor.x = 0.0;
 }
@@ -247,32 +264,89 @@ fn update_strip(
     work_size: &Vec2,
     rng: &mut Random,
 ) {
+    let distance = get_displacement_distance(strip, &displacement_pos, &work_size);
+    let mut do_displacement: bool = false;
+    let mut do_return: bool = false;
+    let approaching = if distance <= strip.last_distance {
+        true
+    } else {
+        false
+    };
+    if approaching && !strip.displaced {
+        do_displacement = true;
+        // pre-emptive, but should be ok
+        strip.displaced = true;
+    }
+    if !approaching && strip.displaced {
+        do_return = true;
+        strip.displaced = false;
+    }
+    // log::debug!("{}", approaching);
+
     let mut y_displacement_factor: f32 = -0.1;
     let mut y_displacement: f32 = 0.0;
     for seg in strip.segs.iter_mut() {
-        if y_displacement_factor < 0.0 {
-            y_displacement_factor = calc_displacement_factor(
-                &seg.from.y,
-                &displacement_pos,
-                &displacement_range,
-                &work_size,
-            );
-            // y_displacement = strip_interval * 0.5 * y_displacement_factor;
-            y_displacement = strip_interval * y_displacement_factor;
-            // log::debug!(
-            //     "dpos: {}, y {}, ydf {}, yd {}",
-            //     state.displacement_pos,
-            //     seg.from.y,
-            //     y_displacement_factor,
-            //     y_displacement,
-            // );
-        }
-        let middle = mid(seg.from, seg.to);
-        seg.ctrl.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
-        seg.ctrl.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+        // Update ctrl targets (ctrl_to)
+        if do_displacement {
+            log::debug!("approaching & needs new target");
 
-        seg.ctrl2.x = rng.gen_range(middle.x.min(seg.to.x)..middle.x.max(seg.to.x));
-        seg.ctrl2.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+            if y_displacement_factor < 0.0 {
+                y_displacement_factor = calc_displacement_factor(
+                    &seg.from.y,
+                    &displacement_pos,
+                    &displacement_range,
+                    &work_size,
+                );
+                // y_displacement = strip_interval * 0.5 * y_displacement_factor;
+                y_displacement = strip_interval * y_displacement_factor;
+                // log::debug!(
+                //     "dpos: {}, y {}, ydf {}, yd {}",
+                //     state.displacement_pos,
+                //     seg.from.y,
+                //     y_displacement_factor,
+                //     y_displacement,
+                // );
+            }
+            let middle = mid(seg.from, seg.to);
+            seg.ctrl_to.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
+            seg.ctrl_to.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+
+            seg.ctrl2_to.x = rng.gen_range(middle.x.min(seg.to.x)..middle.x.max(seg.to.x));
+            seg.ctrl2_to.y =
+                rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+        }
+        if do_return {
+            log::debug!("receeding & needs new target");
+            let middle = mid(seg.from, seg.to);
+            seg.ctrl_to = mid(seg.from, middle);
+            seg.ctrl2_to = mid(middle, seg.to);
+        }
+        // Update ctrl
+        if seg.ctrl.x < seg.ctrl_to.x {
+            seg.ctrl.x += SEG_CTRL_STEP;
+        }
+        if seg.ctrl.x > seg.ctrl_to.x {
+            seg.ctrl.x -= SEG_CTRL_STEP;
+        }
+        if seg.ctrl.y < seg.ctrl_to.y {
+            seg.ctrl.y += SEG_CTRL_STEP;
+        }
+        if seg.ctrl.y > seg.ctrl_to.y {
+            seg.ctrl.y -= SEG_CTRL_STEP;
+        }
+
+        if seg.ctrl2.x < seg.ctrl2_to.x {
+            seg.ctrl2.x += SEG_CTRL_STEP;
+        }
+        if seg.ctrl2.x > seg.ctrl2_to.x {
+            seg.ctrl2.x -= SEG_CTRL_STEP;
+        }
+        if seg.ctrl2.y < seg.ctrl2_to.y {
+            seg.ctrl2.y += SEG_CTRL_STEP;
+        }
+        if seg.ctrl2.y > seg.ctrl2_to.y {
+            seg.ctrl2.y -= SEG_CTRL_STEP;
+        }
     }
 }
 
