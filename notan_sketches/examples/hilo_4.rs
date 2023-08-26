@@ -23,7 +23,7 @@ const STRIP_STROKE: f32 = 5.0;
 const STRIP_INTERVAL: RangeInclusive<f32> = 0.02..=0.4;
 // const STRIP_HEIGHT: f32 = 0.05;
 const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
-const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
+const SEG_WIDTH: RangeInclusive<f32> = 0.02..=0.4;
 const SEG_CTRL_STEP: f32 = 0.01;
 const SEG_CTRL_BSTEP: f32 = 0.005;
 const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
