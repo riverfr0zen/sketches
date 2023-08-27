@@ -30,6 +30,7 @@ const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
 const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.1..=0.5;
 // The number of displacement cycles before shuffling settings
 const SHUFFLE_PERIOD: u8 = 2;
+const VARY_HORIZONTAL: bool = true;
 
 
 pub struct Segment {
@@ -232,10 +233,12 @@ fn generate_strips(state: &mut State, refresh: bool) {
 }
 
 fn shuffle(state: &mut State) {
-    state.shuffle_counter = 0;
-    state.gen = GenSettings::randomize(&mut state.rng, &state.work_size);
-    generate_strips(state, true);
-    log::debug!("{:#?}", state.gen);
+    if state.shuffle {
+        state.shuffle_counter = 0;
+        state.gen = GenSettings::randomize(&mut state.rng, &state.work_size);
+        generate_strips(state, true);
+        log::debug!("{:#?}", state.gen);
+    }
 }
 
 
@@ -255,6 +258,7 @@ fn update(app: &mut App, state: &mut State) {
 
     if app.keyboard.was_pressed(KeyCode::S) {
         state.shuffle = !state.shuffle;
+        log::debug!("shuffle toggled");
     }
 
     if state.shuffle_counter >= SHUFFLE_PERIOD {
@@ -286,16 +290,44 @@ fn update_strip(
             strip.displaced = false;
         }
     }
+    // prev_seg_loc:
+    // 0 = neutral
+    // 1 = above
+    // 2 = below
+    let mut prev_seg_loc: u8 = 0;
     for seg in strip.segs.iter_mut() {
         // Update ctrl targets (ctrl_to)
         if do_displacement {
             let middle = mid(seg.from, seg.to);
-            seg.ctrl_to.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
-            seg.ctrl_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
+            if VARY_HORIZONTAL {
+                seg.ctrl_to.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
+                seg.ctrl2_to.x = rng.gen_range(middle.x.min(seg.to.x)..middle.x.max(seg.to.x));
+            } else {
+                seg.ctrl_to.x = (seg.from.x + middle.x) / 2.0;
+                seg.ctrl2_to.x = (middle.x + seg.to.x) / 2.0;
+            }
 
-            seg.ctrl2_to.x = rng.gen_range(middle.x.min(seg.to.x)..middle.x.max(seg.to.x));
-            seg.ctrl2_to.y =
-                rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
+            if prev_seg_loc == 0 {
+                seg.ctrl_to.y =
+                    rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
+                seg.ctrl2_to.y =
+                    rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
+
+                // if (seg.ctrl_to.y + seg.ctrl2_to.y) / 2.0 > seg.from.y {
+                if seg.ctrl2_to.y > seg.to.y {
+                    prev_seg_loc = 2;
+                } else {
+                    prev_seg_loc = 1;
+                }
+            } else if prev_seg_loc == 1 {
+                seg.ctrl_to.y = rng.gen_range(seg.from.y..seg.from.y + strip_interval);
+                seg.ctrl2_to.y = rng.gen_range(seg.from.y..seg.from.y + strip_interval);
+                prev_seg_loc = 2;
+            } else if prev_seg_loc == 2 {
+                seg.ctrl_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y);
+                seg.ctrl2_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y);
+                prev_seg_loc = 1;
+            }
         }
         if do_return {
             let middle = mid(seg.from, seg.to);
