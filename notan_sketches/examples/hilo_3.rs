@@ -23,9 +23,11 @@ const STRIP_STROKE: f32 = 5.0;
 const STRIP_INTERVAL: RangeInclusive<f32> = 0.02..=0.4;
 // const STRIP_HEIGHT: f32 = 0.05;
 const STRIP_HEIGHT: RangeInclusive<f32> = 0.02..=0.2;
-const SEG_WIDTH: RangeInclusive<f32> = 0.05..=0.4;
+const SEG_WIDTH: RangeInclusive<f32> = 0.02..=0.4;
 const DISPLACEMENT_POS_STEP: RangeInclusive<f32> = 0.5..=20.0;
 const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.3..=0.99;
+// The number of displacement cycles before shuffling settings
+const SHUFFLE_PERIOD: u8 = 2;
 
 
 pub struct Segment {
@@ -101,7 +103,10 @@ struct State {
     pub strips: Vec<Strip>,
     pub displacement_pos: f32,
     pub displacement_dir: enums::Direction,
+    pub show_displacement_pos: bool,
     pub paused: bool,
+    pub shuffle: bool,
+    pub shuffle_counter: u8,
     pub gen: GenSettings,
 }
 
@@ -121,7 +126,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         strips: vec![],
         displacement_pos: 0.0,
         displacement_dir: enums::Direction::Down,
+        show_displacement_pos: false,
         paused: false,
+        shuffle: true,
+        shuffle_counter: 0,
         gen: GenSettings::default(&work_size),
     }
 }
@@ -224,6 +232,14 @@ fn generate_strips(state: &mut State, refresh: bool) {
 }
 
 
+fn shuffle(state: &mut State) {
+    state.shuffle_counter = 0;
+    state.gen = GenSettings::randomize(&mut state.rng, &state.work_size);
+    generate_strips(state, true);
+    log::debug!("{:#?}", state.gen);
+}
+
+
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::P) {
         state.paused = !state.paused;
@@ -232,9 +248,19 @@ fn update(app: &mut App, state: &mut State) {
 
 
     if app.keyboard.was_pressed(KeyCode::R) {
-        state.gen = GenSettings::randomize(&mut state.rng, &state.work_size);
-        generate_strips(state, true);
-        log::debug!("{:#?}", state.gen);
+        shuffle(state);
+    }
+
+    if app.keyboard.was_pressed(KeyCode::D) {
+        state.show_displacement_pos = !state.show_displacement_pos;
+    }
+
+    if app.keyboard.was_pressed(KeyCode::S) {
+        state.shuffle = !state.shuffle;
+    }
+
+    if state.shuffle_counter >= SHUFFLE_PERIOD {
+        shuffle(state);
     }
 }
 
@@ -327,8 +353,20 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
         draw_strip(draw, strip, strip.segs[0].from.y, state.gen.strip_height);
     }
 
+    if state.show_displacement_pos {
+        draw.path()
+            .move_to(0.0, state.displacement_pos)
+            .line_to(state.work_size.x, state.displacement_pos)
+            .stroke_color(Color::RED)
+            .stroke(1.0);
+    }
+
+
     if !state.paused {
         move_displacement(state);
+        if state.displacement_pos <= 0.0 {
+            state.shuffle_counter += 1;
+        }
     }
 
     gfx.render(draw);
