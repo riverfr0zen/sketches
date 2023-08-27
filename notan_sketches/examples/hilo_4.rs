@@ -117,6 +117,12 @@ struct State {
     pub gen: GenSettings,
 }
 
+enum Position {
+    Neutral,
+    Above,
+    Below,
+}
+
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (rng, seed) = get_rng(None);
@@ -294,7 +300,7 @@ fn update_strip(
     // 0 = neutral
     // 1 = above
     // 2 = below
-    let mut prev_seg_loc: u8 = 0;
+    let mut prev_seg_loc = Position::Neutral;
     for seg in strip.segs.iter_mut() {
         // Update ctrl targets (ctrl_to)
         if do_displacement {
@@ -307,26 +313,29 @@ fn update_strip(
                 seg.ctrl2_to.x = (middle.x + seg.to.x) / 2.0;
             }
 
-            if prev_seg_loc == 0 {
-                seg.ctrl_to.y =
-                    rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
-                seg.ctrl2_to.y =
-                    rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
+            match prev_seg_loc {
+                Position::Neutral => {
+                    seg.ctrl_to.y =
+                        rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
+                    seg.ctrl2_to.y =
+                        rng.gen_range(seg.from.y - strip_interval..seg.from.y + strip_interval);
 
-                // if (seg.ctrl_to.y + seg.ctrl2_to.y) / 2.0 > seg.from.y {
-                if seg.ctrl2_to.y > seg.to.y {
-                    prev_seg_loc = 2;
-                } else {
-                    prev_seg_loc = 1;
+                    if seg.ctrl2_to.y > seg.to.y {
+                        prev_seg_loc = Position::Below;
+                    } else {
+                        prev_seg_loc = Position::Above;
+                    }
                 }
-            } else if prev_seg_loc == 1 {
-                seg.ctrl_to.y = rng.gen_range(seg.from.y..seg.from.y + strip_interval);
-                seg.ctrl2_to.y = rng.gen_range(seg.from.y..seg.from.y + strip_interval);
-                prev_seg_loc = 2;
-            } else if prev_seg_loc == 2 {
-                seg.ctrl_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y);
-                seg.ctrl2_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y);
-                prev_seg_loc = 1;
+                Position::Above => {
+                    seg.ctrl_to.y = rng.gen_range(seg.from.y..seg.from.y + strip_interval);
+                    seg.ctrl2_to.y = rng.gen_range(seg.from.y..seg.from.y + strip_interval);
+                    prev_seg_loc = Position::Below;
+                }
+                Position::Below => {
+                    seg.ctrl_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y);
+                    seg.ctrl2_to.y = rng.gen_range(seg.from.y - strip_interval..seg.from.y);
+                    prev_seg_loc = Position::Above;
+                }
             }
         }
         if do_return {
