@@ -105,7 +105,7 @@ struct State {
     pub displacement_dir: enums::Direction,
     pub show_displacement_pos: bool,
     pub paused: bool,
-    pub shuffle: bool,
+    pub auto_shuffle: bool,
     pub shuffle_counter: u8,
     pub gen: GenSettings,
 }
@@ -128,7 +128,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         displacement_dir: enums::Direction::Down,
         show_displacement_pos: false,
         paused: false,
-        shuffle: true,
+        auto_shuffle: true,
         shuffle_counter: 0,
         gen: GenSettings::default(&work_size),
     }
@@ -256,10 +256,10 @@ fn update(app: &mut App, state: &mut State) {
     }
 
     if app.keyboard.was_pressed(KeyCode::S) {
-        state.shuffle = !state.shuffle;
+        state.auto_shuffle = !state.auto_shuffle;
     }
 
-    if state.shuffle_counter >= SHUFFLE_PERIOD {
+    if state.auto_shuffle && state.shuffle_counter >= SHUFFLE_PERIOD {
         shuffle(state);
     }
 }
