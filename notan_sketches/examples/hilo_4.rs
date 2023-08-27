@@ -47,6 +47,7 @@ pub struct Strip {
     segs: Vec<Segment>,
     color: Color,
     stroke_color: Color,
+    alpha: f32,
     last_distance: f32,
     displaced: bool,
 }
@@ -175,6 +176,7 @@ fn add_strip(state: &mut State) {
         segs: vec![],
         color: color,
         stroke_color: Color::new(stroke_color.red, stroke_color.green, stroke_color.blue, 1.0),
+        alpha: state.rng.gen_range(0.2..1.0),
         last_distance: 0.0,
         displaced: false,
     };
@@ -398,7 +400,8 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
         .stroke(STRIP_STROKE)
         .fill_color(strip.color)
         .fill()
-        .close();
+        .close()
+        .alpha(strip.alpha);
 }
 
 
