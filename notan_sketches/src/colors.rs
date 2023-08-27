@@ -39,6 +39,9 @@ pub enum PalettesSelection {
     All,
     Neon,
     PurpleFade,
+    DarkAcademia,
+    PartySoho,
+    StabiloBossPastel,
 }
 
 //
@@ -51,10 +54,13 @@ pub enum PalettesSelection {
 impl Distribution<PalettesSelection> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> PalettesSelection {
         // match rng.gen_range(0, 3) { // rand 0.5, 0.6, 0.7
-        match rng.gen_range(0..=2) {
+        match rng.gen_range(0..=5) {
             // rand 0.8
             0 => PalettesSelection::Neon,
             1 => PalettesSelection::PurpleFade,
+            2 => PalettesSelection::DarkAcademia,
+            3 => PalettesSelection::PartySoho,
+            4 => PalettesSelection::StabiloBossPastel,
             _ => PalettesSelection::All,
         }
     }
@@ -64,6 +70,9 @@ pub struct Palettes {
     pub all: Vec<Color>,
     pub neon: Vec<Color>,
     pub purple_fade: Vec<Color>,
+    pub dark_academia: Vec<Color>,
+    pub party_soho: Vec<Color>,
+    pub stabilo_boss_pastel: Vec<Color>,
 }
 
 impl Default for Palettes {
@@ -88,6 +97,32 @@ impl Default for Palettes {
                 Color::new(0.94, 0.81, 1.0, 1.0),
                 Color::WHITE,
             ],
+            // https://colorswall.com/palette/184115
+            dark_academia: vec![
+                Color::new(0.6, 0.41, 0.25, 1.0),
+                Color::new(0.73, 0.64, 0.43, 1.0),
+                Color::new(0.39, 0.2, 0.08, 1.0),
+                Color::new(0.64, 0.5, 0.36, 1.0),
+                Color::new(0.4, 0.34, 0.19, 1.0),
+                Color::new(0.34, 0.24, 0.16, 1.0),
+            ],
+            // https://colorswall.com/palette/266406
+            party_soho: vec![
+                Color::BLACK,
+                Color::new(0.0, 0.08, 0.16, 1.0),
+                Color::new(0.0, 0.0, 0.08, 1.0),
+                Color::new(0.0, 0.08, 0.08, 1.0),
+                Color::new(0.0, 0.08, 0.24, 1.0),
+                Color::new(0.08, 0.16, 0.31, 1.0),
+            ],
+            stabilo_boss_pastel: vec![
+                Color::new(0.97, 0.87, 0.51, 1.0),
+                Color::new(0.96, 0.67, 0.56, 1.0),
+                Color::new(0.96, 0.71, 0.75, 1.0),
+                Color::new(0.84, 0.71, 0.84, 1.0),
+                Color::new(0.73, 0.87, 0.85, 1.0),
+                Color::new(0.61, 0.82, 0.72, 1.0),
+            ],
         }
     }
 }
@@ -99,6 +134,9 @@ impl Palettes {
             PalettesSelection::All => palettes.all,
             PalettesSelection::Neon => palettes.neon,
             PalettesSelection::PurpleFade => palettes.purple_fade,
+            PalettesSelection::DarkAcademia => palettes.dark_academia,
+            PalettesSelection::PartySoho => palettes.party_soho,
+            PalettesSelection::StabiloBossPastel => palettes.stabilo_boss_pastel,
         };
         let mut rng = thread_rng();
         if let Some(color) = palette.choose(&mut rng) {
