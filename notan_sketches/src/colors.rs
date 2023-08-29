@@ -37,6 +37,7 @@ pub const EMERALD: Color = Color::new(0.31, 0.79, 0.47, 1.0);
 #[derive(Debug)]
 pub enum PalettesSelection {
     All,
+    RandomlyGenerated,
     Neon,
     PurpleFade,
     DarkAcademia,
@@ -54,13 +55,14 @@ pub enum PalettesSelection {
 impl Distribution<PalettesSelection> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> PalettesSelection {
         // match rng.gen_range(0, 3) { // rand 0.5, 0.6, 0.7
-        match rng.gen_range(0..=5) {
+        match rng.gen_range(0..=6) {
             // rand 0.8
             0 => PalettesSelection::Neon,
             1 => PalettesSelection::PurpleFade,
             2 => PalettesSelection::DarkAcademia,
             3 => PalettesSelection::PartySoho,
             4 => PalettesSelection::StabiloBossPastel,
+            5 => PalettesSelection::RandomlyGenerated,
             _ => PalettesSelection::All,
         }
     }
@@ -68,12 +70,58 @@ impl Distribution<PalettesSelection> for Standard {
 
 pub struct Palettes {
     pub all: Vec<Color>,
+    pub random: Vec<Color>,
     pub neon: Vec<Color>,
     pub purple_fade: Vec<Color>,
     pub dark_academia: Vec<Color>,
     pub party_soho: Vec<Color>,
     pub stabilo_boss_pastel: Vec<Color>,
 }
+
+impl Palettes {
+    fn generate_random() -> Vec<Color> {
+        let mut rng = thread_rng();
+        vec![
+            Color::new(
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                1.0,
+            ),
+            Color::new(
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                1.0,
+            ),
+            Color::new(
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                1.0,
+            ),
+            Color::new(
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                1.0,
+            ),
+            Color::new(
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                1.0,
+            ),
+            Color::new(
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                rng.gen_range(0.0..=1.0),
+                1.0,
+            ),
+        ]
+    }
+}
+
 
 impl Default for Palettes {
     fn default() -> Self {
@@ -83,6 +131,7 @@ impl Default for Palettes {
                 SACRAMENTO, SEAWEED, PICKLE, LIME, EMERALD, PICKLE, GRAYPURP, MAHOGANY, CARMINE,
                 SCARLET, SALMON,
             ],
+            random: Palettes::generate_random(),
             neon: vec![
                 Color::new(1.0, 0.37, 0.0, 1.0),
                 Color::new(0.8, 1.0, 0.0, 1.0),
@@ -132,6 +181,7 @@ impl Palettes {
         let palettes = Palettes::default();
         let palette = match palette_selection {
             PalettesSelection::All => palettes.all,
+            PalettesSelection::RandomlyGenerated => palettes.random,
             PalettesSelection::Neon => palettes.neon,
             PalettesSelection::PurpleFade => palettes.purple_fade,
             PalettesSelection::DarkAcademia => palettes.dark_academia,
