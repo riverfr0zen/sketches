@@ -31,6 +31,7 @@ const DISPLACEMENT_RANGE: RangeInclusive<f32> = 0.1..=0.5;
 // The number of displacement cycles before shuffling settings
 const SHUFFLE_PERIOD: u8 = 2;
 const VARY_HORIZONTAL: bool = true;
+const USE_CUBIC_BEZIER: bool = true;
 
 
 pub struct Segment {
@@ -379,28 +380,39 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
 
 
     for seg in strip.segs.iter_mut() {
-        path.cubic_bezier_to(
-            (seg.ctrl.x, seg.ctrl.y),
-            (seg.ctrl2.x, seg.ctrl2.y),
-            (seg.to.x, seg.to.y),
-        );
+        if USE_CUBIC_BEZIER {
+            path.cubic_bezier_to(
+                (seg.ctrl.x, seg.ctrl.y),
+                (seg.ctrl2.x, seg.ctrl2.y),
+                (seg.to.x, seg.to.y),
+            );
+        } else {
+            path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y));
+        }
     }
     path.line_to(
         strip.segs.last().unwrap().to.x,
         strip.segs.last().unwrap().to.y + strip_height,
     );
     for seg in strip.segs.iter_mut().rev() {
-        path.cubic_bezier_to(
-            (seg.ctrl2.x, seg.ctrl2.y + strip_height),
-            (seg.ctrl.x, seg.ctrl.y + strip_height),
-            (seg.from.x, seg.from.y + strip_height),
-        );
+        if USE_CUBIC_BEZIER {
+            path.cubic_bezier_to(
+                (seg.ctrl2.x, seg.ctrl2.y + strip_height),
+                (seg.ctrl.x, seg.ctrl.y + strip_height),
+                (seg.from.x, seg.from.y + strip_height),
+            );
+        } else {
+            path.quadratic_bezier_to(
+                (seg.ctrl.x, seg.ctrl.y + strip_height),
+                (seg.from.x, seg.from.y + strip_height),
+            );
+        }
     }
     path.stroke_color(strip.stroke_color)
+        .close()
         .stroke(STRIP_STROKE)
         .fill_color(strip.color)
         .fill()
-        .close()
         .alpha(strip.alpha);
 }
 
