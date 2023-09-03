@@ -3,6 +3,7 @@ use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
+use notan_sketches::colors::Palettes;
 use notan_sketches::colors::PalettesSelection;
 use notan_sketches::enums;
 use notan_sketches::mathutils::mid;
@@ -62,6 +63,7 @@ pub struct GenSettings {
     pub displacement_pos_step: f32,
     pub displacement_range: f32,
     pub palette: colors::PalettesSelection,
+    pub clear_color: Color,
 }
 
 impl GenSettings {
@@ -72,6 +74,7 @@ impl GenSettings {
         let displacement_pos_step: f32 = 10.0;
         let displacement_range: f32 = 0.3;
         let palette = colors::PalettesSelection::All;
+        let clear_color = CLEAR_COLOR;
 
         Self {
             seg_width,
@@ -80,17 +83,30 @@ impl GenSettings {
             displacement_pos_step,
             displacement_range,
             palette,
+            clear_color,
         }
     }
 
     fn randomize(rng: &mut Random, work_size: &Vec2) -> Self {
         // default = Self::default(&work_size)
+        let seed;
+        (*rng, seed) = get_rng(None);
+        log::info!("Seed: {}", seed);
+
         let seg_width = rng.gen_range(SEG_WIDTH) * work_size.x;
         let strip_interval = rng.gen_range(STRIP_INTERVAL) * work_size.y;
         let strip_height = rng.gen_range(STRIP_HEIGHT) * work_size.y;
         let displacement_pos_step = rng.gen_range(DISPLACEMENT_POS_STEP);
         let displacement_range = rng.gen_range(DISPLACEMENT_RANGE);
         let palette: PalettesSelection = rng.gen();
+        // let clear_color = Palettes::choose_color(&clear_palette);
+        let clear_color = match (rng.gen_bool(0.5)) {
+            true => Palettes::choose_color(&palette),
+            false => {
+                let clear_palette: PalettesSelection = rng.gen();
+                Palettes::choose_color(&clear_palette)
+            }
+        };
 
         Self {
             seg_width,
@@ -98,7 +114,9 @@ impl GenSettings {
             strip_height,
             displacement_pos_step,
             displacement_range,
+            // clear_color: Palettes::choose_color(&clear_palette),
             palette,
+            clear_color,
         }
     }
 }
@@ -420,7 +438,7 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
 
 
 fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
-    let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
+    let draw = &mut get_draw_setup(gfx, state.work_size, false, state.gen.clear_color);
 
     generate_strips(state, false);
 
