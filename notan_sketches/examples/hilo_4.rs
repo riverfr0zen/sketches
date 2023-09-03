@@ -285,7 +285,9 @@ fn update_strip(
     let distance = get_displacement_distance(strip, &displacement_pos, &work_size);
     let mut do_displacement: bool = false;
     let mut do_return: bool = false;
-    let mut ctrl_step = SEG_CTRL_STEP * work_size.y;
+    // let mut ctrl_step = SEG_CTRL_STEP * work_size.y;
+    let mut ctrl_step = strip_interval / (displacement_range * work_size.y * 2.0);
+
     if distance <= displacement_range && !strip.displaced {
         do_displacement = true;
         strip.displaced = true;
