@@ -277,6 +277,7 @@ fn update(app: &mut App, state: &mut State) {
 fn update_strip(
     strip: &mut Strip,
     displacement_pos: f32,
+    displacement_pos_step: f32,
     displacement_range: f32,
     strip_interval: f32,
     work_size: &Vec2,
@@ -286,7 +287,10 @@ fn update_strip(
     let mut do_displacement: bool = false;
     let mut do_return: bool = false;
     // let mut ctrl_step = SEG_CTRL_STEP * work_size.y;
-    let mut ctrl_step = strip_interval / (displacement_range * work_size.y * 2.0);
+    // let mut ctrl_step = strip_interval / (displacement_range * work_size.y * 2.0);
+    // let mut ctrl_step = displacement_pos_step;
+    let mut ctrl_step =
+        displacement_pos_step * (strip_interval / (displacement_range * work_size.y * 2.0));
 
     if distance <= displacement_range && !strip.displaced {
         do_displacement = true;
@@ -299,10 +303,6 @@ fn update_strip(
             strip.displaced = false;
         }
     }
-    // prev_seg_loc:
-    // 0 = neutral
-    // 1 = above
-    // 2 = below
     let mut prev_seg_loc = Position::Neutral;
     for seg in strip.segs.iter_mut() {
         // Update ctrl targets (ctrl_to)
@@ -429,6 +429,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
             update_strip(
                 strip,
                 state.displacement_pos,
+                state.gen.displacement_pos_step,
                 state.gen.displacement_range,
                 state.gen.strip_interval,
                 &state.work_size,
