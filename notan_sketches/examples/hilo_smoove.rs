@@ -100,7 +100,7 @@ impl GenSettings {
         let displacement_range = rng.gen_range(DISPLACEMENT_RANGE);
         let palette: PalettesSelection = rng.gen();
         // let clear_color = Palettes::choose_color(&clear_palette);
-        let clear_color = match (rng.gen_bool(0.5)) {
+        let clear_color = match rng.gen_bool(0.5) {
             true => Palettes::choose_color(&palette),
             false => {
                 let clear_palette: PalettesSelection = rng.gen();
@@ -181,12 +181,12 @@ fn add_strip(state: &mut State) {
     match state.rng.gen_bool(0.5) {
         true => {
             // log::info!("darken");
-            stroke_color = stroke_color.darken(0.5);
+            stroke_color = stroke_color.darken(0.2);
         }
         false => {
             // log::info!("lighten");
             // Lighten factor intentionally more than darken above
-            stroke_color = stroke_color.lighten(0.9);
+            stroke_color = stroke_color.lighten(0.5);
         }
     }
     let stroke_color = Srgb::from_color(stroke_color);
@@ -428,8 +428,8 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
             );
         }
     }
-    path.stroke_color(strip.stroke_color)
-        .close()
+    path.close()
+        .stroke_color(strip.stroke_color)
         .stroke(STRIP_STROKE)
         .fill_color(strip.color)
         .fill()
