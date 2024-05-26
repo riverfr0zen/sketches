@@ -495,7 +495,7 @@ fn main() -> Result<(), String> {
     let win_config = get_common_win_config().high_dpi(true);
 
     let win_config = win_config.title("hilo_strips.smoove");
-    set_html_bgcolor(CLEAR_COLOR);
+    set_html_bgcolor(colors::MAHOGANY);
 
     // notan::init()
     notan::init_with(init)
