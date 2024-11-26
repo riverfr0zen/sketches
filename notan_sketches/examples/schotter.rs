@@ -40,19 +40,17 @@ fn draw(
     draw_basic(gfx, state, WORK_SIZE, CLEAR_COLOR, DAMPEN)
 }
 
-
 fn init(gfx: &mut Graphics) -> State {
     init_basic(gfx, WORK_SIZE, PADDING, ROWS, COLS, RAND_STEP)
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
     let win_config = get_common_win_config()
-        .high_dpi(true)
-        .vsync(true)
-        .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32)
-        .title("Schotter");
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_size(WORK_SIZE.x as u32, WORK_SIZE.y as u32)
+        .set_title("Schotter");
 
     set_html_bgcolor(CLEAR_COLOR);
 

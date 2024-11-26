@@ -49,19 +49,16 @@ const MONOCHROME: bool = false;
 // ];
 const PALETTE: [Color; 3] = [colors::PEACOCK, colors::SEAWEED, colors::MAHOGANY];
 
-
 struct Segment {
     from: Vec2,
     to: Vec2,
     ctrl: Vec2,
 }
 
-
 struct Strip {
     segs: Vec<Segment>,
     color: Color,
 }
-
 
 #[derive(AppState)]
 struct State {
@@ -74,7 +71,6 @@ struct State {
     pub displacement_pos: f32,
     pub displacement_dir: enums::Direction,
 }
-
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (rng, seed) = get_rng(None);
@@ -98,7 +94,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     }
 }
 
-
 fn add_strip(state: &mut State) {
     let mut strip = Strip {
         segs: vec![],
@@ -117,7 +112,6 @@ fn add_strip(state: &mut State) {
     state.cursor.x = 0.0;
 }
 
-
 fn calc_displacement_factor(seg_y_pos: &f32, displacement_pos: &f32, work_size: &Vec2) -> f32 {
     // Return a displacement factor based on the vertical distance of the segment from displacement_pos
     let distance = (seg_y_pos - displacement_pos).abs() / work_size.y;
@@ -128,7 +122,6 @@ fn calc_displacement_factor(seg_y_pos: &f32, displacement_pos: &f32, work_size: 
     // Revisit on whether there's a better approach
     0.00001
 }
-
 
 fn move_displacement(state: &mut State) {
     if state.displacement_pos <= 0.0 {
@@ -146,7 +139,6 @@ fn move_displacement(state: &mut State) {
     }
 }
 
-
 fn choose_color() -> Color {
     if !MONOCHROME {
         let mut rng = thread_rng();
@@ -156,7 +148,6 @@ fn choose_color() -> Color {
     }
     Color::BLACK
 }
-
 
 fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
@@ -196,7 +187,6 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 .rng
                 .gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
 
-
             path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
                 .color(strip.color)
                 .stroke(STRIP_STROKE);
@@ -208,26 +198,28 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     gfx.render(draw);
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
-    let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-        // let win_config = get_common_win_config().high_dpi(true).size(
-        // ScreenDimensions::RES_4KISH.x as i32,
-        // ScreenDimensions::RES_4KISH.y as i32,
-        // ScreenDimensions::RES_HDPLUS.x as i32,
-        // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
-        // ScreenDimensions::DEFAULT.x as i32,
-        // ScreenDimensions::DEFAULT.y as i32,
-    );
+    let win_config = get_common_win_config()
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_size(
+            // let win_config = get_common_win_config().high_dpi(true).size(
+            // ScreenDimensions::RES_4KISH.x as i32,
+            // ScreenDimensions::RES_4KISH.y as i32,
+            // ScreenDimensions::RES_HDPLUS.x as i32,
+            // ScreenDimensions::RES_HDPLUS.y as i32,
+            ScreenDimensions::RES_1080P.x as u32,
+            ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::DEFAULT.x as i32,
+            // ScreenDimensions::DEFAULT.y as i32,
+        );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
-    let win_config = win_config.title("hilo_strips.displacement");
+    let win_config = win_config.set_title("hilo_strips.displacement");
     set_html_bgcolor(CLEAR_COLOR);
 
     // notan::init()

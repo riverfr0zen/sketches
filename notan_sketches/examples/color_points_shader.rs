@@ -17,7 +17,6 @@ const COLOR2: Color = colors::SALMON;
 const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 const UPDATE_STEP: f32 = 5.0;
 
-
 #[uniform]
 #[derive(Copy, Clone)]
 struct ColorSourceUniform {
@@ -30,7 +29,6 @@ struct ColorSource {
     ubo: Buffer,
     created: f32,
 }
-
 
 #[derive(AppState)]
 struct State {
@@ -77,7 +75,6 @@ fn prep_ubos(
 
     (common_ubo, bg_color_ubo, color1_ubo, color2_ubo)
 }
-
 
 fn init(gfx: &mut Graphics) -> State {
     let pipeline =
@@ -128,7 +125,6 @@ fn init(gfx: &mut Graphics) -> State {
     }
 }
 
-
 fn update_color(color: &mut ColorSource, time_since_init: f32, rng: &mut Random) {
     if time_since_init - color.created > UPDATE_STEP {
         color.uniform.pos.x = rng.gen_range(0.0..1.0);
@@ -137,26 +133,17 @@ fn update_color(color: &mut ColorSource, time_since_init: f32, rng: &mut Random)
     }
 }
 
-
 fn update(app: &mut App, state: &mut State) {
     state.hot_mgr.update();
 
-    update_color(
-        &mut state.color1,
-        app.timer.time_since_init(),
-        &mut state.rng,
-    );
+    update_color(&mut state.color1, app.timer.elapsed_f32(), &mut state.rng);
 
-    update_color(
-        &mut state.color2,
-        app.timer.time_since_init(),
-        &mut state.rng,
-    );
+    update_color(&mut state.color2, app.timer.elapsed_f32(), &mut state.rng);
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, CLEAR_COLOR);
-    let u_time = app.timer.time_since_init();
+    let u_time = app.timer.elapsed_f32();
     let common_data = CommonData::new(u_time, WORK_SIZE);
 
     if state.hot_mgr.needs_reload() {
@@ -190,11 +177,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         ],
     );
 
-
     draw.image(&state.srt.rt)
         .position(0.0, 0.0)
         .size(WORK_SIZE.x, WORK_SIZE.y);
-
 
     gfx.render(draw);
 
@@ -207,19 +192,19 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     // let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-    let win_config = get_common_win_config().high_dpi(true).size(
+    let win_config = get_common_win_config().set_high_dpi(true).set_size(
         // ScreenDimensions::RES_4KISH.x as i32,
         // ScreenDimensions::RES_4KISH.y as i32,
         // ScreenDimensions::RES_HDPLUS.x as i32,
         // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
+        ScreenDimensions::RES_1080P.x as u32,
+        ScreenDimensions::RES_1080P.y as u32,
         // ScreenDimensions::DEFAULT.x as i32,
         // ScreenDimensions::DEFAULT.y as i32,
     );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     set_html_bgcolor(CLEAR_COLOR);
 

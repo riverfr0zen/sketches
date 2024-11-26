@@ -9,7 +9,6 @@ const WORK_SIZE: Vec2 = Vec2::new(1920.0, 1080.0);
 const RED_VAL: f32 = 1.0;
 const GREEN_VAL: f32 = 0.5;
 
-
 // language=glsl
 const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
     r#"
@@ -30,7 +29,7 @@ const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
     };
 
     // Plot a line on Y using a value between 0.0-1.0
-    float plot(vec2 st) {    
+    float plot(vec2 st) {
         return smoothstep(0.02, 0.0, abs(st.y - st.x));
     }
 
@@ -42,7 +41,6 @@ const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
     }
 "#
 };
-
 
 const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
     r#"
@@ -58,7 +56,7 @@ const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
     };
 
     // Plot a line on Y using a value between 0.0-1.0
-    float plot(vec2 st) {    
+    float plot(vec2 st) {
         return smoothstep(0.02, 0.0, abs(st.y - st.x));
     }
 
@@ -73,7 +71,6 @@ const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
     }
 "#
 };
-
 
 #[derive(AppState)]
 struct State {
@@ -104,7 +101,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         .build()
         .unwrap();
 
-
     let common_ubo2 = gfx
         .create_uniform_buffer(1, "Common")
         .with_data(&[0.0, width as f32, height as f32])
@@ -132,7 +128,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     }
 }
 
-
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLUE);
 
@@ -158,7 +153,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         .position(50.0, 50.0)
         .size(200.0, 200.0);
 
-
     // draw second rt with second pipeline to second shader
     let rt2_draw = &mut state.rt2.create_draw();
 
@@ -178,15 +172,13 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     rt2_draw.shape_pipeline().remove();
     gfx.render_to(&state.rt2, rt2_draw);
 
-
     draw.image(&state.rt2)
         .position(50.0, 300.0)
         .size(200.0, 200.0);
 
-
     gfx.render(draw);
 
-    let u_time = app.timer.time_since_init();
+    let u_time = app.timer.elapsed_f32();
     gfx.set_buffer_data(&state.common_ubo, &[u_time, WORK_SIZE.x, WORK_SIZE.y]);
     gfx.set_buffer_data(&state.common_ubo2, &[u_time, WORK_SIZE.x, WORK_SIZE.y]);
 }
@@ -195,12 +187,12 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     let win_config = get_common_win_config()
-        .high_dpi(true)
-        .vsync(true)
-        .size(WORK_SIZE.x as i32, WORK_SIZE.y as i32);
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_size(WORK_SIZE.x as u32, WORK_SIZE.y as u32);
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     // notan::init()
     notan::init_with(init)
@@ -213,15 +205,15 @@ fn main() -> Result<(), String> {
         .build()
 }
 
-
 pub fn get_common_win_config() -> WindowConfig {
     #[cfg(not(target_arch = "wasm32"))]
-    return WindowConfig::default().resizable(true);
+    return WindowConfig::default().set_resizable(true);
 
     #[cfg(target_arch = "wasm32")]
-    return WindowConfig::default().resizable(true).maximized(true);
+    return WindowConfig::default()
+        .set_resizable(true)
+        .set_maximized(true);
 }
-
 
 /// Set up a Draw with some common basics
 pub fn get_draw_setup(
@@ -232,7 +224,6 @@ pub fn get_draw_setup(
 ) -> Draw {
     let (width, height) = gfx.size();
     let win_size = vec2(width as f32, height as f32);
-
 
     let mut draw = gfx.create_draw();
     draw.clear(clear_color);
@@ -246,7 +237,6 @@ pub fn get_draw_setup(
     }
     return draw;
 }
-
 
 /// This returns a projection that keeps the aspect ratio while scaling
 /// and fitting the content in our window
@@ -268,7 +258,6 @@ pub fn get_aspect_fit_projection(win_size: Vec2, work_size: Vec2) -> (Mat4, f32)
     let translation = Mat4::from_translation(position);
     (projection * translation * scale, ratio)
 }
-
 
 /// Returns a projection for scaling content to the window size WITHOUT maintaining aspect ratio
 /// (i.e. content will be stretched to fit window)

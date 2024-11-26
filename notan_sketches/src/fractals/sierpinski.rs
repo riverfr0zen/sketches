@@ -7,7 +7,6 @@ use notan_touchy::{TouchGesture, TouchState};
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 
-
 #[derive(AppState)]
 pub struct State {
     pub max_depth: usize,
@@ -52,12 +51,9 @@ pub fn init(gfx: &mut Graphics) -> State {
     State::new(gfx)
 }
 
-
 pub fn event(app: &mut App, state: &mut State, event: Event) {
     state.events_focus.detect(&event);
-    let gesture = state
-        .touch
-        .get_gesture(&app.timer.time_since_init(), &event);
+    let gesture = state.touch.get_gesture(&app.timer.elapsed_f32(), &event);
 
     match event {
         Event::MouseUp { .. } => {
@@ -90,7 +86,6 @@ pub fn event(app: &mut App, state: &mut State, event: Event) {
     }
 }
 
-
 pub fn update(app: &mut App, state: &mut State) {
     if state.events_focus.has_focus() {
         // if app.keyboard.is_down(KeyCode::W) {
@@ -112,7 +107,6 @@ pub fn update(app: &mut App, state: &mut State) {
         }
     }
 }
-
 
 pub fn draw_gasket(
     draw: &mut Draw,
@@ -160,7 +154,6 @@ pub fn draw_gasket(
         }
     }
 }
-
 
 pub fn draw_bushy_gasket(
     draw: &mut Draw,
@@ -210,7 +203,6 @@ pub fn draw_bushy_gasket(
     }
 }
 
-
 fn vary_triangle(a: Vec2, b: Vec2, c: Vec2) -> (Vec2, Vec2, Vec2) {
     (
         vec2(a.x * 1.2, a.y * 1.0),
@@ -218,7 +210,6 @@ fn vary_triangle(a: Vec2, b: Vec2, c: Vec2) -> (Vec2, Vec2, Vec2) {
         vec2(c.x * 1.0, c.y * 1.0),
     )
 }
-
 
 pub fn draw_varied_gasket(
     draw: &mut Draw,

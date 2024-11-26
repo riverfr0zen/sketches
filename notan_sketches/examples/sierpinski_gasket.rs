@@ -5,10 +5,8 @@ use notan::prelude::*;
 use notan_sketches::fractals::sierpinski::{draw_gasket, event, init, update, State};
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, set_html_bgcolor};
 
-
 // const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
-
 
 fn draw(
     gfx: &mut Graphics,
@@ -29,10 +27,9 @@ fn draw(
     // log::debug!("fps: {}", app.timer.fps().round());
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
     set_html_bgcolor(Color::WHITE);
     // notan::init()
     notan::init_with(init)

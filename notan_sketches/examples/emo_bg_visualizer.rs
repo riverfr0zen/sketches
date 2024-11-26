@@ -19,7 +19,6 @@ use notan_sketches::emotion_bg_visualizer::visualizers::VisualizerSelection;
 use notan_sketches::emotion_bg_visualizer::{get_work_size, EmoVisualizerFull};
 use FontFamily::{Monospace, Proportional};
 
-
 // See details at https://stackoverflow.com/a/42764117
 const EMOCAT_DOCS: [&'static str; 7] = [
     include_str!("assets/lb_bronte01.json"),
@@ -46,7 +45,6 @@ const MAX_FPS: u8 = 240;
 // const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::Tiles;
 const DEFAULT_VISUALIZER: VisualizerSelection = VisualizerSelection::TiledShaders;
 
-
 #[derive(PartialEq)]
 enum View {
     HOME,
@@ -54,7 +52,6 @@ enum View {
     READ,
     SETTINGS,
 }
-
 
 struct ReadingViewState {
     doc_index: usize,
@@ -69,7 +66,6 @@ impl Default for ReadingViewState {
         }
     }
 }
-
 
 #[derive(AppState)]
 struct State {
@@ -134,7 +130,6 @@ impl State {
     }
 }
 
-
 fn configure_egui_fonts(title_font_bytes: &'static [u8]) -> FontDefinitions {
     // Start with the default fonts (we will be adding to them rather than replacing them).
     let mut egui_fonts = egui::FontDefinitions::default();
@@ -163,7 +158,6 @@ fn configure_egui_fonts(title_font_bytes: &'static [u8]) -> FontDefinitions {
     egui_fonts
 }
 
-
 fn init(gfx: &mut Graphics) -> State {
     let font_bytes = include_bytes!(
         // "./assets/fonts/Ubuntu-B.ttf"
@@ -177,7 +171,6 @@ fn init(gfx: &mut Graphics) -> State {
     let title_font = gfx.create_font(title_font_bytes).unwrap();
 
     let egui_fonts = configure_egui_fonts(title_font_bytes);
-
 
     let emodocs: Vec<EmocatOutputDoc> = EMOCAT_DOCS
         .iter()
@@ -204,7 +197,6 @@ fn init(gfx: &mut Graphics) -> State {
         .from_image(include_bytes!("../examples/assets/tiles/tile3_4k.png"))
         .build()
         .unwrap();
-
 
     let state = State {
         view: View::HOME,
@@ -249,7 +241,6 @@ fn init(gfx: &mut Graphics) -> State {
     state
 }
 
-
 fn update_read_view(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
@@ -279,9 +270,8 @@ fn update_read_view(app: &mut App, state: &mut State) {
     state.visualizer.update_visualization();
 }
 
-
 fn handle_read_view_touch_events(app: &mut App, state: &mut State, evt: Event) {
-    let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
+    let gesture = state.touch.get_gesture(&app.timer.elapsed_f32(), &evt);
 
     if gesture.is_some() {
         // if !state.help_modal.handle_first_touch_with_help() {
@@ -307,7 +297,6 @@ fn handle_read_view_touch_events(app: &mut App, state: &mut State, evt: Event) {
     }
 }
 
-
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::M) {
         log::debug!("m");
@@ -320,7 +309,6 @@ fn update(app: &mut App, state: &mut State) {
     }
 }
 
-
 fn draw_title(draw: &mut Draw, state: &mut State, work_size: Vec2) {
     let emodoc = &state.emodocs[state.reading.doc_index];
     state.visualizer.draw_title(
@@ -331,7 +319,6 @@ fn draw_title(draw: &mut Draw, state: &mut State, work_size: Vec2) {
         work_size,
     );
 }
-
 
 fn draw_paragraph(draw: &mut Draw, state: &mut State, work_size: Vec2) {
     let emodoc = &state.emodocs[state.reading.doc_index];
@@ -360,7 +347,6 @@ fn draw_read_help(draw: &mut Draw, state: &mut State, work_size: Vec2) {
         );
     }
 }
-
 
 fn draw_read_view(
     app: &mut App,
@@ -397,7 +383,6 @@ fn logo() -> TextStyle {
     TextStyle::Name("Logo".into())
 }
 
-
 #[inline]
 fn analysis_panel_title() -> TextStyle {
     TextStyle::Name("AnalysisPanelTitle".into())
@@ -417,7 +402,6 @@ fn small_button() -> TextStyle {
 fn author_menu_text() -> TextStyle {
     TextStyle::Name("AuthorMenuText".into())
 }
-
 
 // Based on: https://github.com/emilk/egui/blob/master/examples/custom_font_style/src/main.rs
 //
@@ -480,7 +464,6 @@ fn configure_text_styles(ctx: &egui::Context, work_size: Vec2) {
     ctx.request_repaint();
 }
 
-
 // Based on: https://github.com/emilk/egui/blob/master/examples/custom_font/src/main.rs
 fn configure_custom_fonts(ctx: &egui::Context, state: &mut State) {
     // Kind of a hack right now because I don't know a better way to avoid setting up
@@ -490,7 +473,6 @@ fn configure_custom_fonts(ctx: &egui::Context, state: &mut State) {
     // Tell egui to use these fonts:
     ctx.set_fonts(state.egui_fonts.clone());
 }
-
 
 // Based on https://github.com/Nazariglez/notan/blob/main/examples/input_mouse_events.rs
 fn event(app: &mut App, state: &mut State, evt: Event) {
@@ -509,7 +491,6 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
     }
 }
 
-
 fn ui_common_setup(ctx: &Context, state: &mut State, work_size: Vec2) -> egui::Color32 {
     // Switch to light mode
     ctx.set_visuals(egui::Visuals::light());
@@ -527,7 +508,6 @@ fn ui_common_setup(ctx: &Context, state: &mut State, work_size: Vec2) -> egui::C
     let clear_color_u8 = CLEAR_COLOR.rgba_u8();
     egui::Color32::from_rgb(clear_color_u8[0], clear_color_u8[1], clear_color_u8[2])
 }
-
 
 fn draw_main_nav(ui: &mut Ui, state: &mut State) {
     fn _make_small_button(
@@ -548,7 +528,6 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
     fn make_small_analysis_button(text: &str) -> egui::Button {
         _make_small_button(text, ANALYSIS_COLOR, egui::Color32::BLACK)
     }
-
 
     ui.horizontal(|ui| {
         if state.view != View::HOME {
@@ -586,7 +565,6 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
     });
 }
 
-
 fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) {
     if state.show_analysis {
         let title_text = RichText::new("Analysis Details")
@@ -602,14 +580,13 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
             .default_width(work_size.x * 0.2)
             .collapsible(false)
             .frame(egui::Frame::none().fill(panel_color).inner_margin(
-                egui::style::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
+                crate::epaint::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
             ))
             .show(ctx, |ui| {
                 state.visualizer.egui_metrics(ui, &analysis_panel_title);
             });
     }
 }
-
 
 // First time creating a fn that uses a a closure. Useful resources around closures
 // and passing them as fn params:
@@ -636,7 +613,7 @@ fn draw_with_main_panel<F>(
     let panel_inner_margin_h = work_size.y * 0.02;
     let panel_frame = egui::Frame::none()
         // .fill(ui_fill)
-        .inner_margin(egui::style::Margin {
+        .inner_margin(crate::epaint::Margin {
             left: panel_inner_margin_w,
             right: panel_inner_margin_w,
             top: panel_inner_margin_h,
@@ -651,7 +628,7 @@ fn draw_with_main_panel<F>(
                 let heading_frame =
                     egui::Frame::none()
                         .fill(ui_fill)
-                        .inner_margin(egui::style::Margin {
+                        .inner_margin(crate::epaint::Margin {
                             left: 0.0,
                             right: 0.0,
                             top: 0.0,
@@ -671,7 +648,6 @@ fn draw_with_main_panel<F>(
             });
         });
 }
-
 
 fn draw_about_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let mut output = plugins.egui(|ctx| {
@@ -695,11 +671,8 @@ fn draw_about_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State,
     });
 
     output.clear_color(CLEAR_COLOR);
-    if output.needs_repaint() {
-        gfx.render(&output);
-    }
+    gfx.render(&output);
 }
-
 
 fn draw_settings_view(
     gfx: &mut Graphics,
@@ -720,7 +693,7 @@ fn draw_settings_view(
                 let mut heading_frame =
                     egui::Frame::none()
                         .fill(ui_fill)
-                        .inner_margin(egui::style::Margin {
+                        .inner_margin(crate::epaint::Margin {
                             left: 0.0,
                             right: 0.0,
                             top: 0.0,
@@ -773,11 +746,8 @@ fn draw_settings_view(
     });
 
     output.clear_color(CLEAR_COLOR);
-    if output.needs_repaint() {
-        gfx.render(&output);
-    }
+    gfx.render(&output);
 }
-
 
 fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, work_size: Vec2) {
     let mut output = plugins.egui(|ctx| {
@@ -793,7 +763,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                 let heading_frame =
                     egui::Frame::none()
                         .fill(ui_fill)
-                        .inner_margin(egui::style::Margin {
+                        .inner_margin(crate::epaint::Margin {
                             left: 0.0,
                             right: 0.0,
                             top: 0.0,
@@ -815,7 +785,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                             let button_top_margin = work_size.y * 0.01;
                             let title_frame = egui::Frame::none()
                                 // .fill(egui::Color32::RED)
-                                .inner_margin(egui::style::Margin {
+                                .inner_margin(crate::epaint::Margin {
                                     left: 0.0,
                                     right: 0.0,
                                     top: button_top_margin,
@@ -826,7 +796,6 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                             style.spacing.button_padding =
                                 egui::Vec2::new(button_padding_x, button_padding_y);
                             ctx.set_style(style);
-
 
                             for (doc_index, emodoc) in state.emodocs.iter().enumerate() {
                                 // ui.heading(&emodoc.title);
@@ -855,11 +824,8 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
     });
 
     output.clear_color(CLEAR_COLOR);
-    if output.needs_repaint() {
-        gfx.render(&output);
-    }
+    gfx.render(&output);
 }
-
 
 fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
     let work_size = get_work_size(gfx);
@@ -895,7 +861,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
         }
     }
 
-
     match state.view {
         View::READ => draw_read_view(app, gfx, plugins, state, work_size),
         View::ABOUT => draw_about_view(gfx, plugins, state, work_size),
@@ -907,22 +872,21 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
     // log::debug!("fps: {}", app.timer.fps().round());
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     // let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-    let win_config = get_common_win_config().high_dpi(true).size(
+    let win_config = get_common_win_config().set_high_dpi(true).set_size(
         // ScreenDimensions::RES_HDPLUS.x as i32,
         // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
+        ScreenDimensions::RES_1080P.x as u32,
+        ScreenDimensions::RES_1080P.y as u32,
         // ScreenDimensions::DEFAULT.x as i32,
         // ScreenDimensions::DEFAULT.y as i32,
     );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     set_html_bgcolor(CLEAR_COLOR);
 

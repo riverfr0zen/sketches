@@ -13,10 +13,11 @@ use notan_sketches::utils::get_aspect_fit_projection;
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = WindowConfig::default().maximized(true).resizable(true);
+    let win_config = WindowConfig::default()
+        .set_maximized(true)
+        .set_resizable(true);
 
     notan::init()
         .add_config(win_config)
@@ -24,7 +25,6 @@ fn main() -> Result<(), String> {
         .draw(draw)
         .build()
 }
-
 
 fn draw(gfx: &mut Graphics) {
     let (width, height) = gfx.size();

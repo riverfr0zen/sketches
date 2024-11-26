@@ -10,7 +10,6 @@ const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 const RED_VAL: f32 = 1.0;
 const GREEN_VAL: f32 = 0.5;
 
-
 // Based on https://thebookofshaders.com/03/
 // language=glsl
 const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
@@ -41,7 +40,6 @@ const COLOR_FRAG: ShaderSource = notan::fragment_shader! {
 "#
 };
 
-
 // Based on https://thebookofshaders.com/05/
 // language=glsl
 const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
@@ -58,7 +56,7 @@ const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
     };
 
     // Plot a line on Y using a value between 0.0-1.0
-    float plot(vec2 st) {    
+    float plot(vec2 st) {
         return smoothstep(0.02, 0.0, abs(st.y - st.x));
     }
 
@@ -73,7 +71,6 @@ const PLOT_FRAG: ShaderSource = notan::fragment_shader! {
     }
 "#
 };
-
 
 #[derive(AppState)]
 struct State {
@@ -104,7 +101,6 @@ fn init(gfx: &mut Graphics) -> State {
         .with_data(&[RED_VAL - 0.5, GREEN_VAL + 0.5])
         .build()
         .unwrap();
-
 
     let (width, height) = gfx.device.size();
 
@@ -139,7 +135,6 @@ fn init(gfx: &mut Graphics) -> State {
     }
 }
 
-
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLUE);
 
@@ -148,7 +143,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         &state.pipeline,
         vec![&state.red_green_ubo, &state.common_ubo],
     );
-
 
     draw.image(&state.red_green_srt.rt)
         .position(50.0, 50.0)
@@ -162,7 +156,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         .position(550.0, 50.0)
         .size(600.0, 100.0);
 
-
     // blue_green_srt with blue_green_ubo & common_ubo
     state.blue_green_srt.draw_filled(
         gfx,
@@ -173,7 +166,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     draw.image(&state.blue_green_srt.rt)
         .position(1200.0, 50.0)
         .size(100.0, 100.0);
-
 
     // srt with red_green_ubo & common_ubo again
     state.red_green_srt.draw_filled(
@@ -186,7 +178,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         .position(1350.0, 50.0)
         .size(100.0, 100.0);
 
-
     // plot_srt with common_ubo2
     state
         .plot_srt
@@ -195,7 +186,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     draw.image(&state.plot_srt.rt)
         .position(1500.0, 50.0)
         .size(100.0, 100.0);
-
 
     // boxes srt with red_green_ubo & common_ubo
     state.shapes_srt.draw(
@@ -238,10 +228,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         .position(50.0, 200.0)
         .size(200.0, 200.0);
 
-
     gfx.render(draw);
 
-    let u_time = app.timer.time_since_init();
+    let u_time = app.timer.elapsed_f32();
     gfx.set_buffer_data(&state.common_ubo, &[u_time, WORK_SIZE.x, WORK_SIZE.y]);
     gfx.set_buffer_data(&state.common_ubo2, &[u_time, WORK_SIZE.x, WORK_SIZE.y]);
 }
@@ -249,20 +238,23 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
-    let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-        // let win_config = get_common_win_config().high_dpi(true).size(
-        // ScreenDimensions::RES_4KISH.x as i32,
-        // ScreenDimensions::RES_4KISH.y as i32,
-        // ScreenDimensions::RES_HDPLUS.x as i32,
-        // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
-        // ScreenDimensions::DEFAULT.x as i32,
-        // ScreenDimensions::DEFAULT.y as i32,
-    );
+    let win_config = get_common_win_config()
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_size(
+            // let win_config = get_common_win_config().set_high_dpi(true).size(
+            // ScreenDimensions::RES_4KISH.x as i32,
+            // ScreenDimensions::RES_4KISH.y as i32,
+            // ScreenDimensions::RES_HDPLUS.x as i32,
+            // ScreenDimensions::RES_HDPLUS.y as i32,
+            ScreenDimensions::RES_1080P.x as u32,
+            ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::DEFAULT.x as i32,
+            // ScreenDimensions::DEFAULT.y as i32,
+        );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     // notan::init()
     notan::init_with(init)

@@ -42,34 +42,28 @@ fn to_phys_scale(gfx_length: f32) -> Real {
     gfx_length / PHYS_SCALE
 }
 
-
 /// For our purposes here this is just an alias for to_phys_scale
 fn to_phys_x(gfx_pos: f32) -> Real {
     return to_phys_scale(gfx_pos);
 }
-
 
 /// Compensates for coordinate system differences (from top-bottom to bottom-top)
 fn to_phys_y(gfx_pos: f32) -> Real {
     return to_phys_scale(WORK_SIZE.y - gfx_pos);
 }
 
-
 fn to_gfx_scale(physics_length: Real) -> f32 {
     return physics_length * PHYS_SCALE;
 }
-
 
 fn to_gfx_x(physics_pos: Real) -> f32 {
     return to_gfx_scale(physics_pos);
 }
 
-
 /// Compensates for coordinate system differences (from bottom-top to top-bottom)
 fn to_gfx_y(physics_pos: Real) -> f32 {
     return WORK_SIZE.y - to_gfx_scale(physics_pos);
 }
-
 
 #[derive(Debug, Clone, Copy)]
 enum SimulationMode {
@@ -77,7 +71,6 @@ enum SimulationMode {
     RUNNING,
     STEP,
 }
-
 
 #[derive(AppState)]
 struct State {
@@ -136,7 +129,6 @@ impl Default for State {
         let ball_body_handle = rigid_body_set.insert(rigid_body);
         collider_set.insert_with_parent(collider, ball_body_handle, &mut rigid_body_set);
 
-
         /* Create second bouncing ball. */
         let rigid_body2 = RigidBodyBuilder::dynamic()
             .translation(vector![
@@ -149,7 +141,6 @@ impl Default for State {
             .build();
         let ball2_body_handle = rigid_body_set.insert(rigid_body2);
         collider_set.insert_with_parent(collider2, ball2_body_handle, &mut rigid_body_set);
-
 
         /* Create other structures necessary for the simulation. */
         let gravity = vector![0.0, GRAVITY];
@@ -187,7 +178,6 @@ impl Default for State {
     }
 }
 
-
 // fn init(gfx: &mut Graphics) -> State {
 fn init() -> State {
     log::info!("Press \'x\' to reset");
@@ -198,7 +188,6 @@ fn init() -> State {
     let state = State::default();
     state
 }
-
 
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::X) {
@@ -248,7 +237,6 @@ fn update(app: &mut App, state: &mut State) {
     }
 }
 
-
 fn draw(
     //app: &mut App,
     gfx: &mut Graphics,
@@ -256,12 +244,10 @@ fn draw(
 ) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::OLIVE);
 
-
     draw.rect((GROUND_POS.x, GROUND_POS.y), (GROUND_SIZE.x, GROUND_SIZE.y))
         .color(Color::BLUE)
         // .stroke(1.0);
         .fill();
-
 
     let ball_body = &state.rigid_body_set[state.ball_body_handle];
     let ball2_body = &state.rigid_body_set[state.ball2_body_handle];
@@ -285,7 +271,6 @@ fn draw(
         .color(Color::ORANGE)
         .fill();
 
-
     draw.circle(BALL_RADIUS)
         // .position(100.0, ball_body.translation().y)
         .position(
@@ -299,7 +284,6 @@ fn draw(
     gfx.render(&draw);
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
     // Trying to call .vsync(true) in Wayland results in a crash
@@ -312,7 +296,7 @@ fn main() -> Result<(), String> {
     // https://github.com/Nazariglez/notan/issues/187
     //
     // let win_config = get_common_win_config().vsync(true).high_dpi(true);
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
@@ -323,7 +307,6 @@ fn main() -> Result<(), String> {
         .update(update)
         .build()
 }
-
 
 // Original example code
 //

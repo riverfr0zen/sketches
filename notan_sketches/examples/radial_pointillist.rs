@@ -410,7 +410,7 @@ impl State {
 
 fn create_circle_texture(gfx: &mut Graphics, radius: f32, color: Color) -> Texture {
     let rt = gfx
-        .create_render_texture((radius * 2.0) as i32, (radius * 2.0) as i32)
+        .create_render_texture((radius * 2.0) as u32, (radius * 2.0) as u32)
         .build()
         .unwrap();
     let mut draw = gfx.create_draw();
@@ -605,7 +605,7 @@ fn open_source_code(app: &mut App) {
 fn event(app: &mut App, state: &mut State, evt: Event) {
     state.events_focus.detect(&evt);
 
-    let gesture = state.touch.get_gesture(&app.timer.time_since_init(), &evt);
+    let gesture = state.touch.get_gesture(&app.timer.elapsed_f32(), &evt);
     // log::debug!("gesture found: {:?}", gesture);
 
     match evt {
@@ -648,7 +648,7 @@ fn update(app: &mut App, state: &mut State) {
         }
     }
 
-    let curr_time = app.timer.time_since_init();
+    let curr_time = app.timer.elapsed_f32();
 
     state.draw_alpha = (curr_time * state.settings.alpha_freq).sin().abs();
 
@@ -809,20 +809,23 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
-    let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-        // let win_config = get_common_win_config().high_dpi(true).size(
-        // ScreenDimensions::RES_4KISH.x as i32,
-        // ScreenDimensions::RES_4KISH.y as i32,
-        // ScreenDimensions::RES_HDPLUS.x as i32,
-        // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
-        // ScreenDimensions::DEFAULT.x as i32,
-        // ScreenDimensions::DEFAULT.y as i32,
-    );
+    let win_config = get_common_win_config()
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_size(
+            // let win_config = get_common_win_config().high_dpi(true).size(
+            // ScreenDimensions::RES_4KISH.x as i32,
+            // ScreenDimensions::RES_4KISH.y as i32,
+            // ScreenDimensions::RES_HDPLUS.x as i32,
+            // ScreenDimensions::RES_HDPLUS.y as i32,
+            ScreenDimensions::RES_1080P.x as u32,
+            ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::DEFAULT.x as i32,
+            // ScreenDimensions::DEFAULT.y as i32,
+        );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     set_html_bgcolor(CLEAR_COLOR);
 
