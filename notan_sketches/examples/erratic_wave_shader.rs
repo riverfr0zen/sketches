@@ -17,7 +17,6 @@ const WORK_SIZE: Vec2 = ScreenDimensions::RES_1080P;
 const FRAG: ShaderSource =
     notan::include_fragment_shader!("examples/assets/shaders/erratic_wave.frag.glsl");
 
-
 #[derive(AppState)]
 struct State {
     pub pipeline: Pipeline,
@@ -57,11 +56,10 @@ fn update(state: &mut State) {
     state.hot_mgr.update();
 }
 
-
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, WORK_SIZE, false, Color::BLACK);
 
-    let u_time = app.timer.time_since_init();
+    let u_time = app.timer.elapsed_f32();
     let common_data = CommonData::new(u_time, WORK_SIZE);
 
     #[cfg(debug_assertions)]
@@ -93,17 +91,20 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
-    let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-        // let win_config = get_common_win_config().high_dpi(true).size(
-        // ScreenDimensions::RES_4KISH.x as i32,
-        // ScreenDimensions::RES_4KISH.y as i32,
-        // ScreenDimensions::RES_HDPLUS.x as i32,
-        // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
-        // ScreenDimensions::DEFAULT.x as i32,
-        // ScreenDimensions::DEFAULT.y as i32,
-    );
+    let win_config = get_common_win_config()
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_size(
+            // let win_config = get_common_win_config().high_dpi(true).size(
+            // ScreenDimensions::RES_4KISH.x as i32,
+            // ScreenDimensions::RES_4KISH.y as i32,
+            // ScreenDimensions::RES_HDPLUS.x as i32,
+            // ScreenDimensions::RES_HDPLUS.y as i32,
+            ScreenDimensions::RES_1080P.x as u32,
+            ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::DEFAULT.x as i32,
+            // ScreenDimensions::DEFAULT.y as i32,
+        );
 
     set_html_bgcolor(Color::BLACK);
 

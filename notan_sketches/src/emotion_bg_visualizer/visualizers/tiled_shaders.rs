@@ -31,7 +31,6 @@ struct Tile {
     emocolor: EmoColor,
 }
 
-
 impl Tile {
     fn new(emocolor: &EmoColor) -> Self {
         Self {
@@ -43,7 +42,6 @@ impl Tile {
         }
     }
 }
-
 
 pub struct TilesLayout {
     tile_size: Vec2,
@@ -62,7 +60,6 @@ impl TilesLayout {
         }
     }
 }
-
 
 pub struct ShaderBundleStore {
     bundles: Vec<TileShaderBundle>,
@@ -161,7 +158,6 @@ fn get_sentiment_enhanced_color(
     Color::from_rgb(srgb.red, srgb.green, srgb.blue)
 }
 
-
 impl TiledShadersVisualizer {
     pub fn new(
         gfx: &mut Graphics,
@@ -205,12 +201,10 @@ impl TiledShadersVisualizer {
         options
     }
 
-
     pub fn update_text_color(&mut self) {
         // self.text_color = get_optimal_text_color(&self.bg_color);
         self.text_color = get_optimal_text_color(&self.bg_color_for_text);
     }
-
 
     fn manage_cols_in_row(&mut self, row: usize) {
         let reprs_cols = self.layout.reprs[row].len();
@@ -336,7 +330,7 @@ impl TiledShadersVisualizer {
                 gfx.set_buffer_data(
                     &shader_bundle.common_ubo,
                     &[
-                        app.timer.time_since_init(),
+                        app.timer.elapsed_f32(),
                         // The resolution needs to be the res. of the rt, not the work_size of the entire app
                         shader_bundle.srt.rt.width(),
                         shader_bundle.srt.rt.height(),
@@ -365,12 +359,10 @@ impl TiledShadersVisualizer {
     }
 }
 
-
 impl EmoVisualizer for TiledShadersVisualizer {
     fn get_enum(&self) -> VisualizerSelection {
         VisualizerSelection::TiledShaders
     }
-
 
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
         self.model = None;
@@ -400,7 +392,6 @@ impl EmoVisualizer for TiledShadersVisualizer {
         self.refresh_layout = false;
     }
 
-
     fn update_model(&mut self, analysis: &EmocatTextAnalysis) {
         let model = TopEmotionsModel::from_analysis(&analysis);
         let top_emocolors = model.get_top_emocolors(&ColorMapping::PLUTCHIK);
@@ -419,7 +410,6 @@ impl EmoVisualizer for TiledShadersVisualizer {
         self.update_text_color();
     }
 
-
     fn draw(&mut self, app: &mut App, gfx: &mut Graphics, draw: &mut Draw) {
         // The following call to clear() is important when rendering draw & egui output together.
         draw.clear(self.transition.color);
@@ -430,7 +420,6 @@ impl EmoVisualizer for TiledShadersVisualizer {
     fn get_text_color(&self) -> Color {
         self.text_color
     }
-
 
     fn draw_paragraph(&mut self, draw: &mut Draw, font: &Font, text: &str, work_size: Vec2) {
         let textbox_width = work_size.x * 0.75;

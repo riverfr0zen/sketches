@@ -7,7 +7,6 @@ use web_sys;
 
 const HELP_PANEL_COLOR: Color = Color::GRAY;
 
-
 /// This returns a projection that keeps the aspect ratio while scaling
 /// and fitting the content in our window
 /// It also returns the ratio in case we need it to calculate positions
@@ -29,7 +28,6 @@ pub fn get_aspect_fit_projection(win_size: Vec2, work_size: Vec2) -> (Mat4, f32)
     (projection * translation * scale, ratio)
 }
 
-
 /// Returns a projection for scaling content to the window size WITHOUT maintaining aspect ratio
 /// (i.e. content will be stretched to fit window)
 ///
@@ -44,7 +42,6 @@ pub fn get_scaling_projection(win_size: Vec2, work_size: Vec2) -> Mat4 {
     ));
     projection * scale
 }
-
 
 pub fn set_html_bgcolor(clear_color: Color) {
     log::debug!("Setting html clear color to {:?}", clear_color);
@@ -65,7 +62,6 @@ pub fn set_html_bgcolor(clear_color: Color) {
         );
     }
 }
-
 
 /// Return an appropriate work-size based on the device screen.
 ///
@@ -107,7 +103,6 @@ pub fn get_work_size_for_screen(app: &mut App, gfx: &mut Graphics) -> Vec2 {
     work_size
 }
 
-
 /// Set up a Draw with some common basics
 pub fn get_draw_setup(
     gfx: &mut Graphics,
@@ -117,7 +112,6 @@ pub fn get_draw_setup(
 ) -> Draw {
     let (width, height) = gfx.size();
     let win_size = vec2(width as f32, height as f32);
-
 
     let mut draw = gfx.create_draw();
     draw.clear(clear_color);
@@ -132,15 +126,13 @@ pub fn get_draw_setup(
     return draw;
 }
 
-
 pub fn get_common_win_config() -> WindowConfig {
     #[cfg(not(target_arch = "wasm32"))]
-    return WindowConfig::default().resizable(true);
+    return WindowConfig::default().set_resizable(true);
 
     #[cfg(target_arch = "wasm32")]
     return WindowConfig::default().resizable(true).maximized(true);
 }
-
 
 #[non_exhaustive]
 pub struct ScreenDimensions;
@@ -159,7 +151,6 @@ impl ScreenDimensions {
     pub const RES_5K: Vec2 = vec2(5120.0, 2880.0);
     pub const RES_8K: Vec2 = vec2(7680.0, 4320.0);
 }
-
 
 /// Scale the font according to the current work size. Quite simple right now,
 /// probably lots of room for improving this.
@@ -197,7 +188,6 @@ pub fn scale_font(default_size: f32, work_size: Vec2) -> f32 {
     // log::debug!("Default, x:{} y:{}", work_size.x, work_size.y);
     return default_size;
 }
-
 
 pub fn scale_font_fullcomp(default_size: f32, work_size: Vec2) -> f32 {
     if work_size.x >= ScreenDimensions::RES_QHD.x
@@ -248,7 +238,6 @@ pub fn scale_font_fullcomp(default_size: f32, work_size: Vec2) -> f32 {
     return default_size;
 }
 
-
 pub fn modal(
     draw: &mut Draw,
     work_size: Vec2,
@@ -271,7 +260,6 @@ pub fn modal(
         .v_align_middle()
         .alpha(0.0);
     let help_bounds = draw.last_text_bounds();
-
 
     let text_y_offset = help_bounds.height * 0.5 + bg_padding_half;
     let panel_y: f32;
@@ -329,7 +317,6 @@ pub fn modal(
     panel_rect
 }
 
-
 pub struct CommonHelpModal {
     pub show_help: bool,
     pub show_touch_help: bool,
@@ -339,7 +326,6 @@ pub struct CommonHelpModal {
     pub touch_help_text: String,
     info_text: Option<String>,
 }
-
 
 impl CommonHelpModal {
     pub fn new(
@@ -388,7 +374,6 @@ impl CommonHelpModal {
     pub fn toggle_touch_help(&mut self) {
         self.show_touch_help = !self.show_touch_help
     }
-
 
     /// Returns font sizes adjusted for portrait vs landscape
     fn get_font_sizes(work_size: Vec2) -> (f32, f32) {
@@ -481,7 +466,6 @@ impl CommonHelpModal {
     }
 }
 
-
 pub fn get_rng(seed: Option<u64>) -> (Random, u64) {
     let mut rng = Random::default();
     let _seed: u64;
@@ -494,7 +478,6 @@ pub fn get_rng(seed: Option<u64>) -> (Random, u64) {
     rng.reseed(_seed);
     (rng, _seed)
 }
-
 
 pub struct CapturingTexture {
     pub render_texture: RenderTexture,
@@ -543,20 +526,20 @@ impl CapturingTexture {
     }
 
     pub fn capture(&mut self, app: &mut App, gfx: &mut Graphics) {
-        log::debug!("Beginning capture at {}", app.timer.time_since_init());
-        let filepath = format!("{}_{}.png", self.capture_to, app.timer.time_since_init());
+        log::debug!("Beginning capture at {}", app.timer.elapsed_f32());
+        let filepath = format!("{}_{}.png", self.capture_to, app.timer.elapsed_f32());
         self.render_texture.to_file(gfx, &filepath).unwrap();
         self.capture_lock = true;
     }
 
     pub fn periodic_capture(&mut self, app: &mut App, gfx: &mut Graphics) {
         if self.capture_lock {
-            self.last_capture = app.timer.time_since_init();
+            self.last_capture = app.timer.elapsed_f32();
             log::debug!("Last capture completed at {} seconds", self.last_capture);
             self.capture_lock = false;
         } else {
             if self.capture_interval > 0.0
-                && ((app.timer.time_since_init() - self.last_capture) > self.capture_interval)
+                && ((app.timer.elapsed_f32() - self.last_capture) > self.capture_interval)
             {
                 self.capture(app, gfx);
                 self.num_captures += 1;
@@ -564,7 +547,6 @@ impl CapturingTexture {
         }
     }
 }
-
 
 pub struct EventsFocus(pub bool);
 

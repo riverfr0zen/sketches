@@ -15,7 +15,7 @@ For this repo, `.cargo/config.toml`` is ignored in `sketches/.gitignore`
 
 # IMPORTANT notes on updating Notan
 
-When updating `notan` to a new version, make sure to upgrade across all notan-using packages (notan_sketches AND notan_touch)
+When updating `notan` to a new version, make sure to upgrade across all notan-using packages (notan_sketches AND notan_touchy)
 
 
 # Build commands
@@ -125,3 +125,8 @@ The second mapping will come from the "art therapy" world, as described in [this
 Since notan's text support doesn't support line-spacing yet, I found an alternative in changing the spacing within the font file itself using the excellent [FontForge](https://fontforge.org/en-US/) software.
 
 [This doc was helpful for line-spacing](http://designwithfontforge.com/en-US/Line_Spacing.html).
+
+
+## Hot reloader issue
+
+It seems there is an issue with the shader hot reloader (e.g. try running erratic_wave_shader from the terminal). Not sure when this came up, but the best lead to fixing is probably in `notan_sketches/src/shaderutils.rs`. See the comment above the `create_hot_shape_pipeline` fn.

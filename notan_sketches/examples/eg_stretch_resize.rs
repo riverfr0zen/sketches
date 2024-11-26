@@ -15,10 +15,11 @@ const CLEAR_COLOR: Color = Color::BLACK;
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 // const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = WindowConfig::default().maximized(true).resizable(true);
+    let win_config = WindowConfig::default()
+        .set_maximized(true)
+        .set_resizable(true);
     set_html_bgcolor(CLEAR_COLOR);
 
     notan::init()
@@ -27,7 +28,6 @@ fn main() -> Result<(), String> {
         .draw(draw)
         .build()
 }
-
 
 fn draw(gfx: &mut Graphics) {
     let (width, height) = gfx.size();

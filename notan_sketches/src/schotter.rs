@@ -13,7 +13,6 @@ pub enum VizMod {
     SOLID,
 }
 
-
 pub fn _create_box_texture(
     gfx: &mut Graphics,
     tile_size: f32,
@@ -21,7 +20,7 @@ pub fn _create_box_texture(
     vizmod: VizMod,
 ) -> Texture {
     let rt = gfx
-        .create_render_texture(tile_size as i32, tile_size as i32)
+        .create_render_texture(tile_size as u32, tile_size as u32)
         .build()
         .unwrap();
 
@@ -53,16 +52,13 @@ pub fn _create_box_texture(
     }
 }
 
-
 pub fn create_basic_box_texture(gfx: &mut Graphics, tile_size: f32, stroke_width: f32) -> Texture {
     _create_box_texture(gfx, tile_size, stroke_width, VizMod::BASIC)
 }
 
-
 pub fn create_solid_box_texture(gfx: &mut Graphics, tile_size: f32, stroke_width: f32) -> Texture {
     _create_box_texture(gfx, tile_size, stroke_width, VizMod::SOLID)
 }
-
 
 #[derive(AppState)]
 pub struct State {
@@ -80,7 +76,6 @@ pub struct State {
     pub events_focus: EventsFocus,
     pub touch: TouchState,
 }
-
 
 impl State {
     pub fn reframe(
@@ -144,7 +139,6 @@ impl State {
     }
 }
 
-
 pub fn init_basic(
     gfx: &mut Graphics,
     work_size: Vec2,
@@ -163,7 +157,6 @@ pub fn init_basic(
         rand_step,
     )
 }
-
 
 pub fn init_solid(
     gfx: &mut Graphics,
@@ -184,12 +177,9 @@ pub fn init_solid(
     )
 }
 
-
 pub fn event(app: &mut App, state: &mut State, event: Event) {
     state.events_focus.detect(&event);
-    let gesture = state
-        .touch
-        .get_gesture(&app.timer.time_since_init(), &event);
+    let gesture = state.touch.get_gesture(&app.timer.elapsed_f32(), &event);
 
     match event {
         Event::WindowResize { .. } => {
@@ -210,14 +200,12 @@ pub fn event(app: &mut App, state: &mut State, event: Event) {
     }
 }
 
-
 pub fn update_common(app: &mut App, state: &mut State) {
     if state.events_focus.has_focus() && app.keyboard.was_pressed(KeyCode::R) {
         state.freeze = false;
         log::debug!("Freeze released");
     }
 }
-
 
 pub fn update_anim(
     app: &mut App,
@@ -236,7 +224,7 @@ pub fn update_anim(
         log::debug!("Freeze released");
     }
 
-    let time_since_init = app.timer.time_since_init();
+    let time_since_init = app.timer.elapsed_f32();
 
     // Original approach to modifying the rand_step value. Resulted in jerky displacement
     // animation.
@@ -282,7 +270,6 @@ pub fn update_anim(
     ) = State::reframe(work_size, padding, state.rows, state.cols);
 }
 
-
 pub fn draw_basic(
     gfx: &mut Graphics,
     state: &mut State,
@@ -322,7 +309,6 @@ pub fn draw_basic(
         // log::debug!("fps: {}", app.timer.fps().round());
     }
 }
-
 
 pub fn draw_solid(
     gfx: &mut Graphics,
@@ -387,13 +373,11 @@ pub fn draw_solid(
             }
         }
 
-
         gfx.render(&draw);
         state.freeze = true;
         // log::debug!("fps: {}", app.timer.fps().round());
     }
 }
-
 
 pub fn _draw_solid2(
     gfx: &mut Graphics,
@@ -456,7 +440,6 @@ pub fn _draw_solid2(
                 xpos += rand_val * (dampen * 0.1);
                 ypos += rand_val * (dampen * 0.1);
 
-
                 draw.image(&state.box_texture)
                     .position(xpos, ypos)
                     // Need to rotate from the center of the image, which doesn't seem to be the
@@ -469,10 +452,8 @@ pub fn _draw_solid2(
                     .color(box2_color)
                     .size(state.tile_size, state.tile_size);
 
-
                 xpos += rand_val * (dampen * 0.3);
                 ypos += rand_val * (dampen * 0.3);
-
 
                 draw.image(&state.box_texture)
                     .position(xpos, ypos)
@@ -486,10 +467,8 @@ pub fn _draw_solid2(
                     .color(box3_color)
                     .size(state.tile_size, state.tile_size);
 
-
                 xpos += rand_val * dampen;
                 ypos += rand_val * dampen;
-
 
                 draw.image(&state.box_texture)
                     .position(xpos, ypos)
@@ -504,13 +483,11 @@ pub fn _draw_solid2(
             }
         }
 
-
         gfx.render(&draw);
         state.freeze = freeze_on_render;
         // log::debug!("fps: {}", app.timer.fps().round());
     }
 }
-
 
 pub fn draw_solid2(
     gfx: &mut Graphics,
@@ -537,7 +514,6 @@ pub fn draw_solid2(
         true,
     );
 }
-
 
 pub fn draw_solid2_anim(
     gfx: &mut Graphics,

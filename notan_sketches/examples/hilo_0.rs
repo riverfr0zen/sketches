@@ -50,7 +50,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     }
 }
 
-
 fn add_strip(state: &mut State) {
     let mut strip: Vec<Segment> = vec![];
     while state.cursor.x < state.work_size.x {
@@ -76,7 +75,6 @@ fn add_strip(state: &mut State) {
     state.cursor.x = 0.0;
 }
 
-
 fn calc_displacement_factor(state: &mut State) -> f32 {
     // Return a displacement factor that gets larger as we go down the screen
     // 0.001 + state.cursor.y / state.work_size.y
@@ -94,7 +92,6 @@ fn move_displacement(state: &mut State) {
         // state.displacement_pos += 500.0;
     }
 }
-
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, CLEAR_COLOR);
@@ -119,21 +116,23 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     gfx.render(draw);
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
-    let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-        // let win_config = get_common_win_config().high_dpi(true).size(
-        // ScreenDimensions::RES_4KISH.x as i32,
-        // ScreenDimensions::RES_4KISH.y as i32,
-        // ScreenDimensions::RES_HDPLUS.x as i32,
-        // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
-        // ScreenDimensions::DEFAULT.x as i32,
-        // ScreenDimensions::DEFAULT.y as i32,
-    );
+    let win_config = get_common_win_config()
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_size(
+            // let win_config = get_common_win_config().high_dpi(true).size(
+            // ScreenDimensions::RES_4KISH.x as i32,
+            // ScreenDimensions::RES_4KISH.y as i32,
+            // ScreenDimensions::RES_HDPLUS.x as i32,
+            // ScreenDimensions::RES_HDPLUS.y as i32,
+            ScreenDimensions::RES_1080P.x as u32,
+            ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::DEFAULT.x as i32,
+            // ScreenDimensions::DEFAULT.y as i32,
+        );
 
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);

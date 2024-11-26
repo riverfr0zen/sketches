@@ -14,7 +14,6 @@ use notan_sketches::utils::{
 use palette::{FromColor, Hsv, Shade, Srgb};
 use std::ops::RangeInclusive;
 
-
 // const CLEAR_COLOR: Color = Color::WHITE;
 const CLEAR_COLOR: Color = Color::BLACK;
 // const STRIP_STROKE: f32 = 2.0;
@@ -34,7 +33,6 @@ const SHUFFLE_PERIOD: u8 = 2;
 const VARY_HORIZONTAL: bool = true;
 const USE_CUBIC_BEZIER: bool = true;
 
-
 pub struct Segment {
     from: Vec2,
     to: Vec2,
@@ -44,7 +42,6 @@ pub struct Segment {
     ctrl2_to: Vec2,
 }
 
-
 pub struct Strip {
     segs: Vec<Segment>,
     color: Color,
@@ -53,7 +50,6 @@ pub struct Strip {
     last_distance: f32,
     displaced: bool,
 }
-
 
 #[derive(Debug)]
 pub struct GenSettings {
@@ -121,7 +117,6 @@ impl GenSettings {
     }
 }
 
-
 #[derive(AppState)]
 struct State {
     pub rng: Random,
@@ -143,14 +138,12 @@ enum Position {
     Below,
 }
 
-
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
     let work_size = get_work_size_for_screen(app, gfx);
 
     let cursor = Vec2::new(0.0, 0.0);
-
 
     State {
         rng,
@@ -167,12 +160,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     }
 }
 
-
 /// Get the distance of the strip from the displacement
 fn get_displacement_distance(strip: &Strip, displacement_pos: &f32, work_size: &Vec2) -> f32 {
     (strip.segs[0].from.y - displacement_pos).abs() / work_size.y
 }
-
 
 fn add_strip(state: &mut State) {
     let color = colors::Palettes::choose_color(&state.gen.palette);
@@ -223,7 +214,6 @@ fn add_strip(state: &mut State) {
     state.cursor.x = 0.0;
 }
 
-
 fn move_displacement(state: &mut State) {
     if state.displacement_pos <= 0.0 {
         state.displacement_dir = enums::Direction::Down;
@@ -239,7 +229,6 @@ fn move_displacement(state: &mut State) {
         _ => (),
     }
 }
-
 
 fn generate_strips(state: &mut State, refresh: bool) {
     if refresh {
@@ -266,7 +255,6 @@ fn shuffle(state: &mut State) {
     log::debug!("{:#?}", state.gen);
 }
 
-
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::P) {
         state.paused = !state.paused;
@@ -290,7 +278,6 @@ fn update(app: &mut App, state: &mut State) {
         shuffle(state);
     }
 }
-
 
 fn update_strip(
     strip: &mut Strip,
@@ -393,11 +380,9 @@ fn update_strip(
     }
 }
 
-
 fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) {
     let path = &mut draw.path();
     path.move_to(0.0, ypos);
-
 
     for seg in strip.segs.iter_mut() {
         if USE_CUBIC_BEZIER {
@@ -435,7 +420,6 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
         .fill()
         .alpha(strip.alpha);
 }
-
 
 fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, state.gen.clear_color);
@@ -475,18 +459,17 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     gfx.render(draw);
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     // let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-    let win_config = get_common_win_config().high_dpi(true).size(
+    let win_config = get_common_win_config().set_high_dpi(true).set_size(
         // ScreenDimensions::RES_4KISH.x as i32,
         // ScreenDimensions::RES_4KISH.y as i32,
         // ScreenDimensions::RES_HDPLUS.x as i32,
         // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
+        ScreenDimensions::RES_1080P.x as u32,
+        ScreenDimensions::RES_1080P.y as u32,
         // ScreenDimensions::DEFAULT.x as i32,
         // ScreenDimensions::DEFAULT.y as i32,
     );
@@ -494,7 +477,7 @@ fn main() -> Result<(), String> {
     #[cfg(target_arch = "wasm32")]
     let win_config = get_common_win_config().high_dpi(true);
 
-    let win_config = win_config.title("hilo_strips.smoove");
+    let win_config = win_config.set_title("hilo_strips.smoove");
     set_html_bgcolor(colors::MAHOGANY);
 
     // notan::init()

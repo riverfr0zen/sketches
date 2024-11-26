@@ -4,15 +4,12 @@ use notan::math::{vec2, vec3, Mat4, Vec2};
 use notan::prelude::*;
 use notan::text::*;
 
-
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
-
 
 #[derive(AppState)]
 struct State {
     font: Font,
 }
-
 
 pub fn get_aspect_fit_projection(win_size: Vec2, work_size: Vec2) -> (Mat4, f32) {
     let ratio = (win_size.x / work_size.x).min(win_size.y / work_size.y);
@@ -28,7 +25,6 @@ pub fn get_aspect_fit_projection(win_size: Vec2, work_size: Vec2) -> (Mat4, f32)
     (projection * translation * scale, ratio)
 }
 
-
 pub fn get_draw_setup(gfx: &mut Graphics, work_size: Vec2, clear_color: Color) -> Draw {
     let (width, height) = gfx.size();
     let win_size = vec2(width as f32, height as f32);
@@ -41,7 +37,6 @@ pub fn get_draw_setup(gfx: &mut Graphics, work_size: Vec2, clear_color: Color) -
     return draw;
 }
 
-
 fn init(gfx: &mut Graphics) -> State {
     let font = gfx
         .create_font(include_bytes!("./assets/fonts/ubuntu/Ubuntu-B.ttf"))
@@ -50,7 +45,6 @@ fn init(gfx: &mut Graphics) -> State {
     let state = State { font: font };
     state
 }
-
 
 fn draw(gfx: &mut Graphics, state: &mut State) {
     let mut draw = get_draw_setup(gfx, WORK_SIZE, Color::GRAY);
@@ -76,17 +70,15 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     .h_align_left()
     .v_align_middle();
 
-
     gfx.render(&draw);
     gfx.render(&text);
 
     // log::debug!("fps: {}", app.timer.fps().round());
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = WindowConfig::default().resizable(true);
+    let win_config = WindowConfig::default().set_resizable(true);
 
     // notan::init_with(State::default)
     // notan::init()

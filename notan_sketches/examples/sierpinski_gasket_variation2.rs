@@ -9,7 +9,6 @@ use notan_sketches::utils::{get_common_win_config, get_draw_setup, set_html_bgco
 // const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 const WORK_SIZE: Vec2 = vec2(1920.0, 1080.0);
 
-
 fn draw(
     gfx: &mut Graphics,
     state: &mut State,
@@ -29,11 +28,10 @@ fn draw(
     // log::debug!("fps: {}", app.timer.fps().round());
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
-    let mut win_config = get_common_win_config().high_dpi(true);
-    win_config = win_config.title("sierpinski gasket (varied)");
+    let mut win_config = get_common_win_config().set_high_dpi(true);
+    win_config = win_config.set_title("sierpinski gasket (varied)");
     set_html_bgcolor(SAFFRON);
 
     // notan::init()

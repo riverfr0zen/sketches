@@ -11,7 +11,6 @@ use notan_sketches::emotion_bg_visualizer::visualizers::tiled_shaders::TiledShad
 use notan_sketches::emotion_bg_visualizer::visualizers::EmoVisualizer;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, ScreenDimensions};
 
-
 macro_rules! EMOCAT_OUTPUT_FILE {
     () => {
         // "assets/lb_bronte01.json"
@@ -26,7 +25,6 @@ macro_rules! EMOCAT_OUTPUT_FILE {
     };
 }
 
-
 const CLEAR_COLOR: Color = Color::WHITE;
 const TITLE_COLOR: Color = Color::BLACK;
 // const META_COLOR: Color = Color::GRAY;
@@ -35,7 +33,6 @@ const MAX_FPS: u8 = 240;
 // const VISUALIZER: &str = "ColorTransitionVisualizer";
 // const VISUALIZER: &str = "TilesVisualizer";
 const VISUALIZER: &str = "TiledShadersVisualizer";
-
 
 #[derive(AppState)]
 struct State {
@@ -46,7 +43,6 @@ struct State {
     // visualizer: ColorTransitionVisualizer,
     visualizer: Box<dyn EmoVisualizer>,
 }
-
 
 fn init(gfx: &mut Graphics) -> State {
     let font = gfx
@@ -101,7 +97,6 @@ fn init(gfx: &mut Graphics) -> State {
     state
 }
 
-
 fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::Home) {
         log::debug!("home");
@@ -118,7 +113,6 @@ fn update(app: &mut App, state: &mut State) {
             .visualizer
             .update_model(&state.emodoc.analyses[state.analysis - 1]);
     }
-
 
     if app.keyboard.was_pressed(KeyCode::Left) && state.analysis > 0 {
         log::debug!("left");
@@ -144,7 +138,6 @@ fn update(app: &mut App, state: &mut State) {
     state.visualizer.update_visualization();
 }
 
-
 fn draw_title(draw: &mut Draw, state: &mut State, work_size: Vec2) {
     state.visualizer.draw_title(
         draw,
@@ -155,7 +148,6 @@ fn draw_title(draw: &mut Draw, state: &mut State, work_size: Vec2) {
     );
 }
 
-
 fn draw_paragraph(draw: &mut Draw, state: &mut State, work_size: Vec2) {
     state.visualizer.draw_paragraph(
         draw,
@@ -164,7 +156,6 @@ fn draw_paragraph(draw: &mut Draw, state: &mut State, work_size: Vec2) {
         work_size,
     );
 }
-
 
 fn draw(
     app: &mut App,
@@ -189,23 +180,21 @@ fn draw(
     // log::debug!("fps: {}", app.timer.fps().round());
 }
 
-
 #[notan_main]
 fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     // let win_config = get_common_win_config().high_dpi(true).vsync(true).size(
-    let win_config = get_common_win_config().high_dpi(true).size(
+    let win_config = get_common_win_config().set_high_dpi(true).set_size(
         // ScreenDimensions::RES_HDPLUS.x as i32,
         // ScreenDimensions::RES_HDPLUS.y as i32,
-        ScreenDimensions::RES_1080P.x as i32,
-        ScreenDimensions::RES_1080P.y as i32,
+        ScreenDimensions::RES_1080P.x as u32,
+        ScreenDimensions::RES_1080P.y as u32,
         // ScreenDimensions::DEFAULT.x as i32,
         // ScreenDimensions::DEFAULT.y as i32,
     );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
-
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
