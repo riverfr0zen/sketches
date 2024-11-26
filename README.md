@@ -2,15 +2,20 @@ initial
 
 # Local configuration
 
-Local configuration can be added to `notan_sketches/.cargo/config.toml`. 
+Local configuration can be added to `notan_sketches/.cargo/config.toml`.
 
-For example, I have added it on my weak laptop to limit the number of jobs. 
+For example, I have added it on my weak laptop to limit the number of jobs.
 
 I could have done this in `$CARGO_HOME/config.toml` too, but I didn't want to forget about it, and this seemed more visible. Might change that in the future.
 
 See: https://doc.rust-lang.org/cargo/reference/config.html
 
 For this repo, `.cargo/config.toml`` is ignored in `sketches/.gitignore`
+
+
+# IMPORTANT notes on updating Notan
+
+When updating `notan` to a new version, make sure to upgrade across all notan-using packages (notan_sketches AND notan_touch)
 
 
 # Build commands
@@ -84,7 +89,7 @@ This method will return a color calculated as below:
 
 If no emotion has a score, a neutral gray color will be returned.
 
-If only one emotion has the high score, the color corresponding to the emotion in one of the mappings (see "Emotion to Color Mappings" below) will be returned. 
+If only one emotion has the high score, the color corresponding to the emotion in one of the mappings (see "Emotion to Color Mappings" below) will be returned.
 
 If there are multiple emotions in the high score, the top emotions will be further grouped into "positive",  "negative", and "neutral" emotions. Following this, starting with a neutral gray HSV value, each emotion's color (based on the color mappings) will be "mixed" in. The factor by which one color mixes into the total will be based on the analysis value of the sentiment (positive/negative) that the color corresponds to. For example, if the emotion is "joy", which is a positive emotion, then the value of "positive" from the analysis will be the factor. If the emotion is neutral, the factor will be the dominant sentiment value.
 
@@ -98,7 +103,7 @@ This simple toy method will return black if the dominant sentiment of the text i
 
 Similar to Top Emotions Model above, except that if more than one emotion has the high score:
 
-* First, top emotions that are adjacent on the color wheel (in the same quadrant) will be grouped. 
+* First, top emotions that are adjacent on the color wheel (in the same quadrant) will be grouped.
 ===probably the separator between model & method===
 * For each group, the avg hue will be calculated.
 * The model will return a list of the averaged hues.
@@ -106,7 +111,7 @@ Similar to Top Emotions Model above, except that if more than one emotion has th
 This model may also do the same with a "second ranked color" if only one emotion is at the top.
 
 
-## Emotion to Color Mappings 
+## Emotion to Color Mappings
 I want to experiment with two different mappings, based on different theories, so switching the used mapping is an important capability.
 
 The first mapping is based on the theories of psychologist Dr. Robert Plutchik as described in [this article](http://shelleycrick.com/how-color-affects-emotions/). I'll call it the Plutchik mapping.
@@ -117,6 +122,6 @@ The second mapping will come from the "art therapy" world, as described in [this
 
 ## FontForge
 
-Since notan's text support doesn't support line-spacing yet, I found an alternative in changing the spacing within the font file itself using the excellent [FontForge](https://fontforge.org/en-US/) software. 
+Since notan's text support doesn't support line-spacing yet, I found an alternative in changing the spacing within the font file itself using the excellent [FontForge](https://fontforge.org/en-US/) software.
 
 [This doc was helpful for line-spacing](http://designwithfontforge.com/en-US/Line_Spacing.html).
