@@ -49,8 +49,8 @@ const DEFAULT_ALPHA: f32 = 0.5;
 // const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
 // Capture interval
-const CAPTURE_INTERVAL: f32 = 10.0;
-// const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+// const CAPTURE_INTERVAL: f32 = 10.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
 const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -78,7 +78,7 @@ const PALETTE: [Color; 21] = [
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 // SEED can optionally be specified here. If specified, `reinitialize_drawing` won't be called even if MAX_CAPTURES is exceeded.
 // const SEED: Option<u64> = None;
-const SEED: Option<u64> = Some(7073019043407592007);
+const SEED: Option<u64> = Some(5267013345884581871);
 
 #[derive(Debug, PartialEq)]
 enum SpawnStrategy {
@@ -360,7 +360,7 @@ pub struct State {
     pub embossed_brush: Texture,
     pub splat_brush: Texture,
     pub scratch_brush: Texture,
-    pub draw_alpha: f32,
+    pub draw_parent_alpha: f32,
     pub nodes: Vec<Node>,
     pub spawn_max_distance_mod: f32,
     pub settings: Settings,
@@ -530,7 +530,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         embossed_brush,
         splat_brush,
         scratch_brush,
-        draw_alpha: 0.0,
+        draw_parent_alpha: 0.0,
         nodes: vec![],
         spawn_max_distance_mod: 2.0,
         settings,
@@ -550,7 +550,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 fn spawn_random(state: &mut State) {
     state.nodes.push(Node {
         class: NodeClass::PARENT,
-        alpha: state.draw_alpha,
+        alpha: state.draw_parent_alpha,
         pos: vec2(
             state.rng.gen_range(0.0..state.work_size.x),
             state.rng.gen_range(0.0..state.work_size.y),
@@ -659,7 +659,9 @@ fn update(app: &mut App, state: &mut State) {
 
     let curr_time = app.timer.elapsed_f32();
 
-    state.draw_alpha = (curr_time * state.settings.parent_alpha_freq).sin().abs();
+    state.draw_parent_alpha = (curr_time * state.settings.parent_alpha_freq).sin().abs();
+    let spawn_alpha: f32 = (curr_time * state.settings.spawn_alpha_freq).sin().abs();
+    let spawn2_alpha: f32 = (curr_time * state.settings.spawn2_alpha_freq).sin().abs();
 
     if curr_time - state.last_update > UPDATE_STEP {
         if let Some(active_node) = state.get_active_node() {
@@ -692,7 +694,7 @@ fn update(app: &mut App, state: &mut State) {
                     nodes.push(Node {
                         parent_id: parent_id,
                         pos: vec2(spawn_x, spawn_y),
-                        alpha: state.draw_alpha,
+                        alpha: spawn_alpha,
                         ..Default::default()
                     });
                 }
@@ -716,7 +718,7 @@ fn update(app: &mut App, state: &mut State) {
                         class: NodeClass::SPAWN2,
                         parent_id: parent_id,
                         pos: vec2(spawn2_x, spawn2_y),
-                        alpha: state.draw_alpha,
+                        alpha: spawn2_alpha,
                         ..Default::default()
                     });
                 }
