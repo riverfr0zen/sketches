@@ -49,8 +49,8 @@ const DEFAULT_ALPHA: f32 = 0.5;
 // const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
 // Capture interval
-// const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+const CAPTURE_INTERVAL: f32 = 10.0;
+// const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
 const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -76,6 +76,9 @@ const PALETTE: [Color; 21] = [
     colors::SALMON,
 ];
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
+// SEED can optionally be specified here. If specified, `reinitialize_drawing` won't be called even if MAX_CAPTURES is exceeded.
+// const SEED: Option<u64> = None;
+const SEED: Option<u64> = Some(7073019043407592007);
 
 #[derive(Debug, PartialEq)]
 enum SpawnStrategy {
@@ -452,7 +455,7 @@ fn create_embossed_brush_texture(gfx: &mut Graphics) -> Texture {
 }
 
 fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, CapturingTexture) {
-    let (rng, seed) = get_rng(None);
+    let (rng, seed) = get_rng(SEED);
     log::info!("Seed: {}", seed);
 
     let capture = CapturingTexture::new(
@@ -793,7 +796,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         state.capture_next_draw = false;
     } else if !IS_WASM {
         state.capture.periodic_capture(app, gfx);
-        if state.capture.num_captures >= MAX_CAPTURES {
+        if SEED.is_none() && state.capture.num_captures >= MAX_CAPTURES {
             state.reinitialize_drawing(gfx);
         }
     }

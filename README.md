@@ -19,7 +19,7 @@ When updating `notan` to a new version, make sure to upgrade across all notan-us
 
 # Building
 
-## How to fix wasm-bindgen version mismatch error
+## NOTE: wasm-bindgen version mismatch error
 
 If you see an error like this:
 
