@@ -28,7 +28,6 @@ const PARENT_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.02;
 const SPAWN_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.01;
 const SPAWN2_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.05;
 
-
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 // The frequency of the wave that determines the distance of the Spawn2's position
@@ -78,7 +77,6 @@ const PALETTE: [Color; 21] = [
 ];
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 
-
 #[derive(Debug, PartialEq)]
 enum SpawnStrategy {
     Random,
@@ -95,7 +93,6 @@ impl SpawnStrategy {
         }
     }
 }
-
 
 #[derive(Debug, PartialEq)]
 enum RadialRangeStyle {
@@ -137,7 +134,6 @@ impl RadialRangeStyle {
     }
 }
 
-
 #[derive(Debug)]
 pub struct Settings {
     spawn_strategy: SpawnStrategy,
@@ -158,7 +154,6 @@ pub struct Settings {
     spawn2_brush: Texture,
     use_assigned_brushes: bool,
 }
-
 
 impl Settings {
     // Note this is not a Default impl
@@ -302,14 +297,12 @@ impl Settings {
     }
 }
 
-
 #[derive(Clone, PartialEq)]
 pub enum NodeClass {
     PARENT,
     SPAWN,
     SPAWN2,
 }
-
 
 #[derive(Clone)]
 pub struct Node {
@@ -324,13 +317,11 @@ pub struct Node {
     pub rendered: bool,
 }
 
-
 impl Node {
     fn is_within_view(&self, work_size: &Vec2) -> bool {
         self.pos.x > 0.0 && self.pos.x < work_size.x && self.pos.y > 0.0 && self.pos.y < work_size.y
     }
 }
-
 
 impl Default for Node {
     fn default() -> Self {
@@ -347,7 +338,6 @@ impl Default for Node {
         }
     }
 }
-
 
 #[derive(AppState)]
 pub struct State {
@@ -371,7 +361,6 @@ pub struct State {
     events_focus: EventsFocus,
     help_modal: CommonHelpModal,
 }
-
 
 impl State {
     fn get_active_node(&self) -> Option<usize> {
@@ -419,7 +408,6 @@ impl State {
     }
 }
 
-
 fn create_circle_texture(gfx: &mut Graphics, radius: f32, color: Color) -> Texture {
     let rt = gfx
         .create_render_texture((radius * 2.0) as i32, (radius * 2.0) as i32)
@@ -435,14 +423,12 @@ fn create_circle_texture(gfx: &mut Graphics, radius: f32, color: Color) -> Textu
     rt.take_inner()
 }
 
-
 fn create_basic_brush_texture(gfx: &mut Graphics) -> Texture {
     gfx.create_texture()
         .from_image(include_bytes!("assets/brushes/basic.png"))
         .build()
         .unwrap()
 }
-
 
 fn create_splat_brush_texture(gfx: &mut Graphics) -> Texture {
     gfx.create_texture()
@@ -451,7 +437,6 @@ fn create_splat_brush_texture(gfx: &mut Graphics) -> Texture {
         .unwrap()
 }
 
-
 fn create_scratch_brush_texture(gfx: &mut Graphics) -> Texture {
     gfx.create_texture()
         .from_image(include_bytes!("assets/brushes/scratch.png"))
@@ -459,14 +444,12 @@ fn create_scratch_brush_texture(gfx: &mut Graphics) -> Texture {
         .unwrap()
 }
 
-
 fn create_embossed_brush_texture(gfx: &mut Graphics) -> Texture {
     gfx.create_texture()
         .from_image(include_bytes!("assets/brushes/embossed.png"))
         .build()
         .unwrap()
 }
-
 
 fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, CapturingTexture) {
     let (rng, seed) = get_rng(None);
@@ -555,7 +538,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     }
 }
 
-
 fn spawn_random(state: &mut State) {
     state.nodes.push(Node {
         class: NodeClass::PARENT,
@@ -568,7 +550,6 @@ fn spawn_random(state: &mut State) {
         ..Default::default()
     });
 }
-
 
 /// Converts any available child node to an active parent
 fn spawn_random_any_child(state: &mut State) {
@@ -589,7 +570,6 @@ fn spawn_random_any_child(state: &mut State) {
         candidate.rendered = false;
     }
 }
-
 
 /// Converts only available child nodes of the provided parent to an active parent
 fn spawn_random_node_child(state: &mut State, parent: Node) {
@@ -622,7 +602,6 @@ fn open_source_code(app: &mut App) {
     }
 }
 
-
 fn event(app: &mut App, state: &mut State, evt: Event) {
     state.events_focus.detect(&evt);
 
@@ -651,7 +630,6 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
     }
 }
 
-
 fn update(app: &mut App, state: &mut State) {
     if state.events_focus.has_focus() {
         if app.keyboard.was_pressed(KeyCode::R) {
@@ -669,7 +647,6 @@ fn update(app: &mut App, state: &mut State) {
             open_source_code(app);
         }
     }
-
 
     let curr_time = app.timer.time_since_init();
 
@@ -751,7 +728,6 @@ fn update(app: &mut App, state: &mut State) {
     }
 }
 
-
 fn draw_nodes(draw: &mut Draw, state: &mut State) {
     for node in state.nodes.iter_mut().filter(|node| !node.rendered) {
         let size: f32;
@@ -802,7 +778,6 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
     }
 }
 
-
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.reinit_next_draw {
         state.reinitialize_drawing(gfx);
@@ -830,7 +805,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     gfx.render(rdraw);
 }
-
 
 #[notan_main]
 fn main() -> Result<(), String> {
