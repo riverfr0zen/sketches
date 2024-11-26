@@ -13,12 +13,30 @@ See: https://doc.rust-lang.org/cargo/reference/config.html
 For this repo, `.cargo/config.toml`` is ignored in `sketches/.gitignore`
 
 
-# IMPORTANT notes on updating Notan
+# IMPORTANT: notes on updating Notan
 
 When updating `notan` to a new version, make sure to upgrade across all notan-using packages (notan_sketches AND notan_touchy)
 
+# Building
 
-# Build commands
+## How to fix wasm-bindgen version mismatch error
+
+If you see an error like this:
+
+```
+it looks like the Rust project used to create this wasm file was linked against
+version of wasm-bindgen that uses a different bindgen format than this binary:
+
+  rust wasm file schema version: 0.2.95
+     this binary schema version: 0.2.92
+```
+
+you should update wasm-bindgen-cli to the latest version. Typically you can do this with:
+
+`cargo install wasm-bindgen-cli`
+
+
+## Build commands
 
 ```
 cargo build --release --example eg_notan --target wasm32-unknown-unknown
@@ -66,7 +84,7 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 
 ```
 
-# wasm-pack command that doesn't work
+## wasm-pack command that doesn't work
 
 Probably doesn't work because it's an example.
 

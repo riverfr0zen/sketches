@@ -131,7 +131,9 @@ pub fn get_common_win_config() -> WindowConfig {
     return WindowConfig::default().set_resizable(true);
 
     #[cfg(target_arch = "wasm32")]
-    return WindowConfig::default().resizable(true).maximized(true);
+    return WindowConfig::default()
+        .set_resizable(true)
+        .set_maximized(true);
 }
 
 #[non_exhaustive]

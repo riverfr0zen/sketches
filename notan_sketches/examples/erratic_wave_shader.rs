@@ -109,7 +109,7 @@ fn main() -> Result<(), String> {
     set_html_bgcolor(Color::BLACK);
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     // notan::init()
     notan::init_with(init)

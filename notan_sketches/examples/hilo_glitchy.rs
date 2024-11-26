@@ -369,7 +369,7 @@ fn main() -> Result<(), String> {
     );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     let win_config = win_config.set_title("hilo_strips.glitchy");
     set_html_bgcolor(colors::LIME);

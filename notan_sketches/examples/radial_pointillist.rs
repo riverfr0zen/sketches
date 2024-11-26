@@ -825,7 +825,7 @@ fn main() -> Result<(), String> {
         );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     set_html_bgcolor(CLEAR_COLOR);
 

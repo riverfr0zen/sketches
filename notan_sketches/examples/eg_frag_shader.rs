@@ -242,7 +242,7 @@ fn main() -> Result<(), String> {
         .set_high_dpi(true)
         .set_vsync(true)
         .set_size(
-            // let win_config = get_common_win_config().high_dpi(true).size(
+            // let win_config = get_common_win_config().set_high_dpi(true).size(
             // ScreenDimensions::RES_4KISH.x as i32,
             // ScreenDimensions::RES_4KISH.y as i32,
             // ScreenDimensions::RES_HDPLUS.x as i32,
@@ -254,7 +254,7 @@ fn main() -> Result<(), String> {
         );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     // notan::init()
     notan::init_with(init)

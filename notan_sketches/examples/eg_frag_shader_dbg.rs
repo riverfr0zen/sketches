@@ -192,7 +192,7 @@ fn main() -> Result<(), String> {
         .set_size(WORK_SIZE.x as u32, WORK_SIZE.y as u32);
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().high_dpi(true);
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     // notan::init()
     notan::init_with(init)
@@ -210,7 +210,9 @@ pub fn get_common_win_config() -> WindowConfig {
     return WindowConfig::default().set_resizable(true);
 
     #[cfg(target_arch = "wasm32")]
-    return WindowConfig::default().resizable(true).maximized(true);
+    return WindowConfig::default()
+        .set_resizable(true)
+        .set_maximized(true);
 }
 
 /// Set up a Draw with some common basics
