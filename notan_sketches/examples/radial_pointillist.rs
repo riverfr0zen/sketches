@@ -148,7 +148,9 @@ pub struct Settings {
     spawn_angle_step: f32,
     spawn2_angle_step: f32,
     spawn2_wave_freq: f32,
-    alpha_freq: f32,
+    parent_alpha_freq: f32,
+    spawn_alpha_freq: f32,
+    spawn2_alpha_freq: f32,
     parent_color: Color,
     spawn_color: Color,
     spawn2_color: Color,
@@ -175,7 +177,9 @@ impl Settings {
             spawn_angle_step: 10.0,
             spawn2_angle_step: 5.0,
             spawn2_wave_freq: 20.0,
-            alpha_freq: 0.5,
+            parent_alpha_freq: 0.5,
+            spawn_alpha_freq: 0.5,
+            spawn2_alpha_freq: 0.5,
             parent_color: colors::AEGEAN,
             spawn_color: colors::SEAWEED,
             spawn2_color: colors::SALMON,
@@ -288,7 +292,9 @@ impl Settings {
             spawn_angle_step: rng.gen_range(SPAWN_ANGLE_STEP),
             spawn2_angle_step: rng.gen_range(SPAWN2_ANGLE_STEP),
             spawn2_wave_freq: rng.gen_range(SPAWN2_WAVE_FREQ),
-            alpha_freq: rng.gen_range(ALPHA_FREQ),
+            parent_alpha_freq: rng.gen_range(ALPHA_FREQ),
+            spawn_alpha_freq: rng.gen_range(ALPHA_FREQ),
+            spawn2_alpha_freq: rng.gen_range(ALPHA_FREQ),
             parent_color,
             spawn_color,
             spawn2_color,
@@ -653,7 +659,7 @@ fn update(app: &mut App, state: &mut State) {
 
     let curr_time = app.timer.elapsed_f32();
 
-    state.draw_alpha = (curr_time * state.settings.alpha_freq).sin().abs();
+    state.draw_alpha = (curr_time * state.settings.parent_alpha_freq).sin().abs();
 
     if curr_time - state.last_update > UPDATE_STEP {
         if let Some(active_node) = state.get_active_node() {
