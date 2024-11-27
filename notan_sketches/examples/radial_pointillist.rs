@@ -49,8 +49,8 @@ const DEFAULT_ALPHA: f32 = 0.5;
 // const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
 // Capture interval
-const CAPTURE_INTERVAL: f32 = 10.0;
-// const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+// const CAPTURE_INTERVAL: f32 = 10.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
 const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
@@ -78,7 +78,7 @@ const PALETTE: [Color; 21] = [
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 // SEED can optionally be specified here. If specified, `reinitialize_drawing` won't be called even if MAX_CAPTURES is exceeded.
 // const SEED: Option<u64> = None;
-const SEED: Option<u64> = Some(7073019043407592007);
+const SEED: Option<u64> = Some(13236161089428852814);
 
 #[derive(Debug, PartialEq)]
 enum SpawnStrategy {
@@ -354,13 +354,14 @@ pub struct State {
     pub work_size: Vec2,
     pub rng: Random,
     pub last_update: f32,
+    pub update_count: f32,
     pub capture: CapturingTexture,
     pub circle_brush: Texture,
     pub basic_brush: Texture,
     pub embossed_brush: Texture,
     pub splat_brush: Texture,
     pub scratch_brush: Texture,
-    pub draw_alpha: f32,
+    pub draw_parent_alpha: f32,
     pub nodes: Vec<Node>,
     pub spawn_max_distance_mod: f32,
     pub settings: Settings,
@@ -374,6 +375,14 @@ pub struct State {
 impl State {
     fn get_active_node(&self) -> Option<usize> {
         self.nodes.iter().position(|node| node.active == true)
+    }
+
+    fn increment_update_count(&mut self) {
+        if (self.update_count >= f32::MAX) {
+            self.update_count = 0.0;
+        } else {
+            self.update_count += 0.01;
+        }
     }
 
     fn manage_node_size(&mut self) {
@@ -524,13 +533,14 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         work_size,
         rng,
         last_update: 0.0,
+        update_count: 0.0,
         capture,
         circle_brush,
         basic_brush,
         embossed_brush,
         splat_brush,
         scratch_brush,
-        draw_alpha: 0.0,
+        draw_parent_alpha: 0.0,
         nodes: vec![],
         spawn_max_distance_mod: 2.0,
         settings,
@@ -550,7 +560,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 fn spawn_random(state: &mut State) {
     state.nodes.push(Node {
         class: NodeClass::PARENT,
-        alpha: state.draw_alpha,
+        alpha: state.draw_parent_alpha,
         pos: vec2(
             state.rng.gen_range(0.0..state.work_size.x),
             state.rng.gen_range(0.0..state.work_size.y),
@@ -657,10 +667,12 @@ fn update(app: &mut App, state: &mut State) {
         }
     }
 
+    let upcount = state.update_count;
+    state.draw_parent_alpha = (upcount * state.settings.parent_alpha_freq).sin().abs();
+    let spawn_alpha: f32 = (upcount * state.settings.spawn_alpha_freq).sin().abs();
+    let spawn2_alpha: f32 = (upcount * state.settings.spawn2_alpha_freq).sin().abs();
+
     let curr_time = app.timer.elapsed_f32();
-
-    state.draw_alpha = (curr_time * state.settings.parent_alpha_freq).sin().abs();
-
     if curr_time - state.last_update > UPDATE_STEP {
         if let Some(active_node) = state.get_active_node() {
             let nodes = &mut state.nodes;
@@ -692,7 +704,7 @@ fn update(app: &mut App, state: &mut State) {
                     nodes.push(Node {
                         parent_id: parent_id,
                         pos: vec2(spawn_x, spawn_y),
-                        alpha: state.draw_alpha,
+                        alpha: spawn_alpha,
                         ..Default::default()
                     });
                 }
@@ -703,7 +715,7 @@ fn update(app: &mut App, state: &mut State) {
                     // Spawn2 distance changes as a wave
                     let spawn2_max_distance = max_distance * 0.75;
                     let spawn2_distance = min_distance
-                        + ((curr_time * state.settings.spawn2_wave_freq).sin().abs()
+                        + ((upcount * state.settings.spawn2_wave_freq).sin().abs()
                             * spawn2_max_distance);
                     let spawn2_x = nodes[active_node].pos.x
                         + spawn2_offset
@@ -716,7 +728,7 @@ fn update(app: &mut App, state: &mut State) {
                         class: NodeClass::SPAWN2,
                         parent_id: parent_id,
                         pos: vec2(spawn2_x, spawn2_y),
-                        alpha: state.draw_alpha,
+                        alpha: spawn2_alpha,
                         ..Default::default()
                     });
                 }
@@ -734,6 +746,7 @@ fn update(app: &mut App, state: &mut State) {
         }
         state.last_update = curr_time;
         state.manage_node_size();
+        state.increment_update_count();
     }
 }
 
@@ -823,12 +836,12 @@ fn main() -> Result<(), String> {
         .set_vsync(true)
         .set_size(
             // let win_config = get_common_win_config().high_dpi(true).size(
-            // ScreenDimensions::RES_4KISH.x as i32,
-            // ScreenDimensions::RES_4KISH.y as i32,
+            ScreenDimensions::RES_4KISH.x as u32,
+            ScreenDimensions::RES_4KISH.y as u32,
             // ScreenDimensions::RES_HDPLUS.x as i32,
             // ScreenDimensions::RES_HDPLUS.y as i32,
-            ScreenDimensions::RES_1080P.x as u32,
-            ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::RES_1080P.x as u32,
+            // ScreenDimensions::RES_1080P.y as u32,
             // ScreenDimensions::DEFAULT.x as i32,
             // ScreenDimensions::DEFAULT.y as i32,
         );
