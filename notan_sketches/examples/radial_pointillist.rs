@@ -190,24 +190,7 @@ impl Settings {
         }
     }
 
-    fn randomize(rng: &mut Random, work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
-        // return Settings::default(work_size, brushes);
-
-        let mut vary_spawn_distance = true;
-        if rng.gen_range(0..10) > 7 {
-            vary_spawn_distance = false;
-        }
-
-        let parent_brush = brushes[rng.gen_range(0..brushes.len())].clone();
-        let spawn_brush = brushes[rng.gen_range(0..brushes.len())].clone();
-        let spawn2_brush = brushes[rng.gen_range(0..brushes.len())].clone();
-        let use_assigned_brushes: bool = rng.gen();
-
-        let mut palette = PALETTE.to_vec();
-        let parent_color = palette.remove(rng.gen_range(0..palette.len()));
-        let spawn_color = palette.remove(rng.gen_range(0..palette.len()));
-        let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
-
+    fn gen_radial_ranges(rng: &mut Random, work_size: &Vec2) -> (RadialRangeStyle, f32, f32, f32) {
         let radial_range_style = RadialRangeStyle::random(rng);
         let (parent_radius, spawn_radius, spawn2_radius) = match &radial_range_style {
             RadialRangeStyle::Small => (
@@ -281,6 +264,34 @@ impl Settings {
                 work_size.x * rng.gen_range(SPAWN2_RADIUS),
             ),
         };
+        (
+            radial_range_style,
+            parent_radius,
+            spawn_radius,
+            spawn2_radius,
+        )
+    }
+
+    fn randomize(rng: &mut Random, work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
+        // return Settings::default(work_size, brushes);
+
+        let mut vary_spawn_distance = true;
+        if rng.gen_range(0..10) > 7 {
+            vary_spawn_distance = false;
+        }
+
+        let parent_brush = brushes[rng.gen_range(0..brushes.len())].clone();
+        let spawn_brush = brushes[rng.gen_range(0..brushes.len())].clone();
+        let spawn2_brush = brushes[rng.gen_range(0..brushes.len())].clone();
+        let use_assigned_brushes: bool = rng.gen();
+
+        let mut palette = PALETTE.to_vec();
+        let parent_color = palette.remove(rng.gen_range(0..palette.len()));
+        let spawn_color = palette.remove(rng.gen_range(0..palette.len()));
+        let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
+
+        let (radial_range_style, parent_radius, spawn_radius, spawn2_radius) =
+            Self::gen_radial_ranges(rng, work_size);
 
         Self {
             spawn_strategy: SpawnStrategy::random(rng),
