@@ -77,8 +77,8 @@ const PALETTE: [Color; 21] = [
 ];
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 // SEED can optionally be specified here. If specified, `reinitialize_drawing` won't be called even if MAX_CAPTURES is exceeded.
-// const SEED: Option<u64> = None;
-const SEED: Option<u64> = Some(13236161089428852814);
+const SEED: Option<u64> = None;
+// const SEED: Option<u64> = Some(13236161089428852814);
 
 #[derive(Debug, PartialEq)]
 enum SpawnStrategy {
