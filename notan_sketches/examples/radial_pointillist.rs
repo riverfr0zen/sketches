@@ -77,8 +77,8 @@ const PALETTE: [Color; 21] = [
 ];
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 // SEED can optionally be specified here. If specified, `reinitialize_drawing` won't be called even if MAX_CAPTURES is exceeded.
-// const SEED: Option<u64> = None;
-const SEED: Option<u64> = Some(5267013345884581871);
+const SEED: Option<u64> = None;
+// const SEED: Option<u64> = Some(5267013345884581871);
 
 #[derive(Debug, PartialEq)]
 enum SpawnStrategy {
@@ -825,12 +825,12 @@ fn main() -> Result<(), String> {
         .set_vsync(true)
         .set_size(
             // let win_config = get_common_win_config().high_dpi(true).size(
-            // ScreenDimensions::RES_4KISH.x as i32,
-            // ScreenDimensions::RES_4KISH.y as i32,
+            ScreenDimensions::RES_4KISH.x as u32,
+            ScreenDimensions::RES_4KISH.y as u32,
             // ScreenDimensions::RES_HDPLUS.x as i32,
             // ScreenDimensions::RES_HDPLUS.y as i32,
-            ScreenDimensions::RES_1080P.x as u32,
-            ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::RES_1080P.x as u32,
+            // ScreenDimensions::RES_1080P.y as u32,
             // ScreenDimensions::DEFAULT.x as i32,
             // ScreenDimensions::DEFAULT.y as i32,
         );
