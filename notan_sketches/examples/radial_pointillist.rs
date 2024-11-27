@@ -17,7 +17,12 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
+// Capture interval
+// const CAPTURE_INTERVAL: f32 = 10.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+const MAX_CAPTURES: u32 = 1;
 
+const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL;
 const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
 const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
 const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
@@ -48,10 +53,6 @@ const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
 // const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
-// Capture interval
-// const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
-const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
     colors::AEGEAN,
@@ -141,6 +142,7 @@ impl RadialRangeStyle {
 pub struct Settings {
     spawn_strategy: SpawnStrategy,
     vary_spawn_distance: bool,
+    radial_change_step: f32,
     radial_range_style: RadialRangeStyle,
     parent_radius: f32,
     spawn_radius: f32,
@@ -170,6 +172,7 @@ impl Settings {
         Self {
             spawn_strategy: SpawnStrategy::RandomChildOfNode,
             vary_spawn_distance: true,
+            radial_change_step: CAPTURE_INTERVAL * 0.5,
             radial_range_style: RadialRangeStyle::None,
             parent_radius: work_size.x * 0.02,
             spawn_radius: work_size.x * 0.015,
@@ -295,7 +298,8 @@ impl Settings {
 
         Self {
             spawn_strategy: SpawnStrategy::random(rng),
-            vary_spawn_distance: vary_spawn_distance,
+            vary_spawn_distance,
+            radial_change_step: rng.gen_range(RADIAL_CHANGE_INTERVAL),
             radial_range_style,
             parent_radius,
             spawn_radius,
@@ -314,6 +318,19 @@ impl Settings {
             spawn2_brush,
             use_assigned_brushes,
         }
+    }
+
+    fn change_radial_ranges(&mut self, rng: &mut Random, work_size: &Vec2) {
+        (
+            self.radial_range_style,
+            self.parent_radius,
+            self.spawn_radius,
+            self.spawn2_radius,
+        ) = Self::gen_radial_ranges(rng, work_size);
+        log::debug!(
+            "Changed radial ranges:\nradial_range_style: {:?}\nparent_radius: {}\nspawn_radius: {}\nspawn2_radius: {}",
+            self.radial_range_style, self.parent_radius, self.spawn_radius, self.spawn2_radius
+        );
     }
 }
 
@@ -366,6 +383,7 @@ pub struct State {
     pub rng: Random,
     pub last_update: f32,
     pub update_count: f32,
+    pub last_radial_change: f32,
     pub capture: CapturingTexture,
     pub circle_brush: Texture,
     pub basic_brush: Texture,
@@ -389,7 +407,7 @@ impl State {
     }
 
     fn increment_update_count(&mut self) {
-        if (self.update_count >= f32::MAX) {
+        if self.update_count >= f32::MAX {
             self.update_count = 0.0;
         } else {
             self.update_count += 0.01;
@@ -545,6 +563,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         rng,
         last_update: 0.0,
         update_count: 0.0,
+        last_radial_change: 0.0,
         capture,
         circle_brush,
         basic_brush,
@@ -684,6 +703,14 @@ fn update(app: &mut App, state: &mut State) {
     let spawn2_alpha: f32 = (upcount * state.settings.spawn2_alpha_freq).sin().abs();
 
     let curr_time = app.timer.elapsed_f32();
+
+    if curr_time - state.last_radial_change > state.settings.radial_change_step {
+        state
+            .settings
+            .change_radial_ranges(&mut state.rng, &state.work_size);
+        state.last_radial_change = curr_time;
+    }
+
     if curr_time - state.last_update > UPDATE_STEP {
         if let Some(active_node) = state.get_active_node() {
             let nodes = &mut state.nodes;
