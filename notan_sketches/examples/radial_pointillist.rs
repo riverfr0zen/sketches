@@ -77,8 +77,8 @@ const PALETTE: [Color; 21] = [
 ];
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 // SEED can optionally be specified here. If specified, `reinitialize_drawing` won't be called even if MAX_CAPTURES is exceeded.
-const SEED: Option<u64> = None;
-// const SEED: Option<u64> = Some(5267013345884581871);
+// const SEED: Option<u64> = None;
+const SEED: Option<u64> = Some(13236161089428852814);
 
 #[derive(Debug, PartialEq)]
 enum SpawnStrategy {
@@ -354,6 +354,7 @@ pub struct State {
     pub work_size: Vec2,
     pub rng: Random,
     pub last_update: f32,
+    pub update_count: f32,
     pub capture: CapturingTexture,
     pub circle_brush: Texture,
     pub basic_brush: Texture,
@@ -374,6 +375,14 @@ pub struct State {
 impl State {
     fn get_active_node(&self) -> Option<usize> {
         self.nodes.iter().position(|node| node.active == true)
+    }
+
+    fn increment_update_count(&mut self) {
+        if (self.update_count >= f32::MAX) {
+            self.update_count = 0.0;
+        } else {
+            self.update_count += 0.01;
+        }
     }
 
     fn manage_node_size(&mut self) {
@@ -524,6 +533,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         work_size,
         rng,
         last_update: 0.0,
+        update_count: 0.0,
         capture,
         circle_brush,
         basic_brush,
@@ -657,12 +667,12 @@ fn update(app: &mut App, state: &mut State) {
         }
     }
 
+    let upcount = state.update_count;
+    state.draw_parent_alpha = (upcount * state.settings.parent_alpha_freq).sin().abs();
+    let spawn_alpha: f32 = (upcount * state.settings.spawn_alpha_freq).sin().abs();
+    let spawn2_alpha: f32 = (upcount * state.settings.spawn2_alpha_freq).sin().abs();
+
     let curr_time = app.timer.elapsed_f32();
-
-    state.draw_parent_alpha = (curr_time * state.settings.parent_alpha_freq).sin().abs();
-    let spawn_alpha: f32 = (curr_time * state.settings.spawn_alpha_freq).sin().abs();
-    let spawn2_alpha: f32 = (curr_time * state.settings.spawn2_alpha_freq).sin().abs();
-
     if curr_time - state.last_update > UPDATE_STEP {
         if let Some(active_node) = state.get_active_node() {
             let nodes = &mut state.nodes;
@@ -705,7 +715,7 @@ fn update(app: &mut App, state: &mut State) {
                     // Spawn2 distance changes as a wave
                     let spawn2_max_distance = max_distance * 0.75;
                     let spawn2_distance = min_distance
-                        + ((curr_time * state.settings.spawn2_wave_freq).sin().abs()
+                        + ((upcount * state.settings.spawn2_wave_freq).sin().abs()
                             * spawn2_max_distance);
                     let spawn2_x = nodes[active_node].pos.x
                         + spawn2_offset
@@ -736,6 +746,7 @@ fn update(app: &mut App, state: &mut State) {
         }
         state.last_update = curr_time;
         state.manage_node_size();
+        state.increment_update_count();
     }
 }
 
