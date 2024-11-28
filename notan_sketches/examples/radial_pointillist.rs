@@ -19,9 +19,9 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 1.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
+const CAPTURE_INTERVAL: f32 = 30.0;
 // const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
 // const CAPTURE_INTERVAL: f32 = 60.0 * 4.0;
-const CAPTURE_INTERVAL: f32 = 30.0;
 const MAX_CAPTURES: u32 = 3;
 
 const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL * MAX_CAPTURES as f32;
@@ -140,6 +140,20 @@ impl RadialRangeStyle {
         }
     }
 
+    fn random_large(rng: &mut Random) -> Self {
+        match rng.gen_range(0..=8) {
+            8 => Self::SwapParentSpawn2,
+            7 => Self::SwapParentSpawn,
+            6 => Self::MediumLargeMedium,
+            5 => Self::LargeMediumLarge,
+            4 => Self::LargeSmallLarge,
+            3 => Self::SmallLargeSmall,
+            2 => Self::LargeToSmall,
+            1 => Self::SmallToLarge,
+            _ => Self::Large,
+        }
+    }
+
     fn random_medium(rng: &mut Random) -> Self {
         match rng.gen_range(0..=2) {
             2 => Self::MediumLargeMedium,
@@ -219,8 +233,10 @@ impl Settings {
     ) -> (RadialRangeStyle, f32, f32, f32) {
         let radial_range_style = match for_time {
             Some(the_time) => match the_time {
-                t if t > 0.5 && t < 0.75 => RadialRangeStyle::random_medium(rng),
                 t if t >= 0.75 => RadialRangeStyle::random_small(rng),
+                t if t >= 0.5 && t < 0.75 => RadialRangeStyle::random_medium(rng),
+                t if t >= 0.25 && t < 0.5 => RadialRangeStyle::random(rng),
+                t if t < 0.25 => RadialRangeStyle::random_large(rng),
                 _ => RadialRangeStyle::random(rng),
             },
             None => RadialRangeStyle::random(rng),
