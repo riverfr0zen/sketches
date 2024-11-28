@@ -33,7 +33,7 @@ const SPAWN_RADIUS_LARGE: RangeInclusive<f32> = 0.01..=0.2;
 const SPAWN2_RADIUS_LARGE: RangeInclusive<f32> = 0.001..=0.2;
 const PARENT_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.02;
 const SPAWN_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.01;
-const SPAWN2_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.05;
+const SPAWN2_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.005;
 
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
