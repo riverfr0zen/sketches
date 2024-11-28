@@ -19,10 +19,10 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 1.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 30.0;
+// const CAPTURE_INTERVAL: f32 = 40.0;
 // const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
-// const CAPTURE_INTERVAL: f32 = 60.0 * 4.0;
-const MAX_CAPTURES: u32 = 3;
+const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
+const MAX_CAPTURES: u32 = 1;
 
 const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL * MAX_CAPTURES as f32;
 const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
@@ -346,7 +346,7 @@ impl Settings {
         let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
 
         let (radial_range_style, parent_radius, spawn_radius, spawn2_radius) =
-            Self::gen_radial_ranges(rng, work_size, None);
+            Self::gen_radial_ranges(rng, work_size, Some(0.0));
 
         Self {
             spawn_strategy: SpawnStrategy::random(rng),
@@ -433,6 +433,7 @@ pub struct State {
     /// The work_size attr is meant to be set at init() and not changed thereafter.
     pub work_size: Vec2,
     pub rng: Random,
+    pub last_initialized: f32,
     pub last_update: f32,
     pub update_count: f32,
     pub last_radial_change: f32,
@@ -484,8 +485,10 @@ impl State {
         }
     }
 
-    fn reinitialize_drawing(&mut self, gfx: &mut Graphics) {
+    fn reinitialize_drawing(&mut self, gfx: &mut Graphics, curr_time: f32) {
         log::debug!("Maximum captures reached. Creating new seed and re-randomizing settings...");
+        self.last_initialized = curr_time;
+        self.last_radial_change = curr_time;
         let (mut rng, capture) = init_rng_and_capture(gfx, &self.work_size);
         self.settings = Settings::randomize(
             &mut rng,
@@ -613,6 +616,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     State {
         work_size,
         rng,
+        last_initialized: 0.0,
         last_update: 0.0,
         update_count: 0.0,
         last_radial_change: 0.0,
@@ -755,9 +759,11 @@ fn update(app: &mut App, state: &mut State) {
     let spawn2_alpha: f32 = (upcount * state.settings.spawn2_alpha_freq).sin().abs();
 
     let curr_time = app.timer.elapsed_f32();
+    let curr_painting_time = curr_time - state.last_initialized;
 
     if curr_time - state.last_radial_change > state.settings.radial_change_step {
-        let for_time = curr_time / RADIAL_CHANGE_INTERVAL.end();
+        log::debug!("Current time in painting: {curr_painting_time}");
+        let for_time = curr_painting_time / RADIAL_CHANGE_INTERVAL.end();
         state
             .settings
             .change_radial_ranges(&mut state.rng, &state.work_size, Some(for_time));
@@ -892,8 +898,9 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    let curr_time = app.timer.elapsed_f32();
     if state.reinit_next_draw {
-        state.reinitialize_drawing(gfx);
+        state.reinitialize_drawing(gfx, curr_time);
         state.reinit_next_draw = false;
     }
 
@@ -907,7 +914,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     } else if !IS_WASM {
         state.capture.periodic_capture(app, gfx);
         if SEED.is_none() && state.capture.num_captures >= MAX_CAPTURES {
-            state.reinitialize_drawing(gfx);
+            state.reinitialize_drawing(gfx, curr_time);
         }
     }
 
