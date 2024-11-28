@@ -20,7 +20,7 @@ const UPDATE_STEP: f32 = 0.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
 // const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 2.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 4.0;
 const MAX_CAPTURES: u32 = 3;
 
 const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL * MAX_CAPTURES as f32;
