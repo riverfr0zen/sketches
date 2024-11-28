@@ -20,7 +20,8 @@ const UPDATE_STEP: f32 = 0.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
 // const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 4.0;
+// const CAPTURE_INTERVAL: f32 = 60.0 * 4.0;
+const CAPTURE_INTERVAL: f32 = 30.0;
 const MAX_CAPTURES: u32 = 3;
 
 const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL * MAX_CAPTURES as f32;
@@ -112,6 +113,7 @@ enum RadialRangeStyle {
     LargeMediumLarge,
     SmallMediumSmall,
     MediumSmallMedium,
+    MediumSmallSmall,
     SwapParentSpawn,
     SwapParentSpawn2,
     SwapSpawnSpawn2,
@@ -135,6 +137,22 @@ impl RadialRangeStyle {
             2 => Self::Small,
             1 => Self::Large,
             _ => Self::Medium,
+        }
+    }
+
+    fn random_medium(rng: &mut Random) -> Self {
+        match rng.gen_range(0..=2) {
+            2 => Self::MediumLargeMedium,
+            1 => Self::MediumSmallMedium,
+            _ => Self::Medium,
+        }
+    }
+
+    fn random_small(rng: &mut Random) -> Self {
+        match rng.gen_range(0..=2) {
+            2 => Self::MediumSmallSmall,
+            1 => Self::SmallMediumSmall,
+            _ => Self::Small,
         }
     }
 }
@@ -194,8 +212,20 @@ impl Settings {
         }
     }
 
-    fn gen_radial_ranges(rng: &mut Random, work_size: &Vec2) -> (RadialRangeStyle, f32, f32, f32) {
-        let radial_range_style = RadialRangeStyle::random(rng);
+    fn gen_radial_ranges(
+        rng: &mut Random,
+        work_size: &Vec2,
+        for_time: Option<f32>,
+    ) -> (RadialRangeStyle, f32, f32, f32) {
+        let radial_range_style = match for_time {
+            Some(the_time) => match the_time {
+                t if t > 0.5 && t < 0.75 => RadialRangeStyle::random_medium(rng),
+                t if t >= 0.75 => RadialRangeStyle::random_small(rng),
+                _ => RadialRangeStyle::random(rng),
+            },
+            None => RadialRangeStyle::random(rng),
+        };
+
         let (parent_radius, spawn_radius, spawn2_radius) = match &radial_range_style {
             RadialRangeStyle::Small => (
                 work_size.x * rng.gen_range(PARENT_RADIUS_SMALL),
@@ -247,6 +277,11 @@ impl Settings {
                 work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
                 work_size.x * rng.gen_range(SPAWN2_RADIUS),
             ),
+            RadialRangeStyle::MediumSmallSmall => (
+                work_size.x * rng.gen_range(PARENT_RADIUS),
+                work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
+                work_size.x * rng.gen_range(SPAWN2_RADIUS_SMALL),
+            ),
             RadialRangeStyle::SwapParentSpawn => (
                 work_size.x * rng.gen_range(SPAWN_RADIUS),
                 work_size.x * rng.gen_range(PARENT_RADIUS),
@@ -295,7 +330,7 @@ impl Settings {
         let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
 
         let (radial_range_style, parent_radius, spawn_radius, spawn2_radius) =
-            Self::gen_radial_ranges(rng, work_size);
+            Self::gen_radial_ranges(rng, work_size, None);
 
         Self {
             spawn_strategy: SpawnStrategy::random(rng),
@@ -321,13 +356,13 @@ impl Settings {
         }
     }
 
-    fn change_radial_ranges(&mut self, rng: &mut Random, work_size: &Vec2) {
+    fn change_radial_ranges(&mut self, rng: &mut Random, work_size: &Vec2, for_time: Option<f32>) {
         (
             self.radial_range_style,
             self.parent_radius,
             self.spawn_radius,
             self.spawn2_radius,
-        ) = Self::gen_radial_ranges(rng, work_size);
+        ) = Self::gen_radial_ranges(rng, work_size, for_time);
         log::debug!(
             "Changed radial ranges:\nradial_range_style: {:?}\nparent_radius: {}\nspawn_radius: {}\nspawn2_radius: {}",
             self.radial_range_style, self.parent_radius, self.spawn_radius, self.spawn2_radius
@@ -706,9 +741,10 @@ fn update(app: &mut App, state: &mut State) {
     let curr_time = app.timer.elapsed_f32();
 
     if curr_time - state.last_radial_change > state.settings.radial_change_step {
+        let for_time = curr_time / RADIAL_CHANGE_INTERVAL.end();
         state
             .settings
-            .change_radial_ranges(&mut state.rng, &state.work_size);
+            .change_radial_ranges(&mut state.rng, &state.work_size, Some(for_time));
         state.last_radial_change = curr_time;
     }
 
