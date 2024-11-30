@@ -17,7 +17,14 @@ const UPDATE_STEP: f32 = 0.0;
 // const UPDATE_STEP: f32 = 0.001;
 // const UPDATE_STEP: f32 = 0.5;
 // const UPDATE_STEP: f32 = 1.0;
+// Capture interval
+// const CAPTURE_INTERVAL: f32 = 10.0;
+// const CAPTURE_INTERVAL: f32 = 40.0;
+// const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
+const MAX_CAPTURES: u32 = 1;
 
+const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL * MAX_CAPTURES as f32;
 const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
 const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
 const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
@@ -26,7 +33,7 @@ const SPAWN_RADIUS_LARGE: RangeInclusive<f32> = 0.01..=0.2;
 const SPAWN2_RADIUS_LARGE: RangeInclusive<f32> = 0.001..=0.2;
 const PARENT_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.02;
 const SPAWN_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.01;
-const SPAWN2_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.05;
+const SPAWN2_RADIUS_SMALL: RangeInclusive<f32> = 0.001..=0.005;
 
 const SPAWN_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
 const SPAWN2_ANGLE_STEP: RangeInclusive<f32> = 1.0..=45.0;
@@ -48,10 +55,6 @@ const CIRCLE_TEXTURE_COLOR: Color = Color::WHITE;
 const DEFAULT_ALPHA: f32 = 0.5;
 // const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=5.0;
 const ALPHA_FREQ: RangeInclusive<f32> = 0.001..=1.0;
-// Capture interval
-// const CAPTURE_INTERVAL: f32 = 10.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
-const MAX_CAPTURES: u32 = 1;
 const PALETTE: [Color; 21] = [
     colors::PEACOCK,
     colors::AEGEAN,
@@ -110,6 +113,7 @@ enum RadialRangeStyle {
     LargeMediumLarge,
     SmallMediumSmall,
     MediumSmallMedium,
+    MediumSmallSmall,
     SwapParentSpawn,
     SwapParentSpawn2,
     SwapSpawnSpawn2,
@@ -135,12 +139,43 @@ impl RadialRangeStyle {
             _ => Self::Medium,
         }
     }
+
+    fn random_large(rng: &mut Random) -> Self {
+        match rng.gen_range(0..=8) {
+            8 => Self::SwapParentSpawn2,
+            7 => Self::SwapParentSpawn,
+            6 => Self::MediumLargeMedium,
+            5 => Self::LargeMediumLarge,
+            4 => Self::LargeSmallLarge,
+            3 => Self::SmallLargeSmall,
+            2 => Self::LargeToSmall,
+            1 => Self::SmallToLarge,
+            _ => Self::Large,
+        }
+    }
+
+    fn random_medium(rng: &mut Random) -> Self {
+        match rng.gen_range(0..=2) {
+            2 => Self::MediumLargeMedium,
+            1 => Self::MediumSmallMedium,
+            _ => Self::Medium,
+        }
+    }
+
+    fn random_small(rng: &mut Random) -> Self {
+        match rng.gen_range(0..=2) {
+            2 => Self::MediumSmallSmall,
+            1 => Self::SmallMediumSmall,
+            _ => Self::Small,
+        }
+    }
 }
 
 #[derive(Debug)]
 pub struct Settings {
     spawn_strategy: SpawnStrategy,
     vary_spawn_distance: bool,
+    radial_change_step: f32,
     radial_range_style: RadialRangeStyle,
     parent_radius: f32,
     spawn_radius: f32,
@@ -170,6 +205,7 @@ impl Settings {
         Self {
             spawn_strategy: SpawnStrategy::RandomChildOfNode,
             vary_spawn_distance: true,
+            radial_change_step: CAPTURE_INTERVAL * 0.5,
             radial_range_style: RadialRangeStyle::None,
             parent_radius: work_size.x * 0.02,
             spawn_radius: work_size.x * 0.015,
@@ -190,25 +226,22 @@ impl Settings {
         }
     }
 
-    fn randomize(rng: &mut Random, work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
-        // return Settings::default(work_size, brushes);
+    fn gen_radial_ranges(
+        rng: &mut Random,
+        work_size: &Vec2,
+        for_time: Option<f32>,
+    ) -> (RadialRangeStyle, f32, f32, f32) {
+        let radial_range_style = match for_time {
+            Some(the_time) => match the_time {
+                t if t >= 0.75 => RadialRangeStyle::random_small(rng),
+                t if t >= 0.5 && t < 0.75 => RadialRangeStyle::random_medium(rng),
+                t if t >= 0.25 && t < 0.5 => RadialRangeStyle::random(rng),
+                t if t < 0.25 => RadialRangeStyle::random_large(rng),
+                _ => RadialRangeStyle::random(rng),
+            },
+            None => RadialRangeStyle::random(rng),
+        };
 
-        let mut vary_spawn_distance = true;
-        if rng.gen_range(0..10) > 7 {
-            vary_spawn_distance = false;
-        }
-
-        let parent_brush = brushes[rng.gen_range(0..brushes.len())].clone();
-        let spawn_brush = brushes[rng.gen_range(0..brushes.len())].clone();
-        let spawn2_brush = brushes[rng.gen_range(0..brushes.len())].clone();
-        let use_assigned_brushes: bool = rng.gen();
-
-        let mut palette = PALETTE.to_vec();
-        let parent_color = palette.remove(rng.gen_range(0..palette.len()));
-        let spawn_color = palette.remove(rng.gen_range(0..palette.len()));
-        let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
-
-        let radial_range_style = RadialRangeStyle::random(rng);
         let (parent_radius, spawn_radius, spawn2_radius) = match &radial_range_style {
             RadialRangeStyle::Small => (
                 work_size.x * rng.gen_range(PARENT_RADIUS_SMALL),
@@ -260,6 +293,11 @@ impl Settings {
                 work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
                 work_size.x * rng.gen_range(SPAWN2_RADIUS),
             ),
+            RadialRangeStyle::MediumSmallSmall => (
+                work_size.x * rng.gen_range(PARENT_RADIUS),
+                work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
+                work_size.x * rng.gen_range(SPAWN2_RADIUS_SMALL),
+            ),
             RadialRangeStyle::SwapParentSpawn => (
                 work_size.x * rng.gen_range(SPAWN_RADIUS),
                 work_size.x * rng.gen_range(PARENT_RADIUS),
@@ -281,10 +319,39 @@ impl Settings {
                 work_size.x * rng.gen_range(SPAWN2_RADIUS),
             ),
         };
+        (
+            radial_range_style,
+            parent_radius,
+            spawn_radius,
+            spawn2_radius,
+        )
+    }
+
+    fn randomize(rng: &mut Random, work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
+        // return Settings::default(work_size, brushes);
+
+        let mut vary_spawn_distance = true;
+        if rng.gen_range(0..10) > 7 {
+            vary_spawn_distance = false;
+        }
+
+        let parent_brush = brushes[rng.gen_range(0..brushes.len())].clone();
+        let spawn_brush = brushes[rng.gen_range(0..brushes.len())].clone();
+        let spawn2_brush = brushes[rng.gen_range(0..brushes.len())].clone();
+        let use_assigned_brushes: bool = rng.gen();
+
+        let mut palette = PALETTE.to_vec();
+        let parent_color = palette.remove(rng.gen_range(0..palette.len()));
+        let spawn_color = palette.remove(rng.gen_range(0..palette.len()));
+        let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
+
+        let (radial_range_style, parent_radius, spawn_radius, spawn2_radius) =
+            Self::gen_radial_ranges(rng, work_size, Some(0.0));
 
         Self {
             spawn_strategy: SpawnStrategy::random(rng),
-            vary_spawn_distance: vary_spawn_distance,
+            vary_spawn_distance,
+            radial_change_step: rng.gen_range(RADIAL_CHANGE_INTERVAL),
             radial_range_style,
             parent_radius,
             spawn_radius,
@@ -303,6 +370,19 @@ impl Settings {
             spawn2_brush,
             use_assigned_brushes,
         }
+    }
+
+    fn change_radial_ranges(&mut self, rng: &mut Random, work_size: &Vec2, for_time: Option<f32>) {
+        (
+            self.radial_range_style,
+            self.parent_radius,
+            self.spawn_radius,
+            self.spawn2_radius,
+        ) = Self::gen_radial_ranges(rng, work_size, for_time);
+        log::debug!(
+            "Changed radial ranges:\nradial_range_style: {:?}\nparent_radius: {}\nspawn_radius: {}\nspawn2_radius: {}",
+            self.radial_range_style, self.parent_radius, self.spawn_radius, self.spawn2_radius
+        );
     }
 }
 
@@ -353,8 +433,10 @@ pub struct State {
     /// The work_size attr is meant to be set at init() and not changed thereafter.
     pub work_size: Vec2,
     pub rng: Random,
+    pub last_initialized: f32,
     pub last_update: f32,
     pub update_count: f32,
+    pub last_radial_change: f32,
     pub capture: CapturingTexture,
     pub circle_brush: Texture,
     pub basic_brush: Texture,
@@ -378,7 +460,7 @@ impl State {
     }
 
     fn increment_update_count(&mut self) {
-        if (self.update_count >= f32::MAX) {
+        if self.update_count >= f32::MAX {
             self.update_count = 0.0;
         } else {
             self.update_count += 0.01;
@@ -403,8 +485,10 @@ impl State {
         }
     }
 
-    fn reinitialize_drawing(&mut self, gfx: &mut Graphics) {
+    fn reinitialize_drawing(&mut self, gfx: &mut Graphics, curr_time: f32) {
         log::debug!("Maximum captures reached. Creating new seed and re-randomizing settings...");
+        self.last_initialized = curr_time;
+        self.last_radial_change = curr_time;
         let (mut rng, capture) = init_rng_and_capture(gfx, &self.work_size);
         self.settings = Settings::randomize(
             &mut rng,
@@ -532,8 +616,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     State {
         work_size,
         rng,
+        last_initialized: 0.0,
         last_update: 0.0,
         update_count: 0.0,
+        last_radial_change: 0.0,
         capture,
         circle_brush,
         basic_brush,
@@ -673,6 +759,17 @@ fn update(app: &mut App, state: &mut State) {
     let spawn2_alpha: f32 = (upcount * state.settings.spawn2_alpha_freq).sin().abs();
 
     let curr_time = app.timer.elapsed_f32();
+    let curr_painting_time = curr_time - state.last_initialized;
+
+    if curr_time - state.last_radial_change > state.settings.radial_change_step {
+        log::debug!("Current time in painting: {curr_painting_time}");
+        let for_time = curr_painting_time / RADIAL_CHANGE_INTERVAL.end();
+        state
+            .settings
+            .change_radial_ranges(&mut state.rng, &state.work_size, Some(for_time));
+        state.last_radial_change = curr_time;
+    }
+
     if curr_time - state.last_update > UPDATE_STEP {
         if let Some(active_node) = state.get_active_node() {
             let nodes = &mut state.nodes;
@@ -801,8 +898,9 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    let curr_time = app.timer.elapsed_f32();
     if state.reinit_next_draw {
-        state.reinitialize_drawing(gfx);
+        state.reinitialize_drawing(gfx, curr_time);
         state.reinit_next_draw = false;
     }
 
@@ -816,7 +914,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     } else if !IS_WASM {
         state.capture.periodic_capture(app, gfx);
         if SEED.is_none() && state.capture.num_captures >= MAX_CAPTURES {
-            state.reinitialize_drawing(gfx);
+            state.reinitialize_drawing(gfx, curr_time);
         }
     }
 
