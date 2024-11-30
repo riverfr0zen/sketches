@@ -443,6 +443,7 @@ pub struct State {
     pub embossed_brush: Texture,
     pub splat_brush: Texture,
     pub scratch_brush: Texture,
+    pub threepoint_brush: Texture,
     pub draw_parent_alpha: f32,
     pub nodes: Vec<Node>,
     pub spawn_max_distance_mod: f32,
@@ -499,6 +500,7 @@ impl State {
                 &self.embossed_brush,
                 &self.splat_brush,
                 &self.scratch_brush,
+                &self.threepoint_brush,
             ],
         );
         log::debug!("With settings: {:#?}", self.settings);
@@ -553,6 +555,13 @@ fn create_embossed_brush_texture(gfx: &mut Graphics) -> Texture {
         .unwrap()
 }
 
+fn create_threepoint_brush_texture(gfx: &mut Graphics) -> Texture {
+    gfx.create_texture()
+        .from_image(include_bytes!("assets/brushes/three-point.png"))
+        .build()
+        .unwrap()
+}
+
 fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, CapturingTexture) {
     let (rng, seed) = get_rng(SEED);
     log::info!("Seed: {}", seed);
@@ -578,6 +587,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let embossed_brush = create_embossed_brush_texture(gfx);
     let splat_brush = create_splat_brush_texture(gfx);
     let scratch_brush = create_scratch_brush_texture(gfx);
+    let threepoint_brush = create_threepoint_brush_texture(gfx);
 
     let brushes = vec![
         &circle_brush,
@@ -585,6 +595,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         &embossed_brush,
         &splat_brush,
         &scratch_brush,
+        &threepoint_brush,
     ];
 
     let settings = Settings::randomize(&mut rng, &work_size, brushes);
@@ -626,6 +637,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         embossed_brush,
         splat_brush,
         scratch_brush,
+        threepoint_brush,
         draw_parent_alpha: 0.0,
         nodes: vec![],
         spawn_max_distance_mod: 2.0,
@@ -851,8 +863,9 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
     for node in state.nodes.iter_mut().filter(|node| !node.rendered) {
         let size: f32;
         let color: Color;
-        let brush_chance = state.rng.gen_range(0..12);
+        let brush_chance = state.rng.gen_range(0..13);
         let mut texture = match brush_chance {
+            9 => &state.threepoint_brush,
             8 => &state.scratch_brush,
             7 => &state.embossed_brush,
             6 => &state.splat_brush,
