@@ -78,6 +78,12 @@ const PALETTE: [Color; 21] = [
     colors::SCARLET,
     colors::SALMON,
 ];
+const BRUSH_BASIC: usize = 0;
+const BRUSH_CIRCLE: usize = 1;
+const BRUSH_EMBOSSED: usize = 2;
+const BRUSH_SPLAT: usize = 3;
+const BRUSH_SCRATCH: usize = 4;
+const BRUSH_THREEPOINT: usize = 5;
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 // SEED can optionally be specified here. If specified, `reinitialize_drawing` won't be called even if MAX_CAPTURES is exceeded.
 const SEED: Option<u64> = None;
@@ -327,7 +333,7 @@ impl Settings {
         )
     }
 
-    fn randomize(rng: &mut Random, work_size: &Vec2, brushes: Vec<&Texture>) -> Self {
+    fn randomize(rng: &mut Random, work_size: &Vec2, brushes: &Vec<Texture>) -> Self {
         // return Settings::default(work_size, brushes);
 
         let mut vary_spawn_distance = true;
@@ -438,12 +444,7 @@ pub struct State {
     pub update_count: f32,
     pub last_radial_change: f32,
     pub capture: CapturingTexture,
-    pub circle_brush: Texture,
-    pub basic_brush: Texture,
-    pub embossed_brush: Texture,
-    pub splat_brush: Texture,
-    pub scratch_brush: Texture,
-    pub threepoint_brush: Texture,
+    pub brushes: Vec<Texture>,
     pub draw_parent_alpha: f32,
     pub nodes: Vec<Node>,
     pub spawn_max_distance_mod: f32,
@@ -491,18 +492,7 @@ impl State {
         self.last_initialized = curr_time;
         self.last_radial_change = curr_time;
         let (mut rng, capture) = init_rng_and_capture(gfx, &self.work_size);
-        self.settings = Settings::randomize(
-            &mut rng,
-            &self.work_size,
-            vec![
-                &self.circle_brush,
-                &self.basic_brush,
-                &self.embossed_brush,
-                &self.splat_brush,
-                &self.scratch_brush,
-                &self.threepoint_brush,
-            ],
-        );
+        self.settings = Settings::randomize(&mut rng, &self.work_size, &self.brushes);
         log::debug!("With settings: {:#?}", self.settings);
         self.rng = rng;
         self.capture = capture;
@@ -590,15 +580,15 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let threepoint_brush = create_threepoint_brush_texture(gfx);
 
     let brushes = vec![
-        &circle_brush,
-        &basic_brush,
-        &embossed_brush,
-        &splat_brush,
-        &scratch_brush,
-        &threepoint_brush,
+        basic_brush,
+        circle_brush,
+        embossed_brush,
+        splat_brush,
+        scratch_brush,
+        threepoint_brush,
     ];
 
-    let settings = Settings::randomize(&mut rng, &work_size, brushes);
+    let settings = Settings::randomize(&mut rng, &work_size, &brushes);
     log::debug!("With settings: {:#?}", settings);
 
     let help_text = concat!(
@@ -632,12 +622,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         update_count: 0.0,
         last_radial_change: 0.0,
         capture,
-        circle_brush,
-        basic_brush,
-        embossed_brush,
-        splat_brush,
-        scratch_brush,
-        threepoint_brush,
+        brushes,
         draw_parent_alpha: 0.0,
         nodes: vec![],
         spawn_max_distance_mod: 2.0,
@@ -865,12 +850,12 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
         let color: Color;
         let brush_chance = state.rng.gen_range(0..13);
         let mut texture = match brush_chance {
-            9 => &state.threepoint_brush,
-            8 => &state.scratch_brush,
-            7 => &state.embossed_brush,
-            6 => &state.splat_brush,
-            3..=5 => &state.circle_brush,
-            _ => &state.basic_brush,
+            9 => &state.brushes[BRUSH_THREEPOINT],
+            8 => &state.brushes[BRUSH_SCRATCH],
+            7 => &state.brushes[BRUSH_EMBOSSED],
+            6 => &state.brushes[BRUSH_SPLAT],
+            3..=5 => &state.brushes[BRUSH_CIRCLE],
+            _ => &state.brushes[BRUSH_BASIC],
         };
         let texture_angle: f32 = state.rng.gen_range(0.0..=360.0);
         match node.class {
