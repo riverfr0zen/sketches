@@ -20,8 +20,8 @@ const UPDATE_STEP: f32 = 0.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
 // const CAPTURE_INTERVAL: f32 = 40.0;
-// const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
+const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+// const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
 const MAX_CAPTURES: u32 = 1;
 
 const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL * MAX_CAPTURES as f32;
@@ -84,6 +84,8 @@ const BRUSH_EMBOSSED: usize = 2;
 const BRUSH_SPLAT: usize = 3;
 const BRUSH_SCRATCH: usize = 4;
 const BRUSH_THREEPOINT: usize = 5;
+const BRUSH_SCRAPE: usize = 6;
+const BRUSH_RECTS: usize = 7;
 const IS_WASM: bool = cfg!(target_arch = "wasm32");
 // SEED can optionally be specified here. If specified, `reinitialize_drawing` won't be called even if MAX_CAPTURES is exceeded.
 const SEED: Option<u64> = None;
@@ -552,6 +554,20 @@ fn create_threepoint_brush_texture(gfx: &mut Graphics) -> Texture {
         .unwrap()
 }
 
+fn create_scrape_brush_texture(gfx: &mut Graphics) -> Texture {
+    gfx.create_texture()
+        .from_image(include_bytes!("assets/brushes/scrape.png"))
+        .build()
+        .unwrap()
+}
+
+fn create_rects_brush_texture(gfx: &mut Graphics) -> Texture {
+    gfx.create_texture()
+        .from_image(include_bytes!("assets/brushes/rects.png"))
+        .build()
+        .unwrap()
+}
+
 fn init_rng_and_capture(gfx: &mut Graphics, work_size: &Vec2) -> (Random, CapturingTexture) {
     let (rng, seed) = get_rng(SEED);
     log::info!("Seed: {}", seed);
@@ -578,6 +594,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let splat_brush = create_splat_brush_texture(gfx);
     let scratch_brush = create_scratch_brush_texture(gfx);
     let threepoint_brush = create_threepoint_brush_texture(gfx);
+    let scrape_brush = create_scrape_brush_texture(gfx);
+    let rects_brush = create_rects_brush_texture(gfx);
 
     let brushes = vec![
         basic_brush,
@@ -586,6 +604,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         splat_brush,
         scratch_brush,
         threepoint_brush,
+        scrape_brush,
+        rects_brush,
     ];
 
     let settings = Settings::randomize(&mut rng, &work_size, &brushes);
@@ -848,8 +868,10 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
     for node in state.nodes.iter_mut().filter(|node| !node.rendered) {
         let size: f32;
         let color: Color;
-        let brush_chance = state.rng.gen_range(0..13);
+        let brush_chance = state.rng.gen_range(0..15);
         let mut texture = match brush_chance {
+            11 => &state.brushes[BRUSH_RECTS],
+            10 => &state.brushes[BRUSH_SCRAPE],
             9 => &state.brushes[BRUSH_THREEPOINT],
             8 => &state.brushes[BRUSH_SCRATCH],
             7 => &state.brushes[BRUSH_EMBOSSED],
