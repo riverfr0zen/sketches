@@ -7,11 +7,9 @@ use notan::math::{vec2, Vec2};
 use ui::{DisplayMetrics, SettingsUi};
 use visualizers::EmoVisualizer;
 
-
 pub trait EmoVisualizerFull: EmoVisualizer + DisplayMetrics + SettingsUi {}
 
 impl<T: EmoVisualizer + DisplayMetrics + SettingsUi> EmoVisualizerFull for T {}
-
 
 /// In this app, where font scaling is involved, a work size that matches
 /// the window size results in nicer looking fonts. This comes at the expense of

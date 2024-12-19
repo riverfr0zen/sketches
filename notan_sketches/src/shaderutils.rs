@@ -1,4 +1,5 @@
 use notan::draw::*;
+use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 
@@ -12,6 +13,7 @@ impl ShaderRenderTexture {
             .create_render_texture(width as _, height as _)
             .build()
             .unwrap();
+        log::info!("ShaderRenderTexture created: {width} x {height}");
         Self { rt }
     }
 
@@ -104,7 +106,6 @@ impl ShaderRenderTexture {
     }
 }
 
-
 // Taken from notan_draw::shapes::painter
 fn vertex_info() -> VertexInfo {
     VertexInfo::new()
@@ -130,7 +131,6 @@ pub fn create_hot_shape_pipeline(
         .with_color_blend(BlendMode::NORMAL)
         .build()
 }
-
 
 pub struct ShaderReloadManager {
     needs_reload: bool,

@@ -148,3 +148,16 @@ Since notan's text support doesn't support line-spacing yet, I found an alternat
 ## Hot reloader issue
 
 It seems there is an issue with the shader hot reloader (e.g. try running erratic_wave_shader from the terminal). Not sure when this came up, but the best lead to fixing is probably in `notan_sketches/src/shaderutils.rs`. See the comment above the `create_hot_shape_pipeline` fn.
+
+
+## ShaderRenderTexture memory issue on mobile
+
+While working on mobile fixes for emo_bg_visualizer, I found that creating too many ShaderRenderTexture (and hence RenderTexture) instances can cause the program to crash. This will probably happen on any platform when too many are created, but the limitation is especially pronounced on mobile.
+
+For now, I have done a quick workaround that reduces the number of tiles (and hence SRT instances) for mobile.
+
+Need to look into how to address the issue in the long-run, since there may be other sketches that face this issue too. So far I have thought of two possibilities:
+
+1. Reduce the size (dimensions) of the RenderTextures. This is not so desirable, for e.g. in the TiledShader visualizer, where if there is only 1 tile, then you'd want a render texture with the max screen dimensions. Maybe some smarter logic in managing the rts (e.g. only create a limited amount of larger RTs when necessary, and use these larger RTs only when the layout calls for it).
+
+2. Could it be possible to re-use the RTs? So instead of multiple ShaderRenderTexture instances, maybe there could be one that is re-used. I'm not sure if this is possible to due while still having different uniform values for each tile.
