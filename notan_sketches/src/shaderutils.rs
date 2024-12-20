@@ -1,5 +1,5 @@
 use notan::draw::*;
-use notan::log;
+// use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 
@@ -13,7 +13,7 @@ impl ShaderRenderTexture {
             .create_render_texture(width as _, height as _)
             .build()
             .unwrap();
-        log::info!("ShaderRenderTexture created: {width} x {height}");
+        // log::info!("ShaderRenderTexture created: {width} x {height}");
         Self { rt }
     }
 
