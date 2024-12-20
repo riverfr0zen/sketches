@@ -23,10 +23,8 @@ const MINIMAL_ENHANCEMENT: f32 = 0.05;
 // const TILE_ALPHA: f32 = 0.3;
 // const TILE_ALPHA: f32 = 0.5;
 // const TILE_ALPHA: f32 = 1.0;
-const MAX_COLS_HIGH: usize = 5;
-const MAX_ROWS_HIGH: usize = 5;
-const MAX_COLS_LOW: usize = 2;
-const MAX_ROWS_LOW: usize = 2;
+const MAX_COLS: usize = 5;
+const MAX_ROWS: usize = 5;
 
 /// Represents different Tile "baselines/archetypes"
 ///
@@ -121,13 +119,6 @@ pub struct TiledShadersVisualizer {
     refresh_layout: bool,
 }
 
-fn get_max_grid_size() -> (usize, usize) {
-    if cfg!(target_arch = "wasm32") {
-        return (MAX_COLS_LOW, MAX_ROWS_LOW);
-    }
-    (MAX_COLS_HIGH, MAX_ROWS_HIGH)
-}
-
 fn get_sentiment_enhanced_color(
     emocolor: &EmoColor,
     rng: &mut Random,
@@ -178,7 +169,6 @@ impl TiledShadersVisualizer {
     ) -> Self {
         let (rng, _) = get_rng(None);
         let shader_pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
-        let (max_cols, max_rows) = get_max_grid_size();
 
         Self {
             rng: rng,
@@ -195,7 +185,7 @@ impl TiledShadersVisualizer {
             tiles: vec![],
             layout: TilesLayout::none(),
             shader_pipeline,
-            shader_bundles: ShaderBundleStore::new(gfx, max_cols * max_rows),
+            shader_bundles: ShaderBundleStore::new(gfx, MAX_COLS * MAX_ROWS),
             refresh_layout: false,
         }
     }
@@ -275,15 +265,13 @@ impl TiledShadersVisualizer {
     }
 
     fn prepare_layout(&mut self, gfx: &mut Graphics, draw: &mut Draw) {
-        let (max_cols, max_rows) = get_max_grid_size();
-
         if self.refresh_layout {
-            if self.tiles.len() > max_cols {
+            if self.tiles.len() > MAX_COLS {
                 self.layout.cols = self.tiles.len();
             } else {
-                self.layout.cols = self.rng.gen_range(self.tiles.len()..=max_cols);
+                self.layout.cols = self.rng.gen_range(self.tiles.len()..=MAX_COLS);
             }
-            self.layout.rows = self.rng.gen_range(1..=max_rows);
+            self.layout.rows = self.rng.gen_range(1..=MAX_ROWS);
             self.layout.tile_size = vec2(
                 draw.width() / self.layout.cols as f32,
                 draw.height() / self.layout.rows as f32,

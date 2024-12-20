@@ -150,14 +150,14 @@ Since notan's text support doesn't support line-spacing yet, I found an alternat
 It seems there is an issue with the shader hot reloader (e.g. try running erratic_wave_shader from the terminal). Not sure when this came up, but the best lead to fixing is probably in `notan_sketches/src/shaderutils.rs`. See the comment above the `create_hot_shape_pipeline` fn.
 
 
-## ShaderRenderTexture memory issue on mobile
+## Issue with native renderer on Pixel 8a
 
-While working on mobile fixes for emo_bg_visualizer, I found that creating too many ShaderRenderTexture (and hence RenderTexture) instances can cause the program to crash. This will probably happen on any platform when too many are created, but the limitation is especially pronounced on mobile.
+It seems that Notan's web renderer doesn't play well with the native renderer on Pixel 8a. Notan apps are choppy and unresponsive by default on the device, and in some cases (e.g. when a number of RenderTextures are created) the apps can even crash from low memory.
 
-For now, I have done a quick workaround that reduces the number of tiles (and hence SRT instances) for mobile.
+The issue can be fixed by changing the renderer used by the browser to ANGLE. To do this:
 
-Need to look into how to address the issue in the long-run, since there may be other sketches that face this issue too. So far I have thought of two possibilities:
+On the phone, go to `Settings > System > Developer Options` (developer options have to be enabled on the phone), and find `ANGLE Preferences` settings. Tap on the setting, and find the browser app (Chrome/Brave, etc.). Tap on the app, and choose the `angle` option.
 
-1. Reduce the size (dimensions) of the RenderTextures. This is not so desirable, for e.g. in the TiledShader visualizer, where if there is only 1 tile, then you'd want a render texture with the max screen dimensions. Maybe some smarter logic in managing the rts (e.g. only create a limited amount of larger RTs when necessary, and use these larger RTs only when the layout calls for it).
+Unfortunately this is not something that can be programmatically done for the end user, so the solution is not ideal. Whether ANGLE will become default over time is a question: apparently the reason ANGLE is not the default on the Pixel 8a is because the phone's native renderer utilizes some hardware and AI techniques to provide what is considered superior renderering. But it doesn't seem to be working for apps made with Notan.
 
-2. Could it be possible to re-use the RTs? So instead of multiple ShaderRenderTexture instances, maybe there could be one that is re-used. I'm not sure if this is possible to due while still having different uniform values for each tile.
+Will have to monitor this issue over time and see how it pans out, but it should be a consideration when thinking about an application's audience.

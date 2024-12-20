@@ -13,11 +13,11 @@ const STARTING_MIX_FACTOR: f32 = 0.0;
 /// Because vsync in wasm seems to be non-negotiable (I think), we need a faster mix rate
 /// to match what it looks like in native
 #[cfg(target_arch = "wasm32")]
+// const MIX_RATE: f32 = 0.1;
 const MIX_RATE: f32 = 0.0001;
 #[cfg(not(target_arch = "wasm32"))]
 const MIX_RATE: f32 = 0.00001;
 // const MIX_RATE: f32 = 0.000001;
-
 
 fn round(val: f32, digits: f32) -> f32 {
     // log::debug!("{}, {}", val, (val * 100.0).round() / 100.0);
@@ -28,7 +28,6 @@ fn round(val: f32, digits: f32) -> f32 {
     // log::debug!("{}, {}", val, (val * multiplier).round() / multiplier);
     (val * multiplier).round() / multiplier
 }
-
 
 #[derive(Clone)]
 pub struct ColorTransition {
@@ -48,7 +47,6 @@ impl Default for ColorTransition {
         }
     }
 }
-
 
 impl ColorTransition {
     pub fn immediate(&mut self) {
@@ -95,7 +93,6 @@ impl ColorTransition {
     }
 }
 
-
 pub struct ColorTransitionVisualizer {
     pub model: Option<TopEmotionsModel>,
     pub color_method: String,
@@ -133,7 +130,6 @@ impl ColorTransitionVisualizer {
         options
     }
 
-
     pub fn update_text_color(&mut self) {
         if self.dynamic_text_color {
             self.text_color = get_optimal_text_color(&self.transition.color);
@@ -143,12 +139,10 @@ impl ColorTransitionVisualizer {
     }
 }
 
-
 impl EmoVisualizer for ColorTransitionVisualizer {
     fn get_enum(&self) -> VisualizerSelection {
         VisualizerSelection::ColorTransition
     }
-
 
     fn reset(&mut self, bg_color: Color, text_color: Color, enable_dynamic_text_color: bool) {
         self.model = None;
@@ -184,7 +178,6 @@ impl EmoVisualizer for ColorTransitionVisualizer {
         self.transition.step();
         self.update_text_color();
     }
-
 
     fn get_text_color(&self) -> Color {
         self.text_color
