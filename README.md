@@ -92,6 +92,25 @@ Probably doesn't work because it's an example.
 wasm-pack build --out-name eg_notan --out-dir www/wasms  --target web --release --example eg_notan
 ```
 
+# Updating dependencies
+
+1. Do automatic updates
+
+`cargo update`
+
+Also run cargo update on local dependencies: `../notan_touchy`
+
+2. Test
+
+* test sketches natively
+* test sketches on wasm 
+
+3. Check what wasn't updated manually, and try to update
+
+`cargo update --verbose`
+
+4. Test again
+
 
 # Text to emotion visualization models
 
