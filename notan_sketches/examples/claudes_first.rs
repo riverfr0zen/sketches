@@ -7,13 +7,13 @@ use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng};
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 const ROWS: u32 = 5;
 const COLS: u32 = 5;
-const CIRCLE_RADIUS: f32 = 50.0;
 
 #[derive(AppState)]
 struct State {
     rng: Random,
     tile_width: f32,
     tile_height: f32,
+    circle_radius: f32,
     circle_positions: Vec<Vec2>,
     show_grid: bool,
 }
@@ -26,13 +26,17 @@ fn init(_gfx: &mut Graphics) -> State {
     let tile_width = WORK_SIZE.x / COLS as f32;
     let tile_height = WORK_SIZE.y / ROWS as f32;
 
+    // Calculate circle radius - use 80% of the smallest tile dimension to allow movement
+    let circle_radius = (tile_width.min(tile_height) / 2.0) * 0.8;
+    log::info!("Circle radius: {}", circle_radius);
+
     // Generate random positions for each tile
     // Constrain positions so circles stay within tile boundaries
     let mut circle_positions = Vec::new();
     for _ in 0..(ROWS * COLS) {
         circle_positions.push(vec2(
-            rng.gen_range(CIRCLE_RADIUS..(tile_width - CIRCLE_RADIUS)),
-            rng.gen_range(CIRCLE_RADIUS..(tile_height - CIRCLE_RADIUS)),
+            rng.gen_range(circle_radius..(tile_width - circle_radius)),
+            rng.gen_range(circle_radius..(tile_height - circle_radius)),
         ));
     }
 
@@ -40,6 +44,7 @@ fn init(_gfx: &mut Graphics) -> State {
         rng,
         tile_width,
         tile_height,
+        circle_radius,
         circle_positions,
         show_grid: false,
     }
@@ -57,8 +62,12 @@ fn update(app: &mut App, state: &mut State) {
         state.circle_positions.clear();
         for _ in 0..(ROWS * COLS) {
             state.circle_positions.push(vec2(
-                state.rng.gen_range(CIRCLE_RADIUS..(state.tile_width - CIRCLE_RADIUS)),
-                state.rng.gen_range(CIRCLE_RADIUS..(state.tile_height - CIRCLE_RADIUS)),
+                state
+                    .rng
+                    .gen_range(state.circle_radius..(state.tile_width - state.circle_radius)),
+                state
+                    .rng
+                    .gen_range(state.circle_radius..(state.tile_height - state.circle_radius)),
             ));
         }
     }
@@ -98,7 +107,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             let circle_pos = state.circle_positions[tile_index];
 
             // Draw the circle at the unique position within this tile
-            draw.circle(CIRCLE_RADIUS)
+            draw.circle(state.circle_radius)
                 .position(tile_x + circle_pos.x, tile_y + circle_pos.y)
                 .color(Color::BLUE);
 
