@@ -139,7 +139,7 @@ fn configure_egui_fonts(title_font_bytes: &'static [u8]) -> FontDefinitions {
     let bytes = title_font_bytes.clone();
     egui_fonts
         .font_data
-        .insert("my_font".to_owned(), egui::FontData::from_static(&bytes));
+        .insert("my_font".to_owned(), std::sync::Arc::new(egui::FontData::from_static(&bytes)));
 
     // Put my font first (highest priority) for proportional text:
     egui_fonts
@@ -518,7 +518,7 @@ fn draw_main_nav(ui: &mut Ui, state: &mut State) {
         let richtext = RichText::new(text)
             .color(text_color)
             .text_style(small_button());
-        egui::Button::new(richtext).wrap(true).fill(fill)
+        egui::Button::new(richtext).wrap().fill(fill)
     }
 
     fn make_small_button(text: &str) -> egui::Button {
@@ -572,16 +572,13 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
             .text_style(analysis_panel_title());
 
         let panel_color = READ_VIEW_GUI_COLOR;
-        let panel_inner_margin_x = work_size.x * 0.02;
-        let panel_inner_margin_y = work_size.y * 0.02;
+        let panel_inner_margin = work_size.y * 0.02;
         egui::Window::new(title_text)
             // .default_pos(egui::Pos2::new(work_size.x, work_size.y))
             .default_pos(egui::Pos2::new(work_size.x, 0.0))
             .default_width(work_size.x * 0.2)
             .collapsible(false)
-            .frame(egui::Frame::none().fill(panel_color).inner_margin(
-                crate::epaint::Margin::symmetric(panel_inner_margin_x, panel_inner_margin_y),
-            ))
+            .frame(egui::Frame::NONE.fill(panel_color).inner_margin(panel_inner_margin))
             .show(ctx, |ui| {
                 state.visualizer.egui_metrics(ui, &analysis_panel_title);
             });
@@ -610,15 +607,9 @@ fn draw_with_main_panel<F>(
     } else {
         panel_inner_margin_w = work_size.y * 0.02;
     }
-    let panel_inner_margin_h = work_size.y * 0.02;
-    let panel_frame = egui::Frame::none()
+    let panel_frame = egui::Frame::NONE
         // .fill(ui_fill)
-        .inner_margin(crate::epaint::Margin {
-            left: panel_inner_margin_w,
-            right: panel_inner_margin_w,
-            top: panel_inner_margin_h,
-            bottom: panel_inner_margin_h,
-        });
+        .inner_margin(panel_inner_margin_w);
     egui::CentralPanel::default()
         .frame(panel_frame)
         .show(ctx, |ui| {
@@ -626,14 +617,9 @@ fn draw_with_main_panel<F>(
             ui.vertical(|ui| {
                 let heading_frame_margin = work_size.y * 0.02;
                 let heading_frame =
-                    egui::Frame::none()
+                    egui::Frame::NONE
                         .fill(ui_fill)
-                        .inner_margin(crate::epaint::Margin {
-                            left: 0.0,
-                            right: 0.0,
-                            top: 0.0,
-                            bottom: heading_frame_margin,
-                        });
+                        .inner_margin(egui::Vec2::new(0.0, heading_frame_margin));
                 heading_frame.show(ui, |ui| {
                     let logo_text = RichText::new("emo bg visualizer").text_style(logo());
 
@@ -691,14 +677,9 @@ fn draw_settings_view(
             |_, ui, state, _| {
                 let margin = work_size.y * 0.02;
                 let mut heading_frame =
-                    egui::Frame::none()
+                    egui::Frame::NONE
                         .fill(ui_fill)
-                        .inner_margin(crate::epaint::Margin {
-                            left: 0.0,
-                            right: 0.0,
-                            top: 0.0,
-                            bottom: margin,
-                        });
+                        .inner_margin(egui::Vec2::new(0.0, margin));
 
                 heading_frame.show(ui, |ui| {
                     ui.heading("General Options");
@@ -713,11 +694,11 @@ fn draw_settings_view(
                         VisualizerSelection::Tiles => "Tiled Texture",
                         _ => "Color Transition",
                     };
-                    egui::ComboBox::from_id_source("selected-visualizer")
+                    egui::ComboBox::new("selected-visualizer", "")
                         .selected_text(visualizer_name)
-                        .wrap(false)
+                        .wrap()
                         .show_ui(ui, |ui| {
-                            ui.style_mut().wrap = Some(false);
+                            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                             ui.selectable_value(
                                 &mut state.selected_visualizer,
                                 VisualizerSelection::ColorTransition,
@@ -736,7 +717,9 @@ fn draw_settings_view(
                         });
                 });
 
-                heading_frame.inner_margin.top = margin * 2.0;
+                heading_frame = egui::Frame::NONE
+                    .fill(ui_fill)
+                    .inner_margin(egui::Vec2::new(0.0, margin * 2.0));
                 heading_frame.show(ui, |ui| {
                     ui.heading("Visualizer Specific");
                 });
@@ -761,14 +744,9 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
             |ctx, ui, state, work_size| {
                 let heading_frame_margin = work_size.y * 0.01;
                 let heading_frame =
-                    egui::Frame::none()
+                    egui::Frame::NONE
                         .fill(ui_fill)
-                        .inner_margin(crate::epaint::Margin {
-                            left: 0.0,
-                            right: 0.0,
-                            top: 0.0,
-                            bottom: heading_frame_margin,
-                        });
+                        .inner_margin(egui::Vec2::new(0.0, heading_frame_margin));
 
                 // ui.separator();
                 heading_frame.show(ui, |ui| {
@@ -783,14 +761,9 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                             let mut style = (*ctx.style()).clone();
                             // let button_top_margin = work_size.y * 0.0075;
                             let button_top_margin = work_size.y * 0.01;
-                            let title_frame = egui::Frame::none()
+                            let title_frame = egui::Frame::NONE
                                 // .fill(egui::Color32::RED)
-                                .inner_margin(crate::epaint::Margin {
-                                    left: 0.0,
-                                    right: 0.0,
-                                    top: button_top_margin,
-                                    bottom: button_top_margin,
-                                });
+                                .inner_margin(egui::Vec2::new(0.0, button_top_margin));
                             let button_padding_x = work_size.x * 0.005;
                             let button_padding_y = work_size.y * 0.005;
                             style.spacing.button_padding =
@@ -804,7 +777,7 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
                                     .text_style(title_button());
                                 // if ui.add(egui::Button::new(&emodoc.title)).clicked() {
                                 let title_button = egui::Button::new(title_text)
-                                    .wrap(true)
+                                    .wrap()
                                     .fill(egui::Color32::GRAY);
                                 title_frame.show(ui, |ui| {
                                     if ui.add(title_button).clicked() {

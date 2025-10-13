@@ -79,10 +79,10 @@ impl SettingsUi for ColorTransitionVisualizer {
             let viz_options = &mut Self::get_options();
 
             ui.label("Color Method");
-            egui::ComboBox::from_id_source("color-method")
+            egui::ComboBox::new("color-method", "")
                 .selected_text(&self.color_method)
                 .show_ui(ui, |ui| {
-                    ui.style_mut().wrap = Some(false);
+                    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                     for option in viz_options.get_mut("Color Method").unwrap().iter() {
                         ui.selectable_value(&mut self.color_method, option.to_string(), option);
                     }
@@ -98,10 +98,10 @@ impl SettingsUi for TilesVisualizer {
             let viz_options = &mut Self::get_options();
 
             ui.label("Text Shadow");
-            egui::ComboBox::from_id_source("shadow-style")
+            egui::ComboBox::new("shadow-style", "")
                 .selected_text(&self.text_shadow_style)
                 .show_ui(ui, |ui| {
-                    ui.style_mut().wrap = Some(false);
+                    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                     for option in viz_options.get_mut("Shadow Style").unwrap().iter() {
                         ui.selectable_value(
                             &mut self.text_shadow_style,
@@ -124,10 +124,10 @@ impl SettingsUi for TiledShadersVisualizer {
             let viz_options = &mut Self::get_options();
 
             ui.label("Text Shadow");
-            egui::ComboBox::from_id_source("shadow-style")
+            egui::ComboBox::new("shadow-style", "")
                 .selected_text(&self.text_shadow_style)
                 .show_ui(ui, |ui| {
-                    ui.style_mut().wrap = Some(false);
+                    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                     for option in viz_options.get_mut("Shadow Style").unwrap().iter() {
                         ui.selectable_value(
                             &mut self.text_shadow_style,
