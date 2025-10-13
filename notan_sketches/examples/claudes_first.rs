@@ -2,11 +2,13 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
+use notan_sketches::colors;
+use notan_sketches::colors::PalettesSelection;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng};
 
 const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
-const ROWS: u32 = 5;
-const COLS: u32 = 5;
+const ROWS: u32 = 15;
+const COLS: u32 = 15;
 
 #[derive(AppState)]
 struct State {
@@ -15,6 +17,8 @@ struct State {
     tile_height: f32,
     circle_radius: f32,
     circle_positions: Vec<Vec2>,
+    circle_colors: Vec<Color>,
+    palette: PalettesSelection,
     show_grid: bool,
 }
 
@@ -30,14 +34,20 @@ fn init(_gfx: &mut Graphics) -> State {
     let circle_radius = (tile_width.min(tile_height) / 2.0) * 0.8;
     log::info!("Circle radius: {}", circle_radius);
 
-    // Generate random positions for each tile
+    // Choose a random palette
+    let palette: PalettesSelection = rng.gen();
+    log::info!("Palette: {:?}", palette);
+
+    // Generate random positions and colors for each tile
     // Constrain positions so circles stay within tile boundaries
     let mut circle_positions = Vec::new();
+    let mut circle_colors = Vec::new();
     for _ in 0..(ROWS * COLS) {
         circle_positions.push(vec2(
             rng.gen_range(circle_radius..(tile_width - circle_radius)),
             rng.gen_range(circle_radius..(tile_height - circle_radius)),
         ));
+        circle_colors.push(colors::Palettes::choose_color(&palette));
     }
 
     State {
@@ -46,6 +56,8 @@ fn init(_gfx: &mut Graphics) -> State {
         tile_height,
         circle_radius,
         circle_positions,
+        circle_colors,
+        palette,
         show_grid: false,
     }
 }
@@ -57,9 +69,14 @@ fn update(app: &mut App, state: &mut State) {
         state.rng.reseed(new_seed);
         log::info!("New seed: {}", new_seed);
 
-        // Generate new random positions for each tile
+        // Choose a new random palette
+        state.palette = state.rng.gen();
+        log::info!("Palette: {:?}", state.palette);
+
+        // Generate new random positions and colors for each tile
         // Constrain positions so circles stay within tile boundaries
         state.circle_positions.clear();
+        state.circle_colors.clear();
         for _ in 0..(ROWS * COLS) {
             state.circle_positions.push(vec2(
                 state
@@ -69,6 +86,9 @@ fn update(app: &mut App, state: &mut State) {
                     .rng
                     .gen_range(state.circle_radius..(state.tile_height - state.circle_radius)),
             ));
+            state
+                .circle_colors
+                .push(colors::Palettes::choose_color(&state.palette));
         }
     }
 
@@ -103,13 +123,14 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             let tile_x = col as f32 * state.tile_width;
             let tile_y = row as f32 * state.tile_height;
 
-            // Get the position for this specific tile
+            // Get the position and color for this specific tile
             let circle_pos = state.circle_positions[tile_index];
+            let circle_color = state.circle_colors[tile_index];
 
             // Draw the circle at the unique position within this tile
             draw.circle(state.circle_radius)
                 .position(tile_x + circle_pos.x, tile_y + circle_pos.y)
-                .color(Color::BLUE);
+                .color(circle_color);
 
             tile_index += 1;
         }
