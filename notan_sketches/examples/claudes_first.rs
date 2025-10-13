@@ -14,6 +14,7 @@ struct State {
     tile_width: f32,
     tile_height: f32,
     circle_positions: Vec<Vec2>,
+    show_grid: bool,
 }
 
 fn init(_gfx: &mut Graphics) -> State {
@@ -38,6 +39,7 @@ fn init(_gfx: &mut Graphics) -> State {
         tile_width,
         tile_height,
         circle_positions,
+        show_grid: false,
     }
 }
 
@@ -56,6 +58,11 @@ fn update(app: &mut App, state: &mut State) {
                 state.rng.gen_range(0.0..state.tile_height),
             ));
         }
+    }
+
+    if app.keyboard.was_pressed(KeyCode::G) {
+        state.show_grid = !state.show_grid;
+        log::debug!("Grid toggled: {}", state.show_grid);
     }
 }
 
@@ -93,6 +100,29 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
                 .color(Color::BLUE);
 
             tile_index += 1;
+        }
+    }
+
+    // Draw grid if enabled
+    if state.show_grid {
+        // Draw vertical lines
+        for col in 0..=COLS {
+            let x = col as f32 * state.tile_width;
+            draw.path()
+                .move_to(x, 0.0)
+                .line_to(x, WORK_SIZE.y)
+                .stroke_color(Color::GREEN)
+                .stroke(1.0);
+        }
+
+        // Draw horizontal lines
+        for row in 0..=ROWS {
+            let y = row as f32 * state.tile_height;
+            draw.path()
+                .move_to(0.0, y)
+                .line_to(WORK_SIZE.x, y)
+                .stroke_color(Color::GREEN)
+                .stroke(1.0);
         }
     }
 
