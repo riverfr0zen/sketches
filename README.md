@@ -166,15 +166,6 @@ Since notan's text support doesn't support line-spacing yet, I found an alternat
 
 # Outstanding Issues
 
-## 0.13.0 upgrade issues
-
-When upgrading to notan 0.13.0, the following issues were seen:
-
-* emo_bg_visualizer: various egui-related compilation issues
-
-These issues have not been resolved yet.
-
-
 ## Hot reloader issue
 
 It seems there is an issue with the shader hot reloader (e.g. try running erratic_wave_shader from the terminal). Not sure when this came up, but the best lead to fixing is probably in `notan_sketches/src/shaderutils.rs`. See the comment above the `create_hot_shape_pipeline` fn.
