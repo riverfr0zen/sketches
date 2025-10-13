@@ -126,13 +126,9 @@ Notan doesn't yet support line spacing configuration. Modified fonts with custom
 
 ## Outstanding Issues
 
-### Shader Hot Reloader
+### emo_bg_visualizer (RESOLVED)
 
-The shader hot reloader (used in `erratic_wave_shader`, `color_points_shader`) currently has issues. See comments in `notan_sketches/src/shaderutils.rs` above `create_hot_shape_pipeline()`.
-
-### emo_bg_visualizer
-
-Has egui-related compilation issues after the 0.13.0 upgrade. Not yet resolved.
+Had egui-related compilation issues after the 0.13.0 upgrade. Fixed by updating to new egui 0.31.1 API.
 
 ### Mobile Rendering (Pixel 8a)
 

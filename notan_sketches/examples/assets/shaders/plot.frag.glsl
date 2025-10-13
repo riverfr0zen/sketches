@@ -3,7 +3,7 @@ precision mediump float;
 layout(location = 0) in vec4 v_color;
 layout(location = 0) out vec4 color;
 
-layout(set = 0, binding = 2) uniform Common {
+layout(binding = 0) uniform Common {
     float u_time;
     vec2 u_resolution;
 };

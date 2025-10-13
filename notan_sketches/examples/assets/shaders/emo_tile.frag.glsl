@@ -4,18 +4,18 @@ layout(location = 0) in vec4 v_color;
 layout(location = 0) out vec4 color;
 
 
-layout(set = 0, binding = 0) uniform Common {
+layout(binding = 0) uniform Common {
     float u_time;
     float u_resolution_x;
     float u_resolution_y;
 };
 
-// layout(set = 0, binding = 0) uniform TileColors {
+// layout(binding = 1) uniform TileColors {
 //     vec3 tile_color;
 //     vec3 bg_color;
 // };
 
-layout(set = 0, binding = 0) uniform TileColors {
+layout(binding = 1) uniform TileColors {
     float tile_color_r;
     float tile_color_g;
     float tile_color_b;

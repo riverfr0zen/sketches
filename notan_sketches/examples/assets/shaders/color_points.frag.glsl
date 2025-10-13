@@ -4,21 +4,21 @@ layout(location = 0) in vec4 v_color;
 layout(location = 0) out vec4 color;
 
 
-layout(set = 0, binding = 0) uniform Common {
+layout(binding = 0) uniform Common {
     float u_time;
     vec2 u_resolution;
 };
 
-layout(set = 0, binding = 0) uniform BgColor {
+layout(binding = 1) uniform BgColor {
     vec3 bg_color;
 };
 
-layout(set = 0, binding = 0) uniform ColorSource1 {
+layout(binding = 2) uniform ColorSource1 {
     vec3 color1;
     vec2 color1_pos;
 };
 
-layout(set = 0, binding = 0) uniform ColorSource2 {
+layout(binding = 3) uniform ColorSource2 {
     vec3 color2;
     vec2 color2_pos;
 };

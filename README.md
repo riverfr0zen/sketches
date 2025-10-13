@@ -166,16 +166,6 @@ Since notan's text support doesn't support line-spacing yet, I found an alternat
 
 # Outstanding Issues
 
-## Hot reloader issue
-
-It seems there is an issue with the shader hot reloader (e.g. try running erratic_wave_shader from the terminal). Not sure when this came up, but the best lead to fixing is probably in `notan_sketches/src/shaderutils.rs`. See the comment above the `create_hot_shape_pipeline` fn.
-
-Known affected sketches (there may be more):
-
-* erratic_wave_shader
-* color_points_shader
-
-
 ## Issue with native renderer on Pixel 8a
 
 It seems that Notan's web renderer doesn't play well with the native renderer on Pixel 8a. Notan apps are choppy and unresponsive by default on the device, and in some cases (e.g. when a number of RenderTextures are created) the apps can even crash from low memory.
