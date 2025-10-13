@@ -8,6 +8,7 @@ const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 
 #[derive(AppState)]
 struct State {
+    rng: Random,
     circle_pos: Vec2,
 }
 
@@ -21,7 +22,23 @@ fn init(_gfx: &mut Graphics) -> State {
         rng.gen_range(0.0..WORK_SIZE.y),
     );
 
-    State { circle_pos }
+    State { rng, circle_pos }
+}
+
+fn update(app: &mut App, state: &mut State) {
+    if app.keyboard.was_pressed(KeyCode::R) {
+        // Reseed the RNG with a new random seed
+        let new_seed = state.rng.gen();
+        state.rng.reseed(new_seed);
+        log::info!("New seed: {}", new_seed);
+
+        // Generate new random position with reseeded RNG
+        state.circle_pos = vec2(
+            state.rng.gen_range(0.0..WORK_SIZE.x),
+            state.rng.gen_range(0.0..WORK_SIZE.y),
+        );
+        log::debug!("New position: {:?}", state.circle_pos);
+    }
 }
 
 #[notan_main]
@@ -32,6 +49,7 @@ fn main() -> Result<(), String> {
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig)
+        .update(update)
         .draw(draw)
         .build()
 }
