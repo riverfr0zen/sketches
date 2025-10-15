@@ -20,11 +20,14 @@ const UPDATE_STEP: f32 = 0.0;
 // Capture interval
 // const CAPTURE_INTERVAL: f32 = 10.0;
 // const CAPTURE_INTERVAL: f32 = 40.0;
-const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
+const CAPTURE_INTERVAL: f32 = 60.0;
+// const CAPTURE_INTERVAL: f32 = 60.0 * 15.0;
 // const CAPTURE_INTERVAL: f32 = 60.0 * 5.0;
-const MAX_CAPTURES: u32 = 1;
+const MAX_CAPTURES: u32 = 3;
 
-const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL * MAX_CAPTURES as f32;
+// const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL * MAX_CAPTURES as f32;
+const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=CAPTURE_INTERVAL;
+// const RADIAL_CHANGE_INTERVAL: RangeInclusive<f32> = 5.0..=30.0;
 const PARENT_RADIUS: RangeInclusive<f32> = 0.01..=0.1;
 const SPAWN_RADIUS: RangeInclusive<f32> = 0.01..=0.075;
 const SPAWN2_RADIUS: RangeInclusive<f32> = 0.005..=0.05;
