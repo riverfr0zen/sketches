@@ -52,7 +52,9 @@ struct State {
     circle_positions: Vec<Vec2>,
     circle_colors: Vec<Color>,
     child_circles: Vec<Vec<ChildCircle>>,
+    tile_bg_colors: Vec<Color>,
     palette: PalettesSelection,
+    bg_palette: PalettesSelection,
     show_grid: bool,
 }
 
@@ -70,15 +72,23 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let circle_radius = (tile_width.min(tile_height) / 2.0) * 0.8;
     log::info!("Circle radius: {}", circle_radius);
 
-    // Choose a random palette
+    // Choose a random palette for circles
     let palette: PalettesSelection = rng.gen();
-    log::info!("Palette: {:?}", palette);
+    log::info!("Circle Palette: {:?}", palette);
+
+    // Choose a different palette for backgrounds
+    let mut bg_palette: PalettesSelection = rng.gen();
+    while format!("{:?}", bg_palette) == format!("{:?}", palette) {
+        bg_palette = rng.gen();
+    }
+    log::info!("Background Palette: {:?}", bg_palette);
 
     // Generate random positions and colors for each tile
     // Constrain positions so circles stay within tile boundaries
     let mut circle_positions = Vec::new();
     let mut circle_colors = Vec::new();
     let mut child_circles = Vec::new();
+    let mut tile_bg_colors = Vec::new();
 
     for _ in 0..(ROWS * COLS) {
         circle_positions.push(vec2(
@@ -87,6 +97,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         ));
         let parent_color = colors::Palettes::choose_color(&palette);
         circle_colors.push(parent_color);
+
+        // Generate background color for this tile
+        let bg_color = colors::Palettes::choose_color(&bg_palette);
+        tile_bg_colors.push(bg_color);
 
         // Generate child circles for this parent
         let num_children = rng.gen_range(0..=MAX_CHILD_CIRCLES);
@@ -115,7 +129,9 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         circle_positions,
         circle_colors,
         child_circles,
+        tile_bg_colors,
         palette,
+        bg_palette,
         show_grid: false,
     }
 }
@@ -127,15 +143,23 @@ fn update(app: &mut App, state: &mut State) {
         state.rng.reseed(new_seed);
         log::info!("New seed: {}", new_seed);
 
-        // Choose a new random palette
+        // Choose a new random palette for circles
         state.palette = state.rng.gen();
-        log::info!("Palette: {:?}", state.palette);
+        log::info!("Circle Palette: {:?}", state.palette);
+
+        // Choose a different palette for backgrounds
+        state.bg_palette = state.rng.gen();
+        while format!("{:?}", state.bg_palette) == format!("{:?}", state.palette) {
+            state.bg_palette = state.rng.gen();
+        }
+        log::info!("Background Palette: {:?}", state.bg_palette);
 
         // Generate new random positions and colors for each tile
         // Constrain positions so circles stay within tile boundaries
         state.circle_positions.clear();
         state.circle_colors.clear();
         state.child_circles.clear();
+        state.tile_bg_colors.clear();
         for _ in 0..(ROWS * COLS) {
             state.circle_positions.push(vec2(
                 state
@@ -147,6 +171,10 @@ fn update(app: &mut App, state: &mut State) {
             ));
             let parent_color = colors::Palettes::choose_color(&state.palette);
             state.circle_colors.push(parent_color);
+
+            // Generate background color for this tile
+            let bg_color = colors::Palettes::choose_color(&state.bg_palette);
+            state.tile_bg_colors.push(bg_color);
 
             // Generate child circles for this parent
             let num_children = state.rng.gen_range(0..=MAX_CHILD_CIRCLES);
@@ -238,6 +266,11 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             // Calculate the tile's top-left corner
             let tile_x = col as f32 * state.tile_width;
             let tile_y = row as f32 * state.tile_height;
+
+            // Draw tile background
+            let bg_color = state.tile_bg_colors[tile_index];
+            draw.rect((tile_x, tile_y), (state.tile_width, state.tile_height))
+                .color(bg_color);
 
             // Get the position and color for this specific tile
             let circle_pos = state.circle_positions[tile_index];
