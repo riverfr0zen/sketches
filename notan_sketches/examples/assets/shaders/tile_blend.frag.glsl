@@ -16,6 +16,13 @@ layout(binding = 2) uniform TileGridInfo {
     vec2 u_grid_size; // x = cols, y = rows
 };
 
+// Rounded rectangle SDF (signed distance field)
+// Returns negative values inside the rounded rect, positive outside
+float roundedBoxSDF(vec2 center_pos, vec2 size, float radius) {
+    vec2 d = abs(center_pos) - size + radius;
+    return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0) - radius;
+}
+
 void main() {
     // Use normalized coordinates - Notan's RenderTexture handles Y-flip automatically
     vec2 st = gl_FragCoord.xy / u_resolution;
@@ -54,7 +61,7 @@ void main() {
     // - Decrease blend_start (e.g., 0.2) for wider blend zones
     // - Increase blend_start (e.g., 0.4) for narrower blend zones
     // - blend_end should stay at 0.5 to blend fully at the tile edge
-    float blend_start = 0.3;
+    float blend_start = 0.0;
     float blend_end = 0.5;
 
     // Remap tile_frac so blending happens symmetrically from center outward
@@ -76,5 +83,24 @@ void main() {
 
     // Mix between pure tile color and bilinear blend based on distance from center
     float blend_amount = max(blend_weights.x, blend_weights.y);
-    color = mix(current_pure, bilinear, blend_amount);
+    vec4 blended_color = mix(current_pure, bilinear, blend_amount);
+
+    // Add rounded corners to tiles
+    // Calculate position relative to tile center (in tile-local coordinates)
+    vec2 tile_size = u_resolution / u_grid_size;
+    vec2 tile_local_pos = (tile_frac - 0.5) * tile_size;
+
+    // Radius of rounded corners (adjust this value to control roundness)
+    float corner_radius = min(tile_size.x, tile_size.y) * 0.15; // 15% of smallest dimension
+
+    // Calculate the rounded rectangle SDF
+    float dist = roundedBoxSDF(tile_local_pos, tile_size * 0.5, corner_radius);
+
+    // Create a smooth fade-out beyond the rounded edges
+    float fade_distance = 20.0; // Distance over which to fade out
+    float alpha = 1.0 - smoothstep(-1.0, fade_distance, dist);
+
+    // Apply rounded corners: blend between bilinear (background) and tile color based on alpha
+    // In corner gaps, the bilinear blend will show through
+    color = mix(bilinear, blended_color, alpha);
 }
