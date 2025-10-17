@@ -51,6 +51,7 @@ void main() {
     vec4 c01 = u_tile_colors[y1 * cols + x0]; // bottom-left
     vec4 c11 = u_tile_colors[y1 * cols + x1]; // bottom-right
 
+    //
     // Create smooth blend weights that remap tile_frac to blend more near edges
     // This creates a region in the center that stays pure color
     //
@@ -61,7 +62,10 @@ void main() {
     // - Decrease blend_start (e.g., 0.2) for wider blend zones
     // - Increase blend_start (e.g., 0.4) for narrower blend zones
     // - blend_end should stay at 0.5 to blend fully at the tile edge
-    float blend_start = 0.0;
+    // 
+    // float blend_start = 0.3;
+    // float blend_end = 0.5;
+    float blend_start = 0.3;
     float blend_end = 0.5;
 
     // Remap tile_frac so blending happens symmetrically from center outward
@@ -91,13 +95,18 @@ void main() {
     vec2 tile_local_pos = (tile_frac - 0.5) * tile_size;
 
     // Radius of rounded corners (adjust this value to control roundness)
-    float corner_radius = min(tile_size.x, tile_size.y) * 0.15; // 15% of smallest dimension
+    // float corner_radius = min(tile_size.x, tile_size.y) * 0.15; // 15% of smallest dimension
+    float corner_radius = min(tile_size.x, tile_size.y) * 0.6; // 15% of smallest dimension
 
     // Calculate the rounded rectangle SDF
     float dist = roundedBoxSDF(tile_local_pos, tile_size * 0.5, corner_radius);
 
     // Create a smooth fade-out beyond the rounded edges
-    float fade_distance = 20.0; // Distance over which to fade out
+    // Calculate fade distance based on grid density
+    // Based on observations: 5x5 needs 50.0, 10x10 needs 10.0
+    // Using proportional scaling relative to tile size
+    float avg_tile_size = (tile_size.x + tile_size.y) * 0.5;
+    float fade_distance = avg_tile_size * 0.13; // Empirically derived: works for both 5x5 and 10x10
     float alpha = 1.0 - smoothstep(-1.0, fade_distance, dist);
 
     // Apply rounded corners: blend between bilinear (background) and tile color based on alpha
