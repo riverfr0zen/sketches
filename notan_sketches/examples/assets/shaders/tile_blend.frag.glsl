@@ -106,7 +106,8 @@ void main() {
     // Based on observations: 5x5 needs 50.0, 10x10 needs 10.0
     // Using proportional scaling relative to tile size
     float avg_tile_size = (tile_size.x + tile_size.y) * 0.5;
-    float fade_distance = avg_tile_size * 0.13; // Empirically derived: works for both 5x5 and 10x10
+    // float fade_distance = avg_tile_size * 0.13; // Empirically derived: works for both 5x5 and 10x10
+    float fade_distance = avg_tile_size * 0.05; // Empirically derived: works for both 5x5 and 10x10
     float alpha = 1.0 - smoothstep(-1.0, fade_distance, dist);
 
     // Apply rounded corners: blend between bilinear (background) and tile color based on alpha

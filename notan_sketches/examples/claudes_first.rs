@@ -13,8 +13,10 @@ use notan_sketches::utils::{
 use palette::{FromColor, Hsv, Shade, Srgb};
 use std::f32::consts::PI;
 
-const ROWS: u32 = 15;
-const COLS: u32 = 15;
+// const ROWS: u32 = 15;
+// const COLS: u32 = 15;
+const ROWS: u32 = 10;
+const COLS: u32 = 10;
 const MAX_CHILD_CIRCLES: u32 = 3;
 const DARKEN_MAX: f32 = 0.2;
 const LIGHTEN_MAX: f32 = 0.3;
@@ -146,7 +148,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     #[cfg(not(debug_assertions))]
     let pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
     #[cfg(debug_assertions)]
-    let pipeline = create_hot_shape_pipeline(gfx, "examples/assets/shaders/tile_blend.frag.glsl").unwrap();
+    let pipeline =
+        create_hot_shape_pipeline(gfx, "examples/assets/shaders/tile_blend.frag.glsl").unwrap();
 
     // Create common uniform buffer
     let common_data = CommonData::new(0.0, work_size);
