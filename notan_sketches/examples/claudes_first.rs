@@ -4,13 +4,21 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::colors::PalettesSelection;
-use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions};
+use notan_sketches::utils::{
+    get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions,
+};
 use palette::{FromColor, Hsv, Shade, Srgb};
 use std::f32::consts::PI;
 
 const ROWS: u32 = 15;
 const COLS: u32 = 15;
 const MAX_CHILD_CIRCLES: u32 = 3;
+const DARKEN_MAX: f32 = 0.2;
+const LIGHTEN_MAX: f32 = 0.3;
+const CHILD_RADIUS_MOD_MAX: f32 = 0.5;
+const CHILD_RADIUS_MOD_MIN: f32 = 0.125;
+const GRID_STROKE: f32 = 5.0;
+
 
 #[derive(Clone)]
 struct ChildCircle {
@@ -25,9 +33,9 @@ fn vary_color(color: Color, rng: &mut Random) -> Color {
 
     // Randomly darken or lighten
     if rng.gen_bool(0.5) {
-        hsv = hsv.darken(0.2);
+        hsv = hsv.darken(rng.gen_range(0.0..DARKEN_MAX));
     } else {
-        hsv = hsv.lighten(0.2);
+        hsv = hsv.lighten(rng.gen_range(0.0..LIGHTEN_MAX));
     }
 
     let result = Srgb::from_color(hsv);
@@ -85,9 +93,15 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         let mut children = Vec::new();
         for _ in 0..num_children {
             let angle = rng.gen_range(0.0..(2.0 * PI));
-            let child_radius = rng.gen_range((circle_radius / 8.0)..(circle_radius / 3.0));
+            let child_radius = rng.gen_range(
+                (circle_radius * CHILD_RADIUS_MOD_MIN)..(circle_radius * CHILD_RADIUS_MOD_MAX),
+            );
             let child_color = vary_color(parent_color, &mut rng);
-            children.push(ChildCircle { angle, radius: child_radius, color: child_color });
+            children.push(ChildCircle {
+                angle,
+                radius: child_radius,
+                color: child_color,
+            });
         }
         child_circles.push(children);
     }
@@ -139,9 +153,15 @@ fn update(app: &mut App, state: &mut State) {
             let mut children = Vec::new();
             for _ in 0..num_children {
                 let angle = state.rng.gen_range(0.0..(2.0 * PI));
-                let child_radius = state.rng.gen_range((state.circle_radius / 8.0)..(state.circle_radius / 3.0));
+                let child_radius = state
+                    .rng
+                    .gen_range((state.circle_radius / 8.0)..(state.circle_radius / 3.0));
                 let child_color = vary_color(parent_color, &mut state.rng);
-                children.push(ChildCircle { angle, radius: child_radius, color: child_color });
+                children.push(ChildCircle {
+                    angle,
+                    radius: child_radius,
+                    color: child_color,
+                });
             }
             state.child_circles.push(children);
         }
@@ -187,6 +207,30 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
     // Set up draw with scaling projection (aspect_fit = false)
     let mut draw = get_draw_setup(gfx, state.work_size, false, Color::WHITE);
 
+    // Draw grid if enabled
+    if state.show_grid {
+        // Draw vertical lines
+        for col in 0..=COLS {
+            let x = col as f32 * state.tile_width;
+            draw.path()
+                .move_to(x, 0.0)
+                .line_to(x, state.work_size.y)
+                .stroke_color(Color::GREEN)
+                .stroke(GRID_STROKE);
+        }
+
+        // Draw horizontal lines
+        for row in 0..=ROWS {
+            let y = row as f32 * state.tile_height;
+            draw.path()
+                .move_to(0.0, y)
+                .line_to(state.work_size.x, y)
+                .stroke_color(Color::GREEN)
+                .stroke(GRID_STROKE);
+        }
+    }
+
+
     // Draw tiled circles
     let mut tile_index = 0;
     for row in 0..ROWS {
@@ -222,28 +266,6 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
         }
     }
 
-    // Draw grid if enabled
-    if state.show_grid {
-        // Draw vertical lines
-        for col in 0..=COLS {
-            let x = col as f32 * state.tile_width;
-            draw.path()
-                .move_to(x, 0.0)
-                .line_to(x, state.work_size.y)
-                .stroke_color(Color::GREEN)
-                .stroke(1.0);
-        }
-
-        // Draw horizontal lines
-        for row in 0..=ROWS {
-            let y = row as f32 * state.tile_height;
-            draw.path()
-                .move_to(0.0, y)
-                .line_to(state.work_size.x, y)
-                .stroke_color(Color::GREEN)
-                .stroke(1.0);
-        }
-    }
 
     // Render to screen
     gfx.render(&draw);
