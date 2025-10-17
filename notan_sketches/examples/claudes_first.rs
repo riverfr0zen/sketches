@@ -4,6 +4,9 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::colors::PalettesSelection;
+use notan_sketches::shaderutils::{
+    create_hot_shape_pipeline, CommonData, ShaderReloadManager, ShaderRenderTexture,
+};
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions,
 };
@@ -19,12 +22,22 @@ const CHILD_RADIUS_MOD_MAX: f32 = 0.5;
 const CHILD_RADIUS_MOD_MIN: f32 = 0.125;
 const GRID_STROKE: f32 = 5.0;
 
+#[cfg(not(debug_assertions))]
+const FRAG: ShaderSource =
+    notan::include_fragment_shader!("examples/assets/shaders/tile_blend.frag.glsl");
+
 
 #[derive(Clone)]
 struct ChildCircle {
     angle: f32,
     radius: f32,
     color: Color,
+}
+
+#[uniform]
+#[derive(Copy, Clone)]
+struct TileGridInfo {
+    pub grid_size: Vec2,
 }
 
 fn vary_color(color: Color, rng: &mut Random) -> Color {
@@ -56,6 +69,15 @@ struct State {
     palette: PalettesSelection,
     bg_palette: PalettesSelection,
     show_grid: bool,
+    // Shader-related fields
+    pipeline: Pipeline,
+    common_ubo: Buffer,
+    tile_colors_ubo: Buffer,
+    tile_grid_info_ubo: Buffer,
+    srt: ShaderRenderTexture,
+    tile_colors_dirty: bool,
+    #[cfg(debug_assertions)]
+    hot_mgr: ShaderReloadManager,
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
@@ -120,6 +142,48 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         child_circles.push(children);
     }
 
+    // Initialize shader pipeline
+    #[cfg(not(debug_assertions))]
+    let pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
+    #[cfg(debug_assertions)]
+    let pipeline = create_hot_shape_pipeline(gfx, "examples/assets/shaders/tile_blend.frag.glsl").unwrap();
+
+    // Create common uniform buffer
+    let common_data = CommonData::new(0.0, work_size);
+    let common_ubo = gfx
+        .create_uniform_buffer(1, "Common")
+        .with_data(&common_data)
+        .build()
+        .unwrap();
+
+    // Create tile colors uniform buffer (flat array of rgba values)
+    let mut tile_colors_flat: Vec<f32> = Vec::with_capacity(ROWS as usize * COLS as usize * 4);
+    for color in &tile_bg_colors {
+        tile_colors_flat.push(color.r);
+        tile_colors_flat.push(color.g);
+        tile_colors_flat.push(color.b);
+        tile_colors_flat.push(color.a);
+    }
+
+    let tile_colors_ubo = gfx
+        .create_uniform_buffer(2, "TileColors")
+        .with_data(tile_colors_flat.as_slice())
+        .build()
+        .unwrap();
+
+    // Create grid info uniform buffer
+    let grid_info = TileGridInfo {
+        grid_size: vec2(COLS as f32, ROWS as f32),
+    };
+
+    let tile_grid_info_ubo = gfx
+        .create_uniform_buffer(3, "TileGridInfo")
+        .with_data(&grid_info)
+        .build()
+        .unwrap();
+
+    let srt = ShaderRenderTexture::new(gfx, work_size.x, work_size.y);
+
     State {
         rng,
         work_size,
@@ -133,10 +197,22 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         palette,
         bg_palette,
         show_grid: false,
+        pipeline,
+        common_ubo,
+        tile_colors_ubo,
+        tile_grid_info_ubo,
+        srt,
+        tile_colors_dirty: false,
+        #[cfg(debug_assertions)]
+        hot_mgr: ShaderReloadManager::default(),
     }
 }
 
 fn update(app: &mut App, state: &mut State) {
+    // Handle shader hot reloading in debug mode (handled in draw function)
+    #[cfg(debug_assertions)]
+    state.hot_mgr.update();
+
     if app.keyboard.was_pressed(KeyCode::R) {
         // Reseed the RNG with a new random seed
         let new_seed = state.rng.gen();
@@ -193,6 +269,9 @@ fn update(app: &mut App, state: &mut State) {
             }
             state.child_circles.push(children);
         }
+
+        // Mark tile colors as dirty so they'll be updated in draw
+        state.tile_colors_dirty = true;
     }
 
     if app.keyboard.was_pressed(KeyCode::G) {
@@ -231,9 +310,52 @@ fn main() -> Result<(), String> {
         .build()
 }
 
-fn draw(gfx: &mut Graphics, state: &mut State) {
+fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    // Handle shader hot reloading in debug mode
+    #[cfg(debug_assertions)]
+    if state.hot_mgr.needs_reload() {
+        match create_hot_shape_pipeline(gfx, "examples/assets/shaders/tile_blend.frag.glsl") {
+            Ok(pipeline) => state.pipeline = pipeline,
+            Err(err) => log::error!("{}", err),
+        }
+    }
+
+    // Update tile colors buffer if colors changed
+    if state.tile_colors_dirty {
+        let mut tile_colors_flat: Vec<f32> = Vec::with_capacity(ROWS as usize * COLS as usize * 4);
+        for color in &state.tile_bg_colors {
+            tile_colors_flat.push(color.r);
+            tile_colors_flat.push(color.g);
+            tile_colors_flat.push(color.b);
+            tile_colors_flat.push(color.a);
+        }
+
+        gfx.set_buffer_data(&state.tile_colors_ubo, tile_colors_flat.as_slice());
+        state.tile_colors_dirty = false;
+    }
+
+    // Render blended tile background using shader
+    let u_time = app.timer.elapsed_f32();
+    let common_data = CommonData::new(u_time, state.work_size);
+
+    // Render shader to texture
+    state.srt.draw_filled(
+        gfx,
+        &state.pipeline,
+        vec![
+            &state.common_ubo,
+            &state.tile_colors_ubo,
+            &state.tile_grid_info_ubo,
+        ],
+    );
+
     // Set up draw with scaling projection (aspect_fit = false)
     let mut draw = get_draw_setup(gfx, state.work_size, false, Color::WHITE);
+
+    // Draw the shader background
+    draw.image(&state.srt.rt)
+        .position(0.0, 0.0)
+        .size(state.work_size.x, state.work_size.y);
 
     // Draw grid if enabled
     if state.show_grid {
@@ -258,7 +380,6 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
         }
     }
 
-
     // Draw tiled circles
     let mut tile_index = 0;
     for row in 0..ROWS {
@@ -266,11 +387,6 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             // Calculate the tile's top-left corner
             let tile_x = col as f32 * state.tile_width;
             let tile_y = row as f32 * state.tile_height;
-
-            // Draw tile background
-            let bg_color = state.tile_bg_colors[tile_index];
-            draw.rect((tile_x, tile_y), (state.tile_width, state.tile_height))
-                .color(bg_color);
 
             // Get the position and color for this specific tile
             let circle_pos = state.circle_positions[tile_index];
@@ -302,4 +418,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
 
     // Render to screen
     gfx.render(&draw);
+
+    // Update common uniform buffer for next frame
+    gfx.set_buffer_data(&state.common_ubo, &common_data);
 }
