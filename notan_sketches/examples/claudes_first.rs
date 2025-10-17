@@ -4,15 +4,15 @@ use notan::math::{vec2, Vec2};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::colors::PalettesSelection;
-use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng};
+use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions};
 
-const WORK_SIZE: Vec2 = vec2(800.0, 600.0);
 const ROWS: u32 = 15;
 const COLS: u32 = 15;
 
 #[derive(AppState)]
 struct State {
     rng: Random,
+    work_size: Vec2,
     tile_width: f32,
     tile_height: f32,
     circle_radius: f32,
@@ -22,13 +22,15 @@ struct State {
     show_grid: bool,
 }
 
-fn init(_gfx: &mut Graphics) -> State {
+fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (mut rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
+    let work_size = get_work_size_for_screen(app, gfx);
+
     // Calculate tile dimensions
-    let tile_width = WORK_SIZE.x / COLS as f32;
-    let tile_height = WORK_SIZE.y / ROWS as f32;
+    let tile_width = work_size.x / COLS as f32;
+    let tile_height = work_size.y / ROWS as f32;
 
     // Calculate circle radius - use 80% of the smallest tile dimension to allow movement
     let circle_radius = (tile_width.min(tile_height) / 2.0) * 0.8;
@@ -52,6 +54,7 @@ fn init(_gfx: &mut Graphics) -> State {
 
     State {
         rng,
+        work_size,
         tile_width,
         tile_height,
         circle_radius,
@@ -100,7 +103,24 @@ fn update(app: &mut App, state: &mut State) {
 
 #[notan_main]
 fn main() -> Result<(), String> {
-    let win_config = get_common_win_config();
+    #[cfg(not(target_arch = "wasm32"))]
+    let win_config = get_common_win_config()
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_size(
+            // let win_config = get_common_win_config().high_dpi(true).size(
+            // ScreenDimensions::RES_4KISH.x as u32,
+            // ScreenDimensions::RES_4KISH.y as u32,
+            // ScreenDimensions::RES_HDPLUS.x as i32,
+            // ScreenDimensions::RES_HDPLUS.y as i32,
+            ScreenDimensions::RES_1080P.x as u32,
+            ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::DEFAULT.x as i32,
+            // ScreenDimensions::DEFAULT.y as i32,
+        );
+
+    #[cfg(target_arch = "wasm32")]
+    let win_config = get_common_win_config().set_high_dpi(true);
 
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
@@ -113,7 +133,7 @@ fn main() -> Result<(), String> {
 
 fn draw(gfx: &mut Graphics, state: &mut State) {
     // Set up draw with scaling projection (aspect_fit = false)
-    let mut draw = get_draw_setup(gfx, WORK_SIZE, false, Color::WHITE);
+    let mut draw = get_draw_setup(gfx, state.work_size, false, Color::WHITE);
 
     // Draw tiled circles
     let mut tile_index = 0;
@@ -143,7 +163,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             let x = col as f32 * state.tile_width;
             draw.path()
                 .move_to(x, 0.0)
-                .line_to(x, WORK_SIZE.y)
+                .line_to(x, state.work_size.y)
                 .stroke_color(Color::GREEN)
                 .stroke(1.0);
         }
@@ -153,7 +173,7 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             let y = row as f32 * state.tile_height;
             draw.path()
                 .move_to(0.0, y)
-                .line_to(WORK_SIZE.x, y)
+                .line_to(state.work_size.x, y)
                 .stroke_color(Color::GREEN)
                 .stroke(1.0);
         }
