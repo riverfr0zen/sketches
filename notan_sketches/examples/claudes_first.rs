@@ -5,9 +5,34 @@ use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::colors::PalettesSelection;
 use notan_sketches::utils::{get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions};
+use palette::{FromColor, Hsv, Shade, Srgb};
+use std::f32::consts::PI;
 
 const ROWS: u32 = 15;
 const COLS: u32 = 15;
+const MAX_CHILD_CIRCLES: u32 = 3;
+
+#[derive(Clone)]
+struct ChildCircle {
+    angle: f32,
+    radius: f32,
+    color: Color,
+}
+
+fn vary_color(color: Color, rng: &mut Random) -> Color {
+    let srgb = Srgb::new(color.r, color.g, color.b);
+    let mut hsv = Hsv::from_color(srgb);
+
+    // Randomly darken or lighten
+    if rng.gen_bool(0.5) {
+        hsv = hsv.darken(0.2);
+    } else {
+        hsv = hsv.lighten(0.2);
+    }
+
+    let result = Srgb::from_color(hsv);
+    Color::new(result.red, result.green, result.blue, color.a)
+}
 
 #[derive(AppState)]
 struct State {
@@ -18,6 +43,7 @@ struct State {
     circle_radius: f32,
     circle_positions: Vec<Vec2>,
     circle_colors: Vec<Color>,
+    child_circles: Vec<Vec<ChildCircle>>,
     palette: PalettesSelection,
     show_grid: bool,
 }
@@ -44,12 +70,26 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     // Constrain positions so circles stay within tile boundaries
     let mut circle_positions = Vec::new();
     let mut circle_colors = Vec::new();
+    let mut child_circles = Vec::new();
+
     for _ in 0..(ROWS * COLS) {
         circle_positions.push(vec2(
             rng.gen_range(circle_radius..(tile_width - circle_radius)),
             rng.gen_range(circle_radius..(tile_height - circle_radius)),
         ));
-        circle_colors.push(colors::Palettes::choose_color(&palette));
+        let parent_color = colors::Palettes::choose_color(&palette);
+        circle_colors.push(parent_color);
+
+        // Generate child circles for this parent
+        let num_children = rng.gen_range(0..=MAX_CHILD_CIRCLES);
+        let mut children = Vec::new();
+        for _ in 0..num_children {
+            let angle = rng.gen_range(0.0..(2.0 * PI));
+            let child_radius = rng.gen_range((circle_radius / 8.0)..(circle_radius / 3.0));
+            let child_color = vary_color(parent_color, &mut rng);
+            children.push(ChildCircle { angle, radius: child_radius, color: child_color });
+        }
+        child_circles.push(children);
     }
 
     State {
@@ -60,6 +100,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         circle_radius,
         circle_positions,
         circle_colors,
+        child_circles,
         palette,
         show_grid: false,
     }
@@ -80,6 +121,7 @@ fn update(app: &mut App, state: &mut State) {
         // Constrain positions so circles stay within tile boundaries
         state.circle_positions.clear();
         state.circle_colors.clear();
+        state.child_circles.clear();
         for _ in 0..(ROWS * COLS) {
             state.circle_positions.push(vec2(
                 state
@@ -89,9 +131,19 @@ fn update(app: &mut App, state: &mut State) {
                     .rng
                     .gen_range(state.circle_radius..(state.tile_height - state.circle_radius)),
             ));
-            state
-                .circle_colors
-                .push(colors::Palettes::choose_color(&state.palette));
+            let parent_color = colors::Palettes::choose_color(&state.palette);
+            state.circle_colors.push(parent_color);
+
+            // Generate child circles for this parent
+            let num_children = state.rng.gen_range(0..=MAX_CHILD_CIRCLES);
+            let mut children = Vec::new();
+            for _ in 0..num_children {
+                let angle = state.rng.gen_range(0.0..(2.0 * PI));
+                let child_radius = state.rng.gen_range((state.circle_radius / 8.0)..(state.circle_radius / 3.0));
+                let child_color = vary_color(parent_color, &mut state.rng);
+                children.push(ChildCircle { angle, radius: child_radius, color: child_color });
+            }
+            state.child_circles.push(children);
         }
     }
 
@@ -146,11 +198,25 @@ fn draw(gfx: &mut Graphics, state: &mut State) {
             // Get the position and color for this specific tile
             let circle_pos = state.circle_positions[tile_index];
             let circle_color = state.circle_colors[tile_index];
+            let children = &state.child_circles[tile_index];
 
-            // Draw the circle at the unique position within this tile
+            // Calculate absolute position
+            let abs_x = tile_x + circle_pos.x;
+            let abs_y = tile_y + circle_pos.y;
+
+            // Draw the parent circle
             draw.circle(state.circle_radius)
-                .position(tile_x + circle_pos.x, tile_y + circle_pos.y)
+                .position(abs_x, abs_y)
                 .color(circle_color);
+
+            // Draw child circles on the parent's circumference
+            for child in children {
+                let child_x = abs_x + state.circle_radius * child.angle.cos();
+                let child_y = abs_y + state.circle_radius * child.angle.sin();
+                draw.circle(child.radius)
+                    .position(child_x, child_y)
+                    .color(child.color);
+            }
 
             tile_index += 1;
         }
