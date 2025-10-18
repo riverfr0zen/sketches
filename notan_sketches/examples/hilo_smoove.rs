@@ -7,6 +7,7 @@ use notan_sketches::colors::Palettes;
 use notan_sketches::colors::PalettesSelection;
 use notan_sketches::enums;
 use notan_sketches::mathutils::mid;
+use notan_sketches::shaderutils::{CommonData, ShaderRenderTexture};
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, set_html_bgcolor,
     ScreenDimensions,
@@ -49,6 +50,7 @@ pub struct Strip {
     alpha: f32,
     last_distance: f32,
     displaced: bool,
+    use_shader: bool,
 }
 
 #[derive(Debug)]
@@ -130,6 +132,9 @@ struct State {
     pub auto_shuffle: bool,
     pub shuffle_counter: u8,
     pub gen: GenSettings,
+    pub shader_pipeline: Pipeline,
+    pub shader_rt: ShaderRenderTexture,
+    pub shader_ubo: Buffer,
 }
 
 enum Position {
@@ -145,6 +150,28 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
     let cursor = Vec2::new(0.0, 0.0);
 
+    // Initialize shader pipeline
+    let shader_pipeline = gfx
+        .create_pipeline()
+        .from_raw(
+            &std::fs::read("examples/assets/shaders/shapes.vert.glsl").unwrap(),
+            &std::fs::read("examples/assets/shaders/horizontal_city.frag.glsl").unwrap(),
+        )
+        .with_vertex_info(&VertexInfo::new()
+            .attr(0, VertexFormat::Float32x2)
+            .attr(1, VertexFormat::Float32x4))
+        .with_color_blend(BlendMode::NORMAL)
+        .build()
+        .unwrap();
+
+    let shader_rt = ShaderRenderTexture::new(gfx, work_size.x, work_size.y);
+
+    let shader_ubo = gfx
+        .create_uniform_buffer(0, "Common")
+        .with_data(&CommonData::new(0.0, work_size))
+        .build()
+        .unwrap();
+
     State {
         rng,
         work_size,
@@ -157,6 +184,9 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         auto_shuffle: true,
         shuffle_counter: 0,
         gen: GenSettings::default(&work_size),
+        shader_pipeline,
+        shader_rt,
+        shader_ubo,
     }
 }
 
@@ -182,6 +212,11 @@ fn add_strip(state: &mut State) {
     }
     let stroke_color = Srgb::from_color(stroke_color);
 
+    let use_shader = state.rng.gen_bool(0.3); // 30% chance of using shader
+    if use_shader {
+        log::debug!("Strip at y={} will use shader", state.cursor.y);
+    }
+
     let mut strip = Strip {
         segs: vec![],
         color: color,
@@ -189,6 +224,7 @@ fn add_strip(state: &mut State) {
         alpha: state.rng.gen_range(0.2..1.0),
         last_distance: 0.0,
         displaced: false,
+        use_shader,
     };
     while state.cursor.x < state.work_size.x {
         let from = vec2(state.cursor.x, state.cursor.y);
@@ -421,10 +457,17 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
         .alpha(strip.alpha);
 }
 
-fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
+fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let draw = &mut get_draw_setup(gfx, state.work_size, false, state.gen.clear_color);
 
     generate_strips(state, false);
+
+    // Update shader uniform and render the shader once
+    let u_time = app.timer.elapsed_f32();
+    gfx.set_buffer_data(&state.shader_ubo, &CommonData::new(u_time, state.work_size));
+
+    // Render the full shader texture once
+    state.shader_rt.draw_filled(gfx, &state.shader_pipeline, vec![&state.shader_ubo]);
 
     for strip in state.strips.iter_mut() {
         if !state.paused {
@@ -438,7 +481,20 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 &mut state.rng,
             );
         }
-        draw_strip(draw, strip, strip.segs[0].from.y, state.gen.strip_height);
+
+        if strip.use_shader {
+            // Draw a simple rectangle with the shader texture for now
+            // This is a simplified version - just to get the shader visible
+            let ypos = strip.segs[0].from.y;
+            draw.image(&state.shader_rt.rt)
+                .position(0.0, ypos)
+                .size(state.work_size.x, state.gen.strip_height)
+                .crop((0.0, ypos), (state.work_size.x, state.gen.strip_height))
+                .alpha(strip.alpha);
+        } else {
+            // Regular strip drawing
+            draw_strip(draw, strip, strip.segs[0].from.y, state.gen.strip_height);
+        }
     }
 
     if state.show_displacement_pos {
