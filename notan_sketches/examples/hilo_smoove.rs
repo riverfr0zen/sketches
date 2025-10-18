@@ -50,7 +50,7 @@ pub struct Strip {
     alpha: f32,
     last_distance: f32,
     displaced: bool,
-    use_shader: bool,
+    shader_rt: Option<ShaderRenderTexture>,
 }
 
 #[derive(Debug)]
@@ -133,7 +133,6 @@ struct State {
     pub shuffle_counter: u8,
     pub gen: GenSettings,
     pub shader_pipeline: Pipeline,
-    pub shader_rt: ShaderRenderTexture,
     pub shader_ubo: Buffer,
 }
 
@@ -157,14 +156,14 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
             &std::fs::read("examples/assets/shaders/shapes.vert.glsl").unwrap(),
             &std::fs::read("examples/assets/shaders/horizontal_city.frag.glsl").unwrap(),
         )
-        .with_vertex_info(&VertexInfo::new()
-            .attr(0, VertexFormat::Float32x2)
-            .attr(1, VertexFormat::Float32x4))
+        .with_vertex_info(
+            &VertexInfo::new()
+                .attr(0, VertexFormat::Float32x2)
+                .attr(1, VertexFormat::Float32x4),
+        )
         .with_color_blend(BlendMode::NORMAL)
         .build()
         .unwrap();
-
-    let shader_rt = ShaderRenderTexture::new(gfx, work_size.x, work_size.y);
 
     let shader_ubo = gfx
         .create_uniform_buffer(1, "Common")
@@ -185,7 +184,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         shuffle_counter: 0,
         gen: GenSettings::default(&work_size),
         shader_pipeline,
-        shader_rt,
         shader_ubo,
     }
 }
@@ -195,7 +193,7 @@ fn get_displacement_distance(strip: &Strip, displacement_pos: &f32, work_size: &
     (strip.segs[0].from.y - displacement_pos).abs() / work_size.y
 }
 
-fn add_strip(state: &mut State) {
+fn add_strip(state: &mut State, gfx: &mut Graphics) {
     let color = colors::Palettes::choose_color(&state.gen.palette);
     let stroke_color = Srgb::new(color.r, color.g, color.b);
     let mut stroke_color = Hsv::from_color(stroke_color);
@@ -213,9 +211,12 @@ fn add_strip(state: &mut State) {
     let stroke_color = Srgb::from_color(stroke_color);
 
     let use_shader = state.rng.gen_bool(0.3); // 30% chance of using shader
-    if use_shader {
+    let shader_rt = if use_shader {
         log::debug!("Strip at y={} will use shader", state.cursor.y);
-    }
+        Some(ShaderRenderTexture::new(gfx, state.work_size.x, state.work_size.y))
+    } else {
+        None
+    };
 
     let mut strip = Strip {
         segs: vec![],
@@ -224,7 +225,7 @@ fn add_strip(state: &mut State) {
         alpha: state.rng.gen_range(0.2..1.0),
         last_distance: 0.0,
         displaced: false,
-        use_shader,
+        shader_rt,
     };
     while state.cursor.x < state.work_size.x {
         let from = vec2(state.cursor.x, state.cursor.y);
@@ -266,7 +267,7 @@ fn move_displacement(state: &mut State) {
     }
 }
 
-fn generate_strips(state: &mut State, refresh: bool) {
+fn generate_strips(state: &mut State, gfx: &mut Graphics, refresh: bool) {
     if refresh {
         state.strips = vec![];
         state.cursor = Vec2::new(0.0, 0.0);
@@ -275,19 +276,19 @@ fn generate_strips(state: &mut State, refresh: bool) {
     // Cursor for testing  w/ a single line
     // if state.strips.len() == 0 {
     //     state.cursor.y = 300.0;
-    //     add_strip(state);
+    //     add_strip(state, gfx);
     // }
     // Cursor for all lines
     if state.cursor.y < state.work_size.y + state.gen.strip_interval {
-        add_strip(state);
+        add_strip(state, gfx);
         state.cursor.y += state.gen.strip_interval;
     }
 }
 
-fn shuffle(state: &mut State) {
+fn shuffle(state: &mut State, gfx: &mut Graphics) {
     state.shuffle_counter = 0;
     state.gen = GenSettings::randomize(&mut state.rng, &state.work_size);
-    generate_strips(state, true);
+    generate_strips(state, gfx, true);
     log::debug!("{:#?}", state.gen);
 }
 
@@ -298,7 +299,7 @@ fn update(app: &mut App, state: &mut State) {
     }
 
     if app.keyboard.was_pressed(KeyCode::R) {
-        shuffle(state);
+        state.shuffle_counter = SHUFFLE_PERIOD; // Trigger shuffle in draw
     }
 
     if app.keyboard.was_pressed(KeyCode::D) {
@@ -308,10 +309,6 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::S) {
         state.auto_shuffle = !state.auto_shuffle;
         log::debug!("shuffle toggled");
-    }
-
-    if state.auto_shuffle && state.shuffle_counter >= SHUFFLE_PERIOD {
-        shuffle(state);
     }
 }
 
@@ -460,8 +457,7 @@ fn draw_strip(draw: &mut Draw, strip: &Strip, ypos: f32, strip_height: f32) {
 fn draw_shader_strip(
     draw: &mut Draw,
     gfx: &mut Graphics,
-    strip: &Strip,
-    shader_rt: &mut ShaderRenderTexture,
+    strip: &mut Strip,
     shader_pipeline: &Pipeline,
     shader_ubo: &Buffer,
     strip_height: f32,
@@ -469,11 +465,8 @@ fn draw_shader_strip(
 ) {
     let ypos = strip.segs[0].from.y;
 
-    shader_rt.draw(
-        gfx,
-        shader_pipeline,
-        vec![shader_ubo],
-        |shader_draw| {
+    if let Some(shader_rt) = &mut strip.shader_rt {
+        shader_rt.draw(gfx, shader_pipeline, vec![shader_ubo], |shader_draw| {
             let path = &mut shader_draw.path();
             path.move_to(0.0, ypos);
 
@@ -506,30 +499,30 @@ fn draw_shader_strip(
                     );
                 }
             }
-            path.close()
-                .fill_color(Color::WHITE)
-                .fill();
-        },
-    );
+            path.close().fill_color(Color::WHITE).fill();
+        });
 
-    // Draw the shader texture
-    draw.image(&shader_rt.rt)
-        .position(0.0, 0.0)
-        .size(work_size.x, work_size.y)
-        .alpha(strip.alpha);
+        // Draw the shader texture
+        draw.image(&shader_rt.rt)
+            .position(0.0, 0.0)
+            .size(work_size.x, work_size.y)
+            .alpha(strip.alpha);
+    }
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    // Check if we need to shuffle before drawing
+    if state.auto_shuffle && state.shuffle_counter >= SHUFFLE_PERIOD {
+        shuffle(state, gfx);
+    }
+
     let draw = &mut get_draw_setup(gfx, state.work_size, false, state.gen.clear_color);
 
-    generate_strips(state, false);
+    generate_strips(state, gfx, false);
 
-    // Update shader uniform and render the shader once
+    // Update shader uniform
     let u_time = app.timer.elapsed_f32();
     gfx.set_buffer_data(&state.shader_ubo, &CommonData::new(u_time, state.work_size));
-
-    // Render the full shader texture once
-    state.shader_rt.draw_filled(gfx, &state.shader_pipeline, vec![&state.shader_ubo]);
 
     for strip in state.strips.iter_mut() {
         if !state.paused {
@@ -544,12 +537,11 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
             );
         }
 
-        if strip.use_shader {
+        if strip.shader_rt.is_some() {
             draw_shader_strip(
                 draw,
                 gfx,
                 strip,
-                &mut state.shader_rt,
                 &state.shader_pipeline,
                 &state.shader_ubo,
                 state.gen.strip_height,
