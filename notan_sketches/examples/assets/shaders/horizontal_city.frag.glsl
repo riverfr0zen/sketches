@@ -99,5 +99,7 @@ void main() {
     out_color *= step(0.2, fpos.y);
     out_color *= step(abs(sin(u_time)), fpos.y) - step(u_time, fpos.x / fpos.y);
 
-    color = vec4(out_color * (0.8 + step(random(ipos.y), random(vel.y))), 1.0);
+    // Make patterns semi-transparent so background color shows through
+    float pattern_alpha = 0.4;  // Adjust this value (0.0-1.0) to control transparency
+    color = vec4(out_color * (0.8 + step(random(ipos.y), random(vel.y))), pattern_alpha);
 }

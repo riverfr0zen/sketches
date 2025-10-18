@@ -107,30 +107,34 @@ impl ShaderRenderTexture {
 }
 
 // Taken from notan_draw::shapes::painter
+#[cfg(debug_assertions)]
 fn vertex_info() -> VertexInfo {
     VertexInfo::new()
         .attr(0, VertexFormat::Float32x2)
         .attr(1, VertexFormat::Float32x4)
 }
 
-// Adapted from notan_draw::shapes::painter::create_shape_pipeline
+// Hot-reloading shape pipeline for debug mode
+#[cfg(debug_assertions)]
 pub fn create_hot_shape_pipeline(
     device: &mut Device,
     fragment_path: &str,
-    // fragment: Option<&ShaderSource>,
 ) -> Result<Pipeline, String> {
-    // let fragment = fragment.unwrap_or(&SHAPES_FRAGMENT);
     let vert = std::fs::read("examples/assets/shaders/shapes.vert.glsl").unwrap();
     let frag = std::fs::read(fragment_path).unwrap();
 
     device
         .create_pipeline()
-        // .from(&SHAPES_VERTEX, fragment)
         .from_raw(&vert, &frag)
         .with_vertex_info(&vertex_info())
         .with_color_blend(BlendMode::NORMAL)
         .build()
 }
+
+// Regular shape pipeline for release mode
+// Re-export from notan::draw
+#[cfg(not(debug_assertions))]
+pub use notan::draw::create_shape_pipeline;
 
 pub struct ShaderReloadManager {
     needs_reload: bool,

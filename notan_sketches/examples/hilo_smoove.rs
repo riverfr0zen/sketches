@@ -8,6 +8,10 @@ use notan_sketches::colors::PalettesSelection;
 use notan_sketches::enums;
 use notan_sketches::mathutils::mid;
 use notan_sketches::shaderutils::{CommonData, ShaderRenderTexture};
+#[cfg(debug_assertions)]
+use notan_sketches::shaderutils::{create_hot_shape_pipeline, ShaderReloadManager};
+#[cfg(not(debug_assertions))]
+use notan_sketches::shaderutils::create_shape_pipeline;
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, set_html_bgcolor,
     ScreenDimensions,
@@ -19,6 +23,10 @@ use std::ops::RangeInclusive;
 const CLEAR_COLOR: Color = Color::BLACK;
 // const STRIP_STROKE: f32 = 2.0;
 const STRIP_STROKE: f32 = 5.0;
+
+#[cfg(not(debug_assertions))]
+const FRAG: ShaderSource =
+    notan::include_fragment_shader!("examples/assets/shaders/horizontal_city.frag.glsl");
 // The vertical interval between each strip. If the STRIP_HEIGHT is greater than STRIP_INTERVAL, then strips will overlap
 // const STRIP_INTERVAL: f32 = 0.05;
 const STRIP_INTERVAL: RangeInclusive<f32> = 0.02..=0.4;
@@ -151,6 +159,8 @@ struct State {
     pub gen: GenSettings,
     pub shader_pipeline: Pipeline,
     pub shader_ubo: Buffer,
+    #[cfg(debug_assertions)]
+    pub hot_mgr: ShaderReloadManager,
 }
 
 enum Position {
@@ -167,20 +177,11 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let cursor = Vec2::new(0.0, 0.0);
 
     // Initialize shader pipeline
-    let shader_pipeline = gfx
-        .create_pipeline()
-        .from_raw(
-            &std::fs::read("examples/assets/shaders/shapes.vert.glsl").unwrap(),
-            &std::fs::read("examples/assets/shaders/horizontal_city.frag.glsl").unwrap(),
-        )
-        .with_vertex_info(
-            &VertexInfo::new()
-                .attr(0, VertexFormat::Float32x2)
-                .attr(1, VertexFormat::Float32x4),
-        )
-        .with_color_blend(BlendMode::NORMAL)
-        .build()
-        .unwrap();
+    #[cfg(not(debug_assertions))]
+    let shader_pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
+    #[cfg(debug_assertions)]
+    let shader_pipeline =
+        create_hot_shape_pipeline(gfx, "examples/assets/shaders/horizontal_city.frag.glsl").unwrap();
 
     let shader_ubo = gfx
         .create_uniform_buffer(1, "Common")
@@ -202,6 +203,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         gen: GenSettings::default(&work_size),
         shader_pipeline,
         shader_ubo,
+        #[cfg(debug_assertions)]
+        hot_mgr: ShaderReloadManager::default(),
     }
 }
 
@@ -325,6 +328,9 @@ fn shuffle(state: &mut State, gfx: &mut Graphics) {
 }
 
 fn update(app: &mut App, state: &mut State) {
+    #[cfg(debug_assertions)]
+    state.hot_mgr.update();
+
     if app.keyboard.was_pressed(KeyCode::P) {
         state.paused = !state.paused;
         log::debug!("pause toggled");
@@ -628,7 +634,23 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     // Update shader uniform
     let u_time = app.timer.elapsed_f32();
-    gfx.set_buffer_data(&state.shader_ubo, &CommonData::new(u_time, state.work_size));
+    let common_data = CommonData::new(u_time, state.work_size);
+
+    #[cfg(debug_assertions)]
+    if state.hot_mgr.needs_reload() {
+        match create_hot_shape_pipeline(gfx, "examples/assets/shaders/horizontal_city.frag.glsl") {
+            Ok(pipeline) => state.shader_pipeline = pipeline,
+            Err(err) => log::error!("{}", err),
+        }
+
+        state.shader_ubo = gfx
+            .create_uniform_buffer(1, "Common")
+            .with_data(&common_data)
+            .build()
+            .unwrap();
+    }
+
+    gfx.set_buffer_data(&state.shader_ubo, &common_data);
 
     for strip in state.strips.iter_mut() {
         if !state.paused {
