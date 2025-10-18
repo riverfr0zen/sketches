@@ -10,5 +10,3 @@ Custom shader utilities in `src/shaderutils.rs`:
 - **CommonData uniform**: Standard time and resolution uniforms for shader effects
 
 **Coordinate System Note**: When working with Notan's shader render textures, use normalized coordinates (`gl_FragCoord.xy / u_resolution`) directly without manual Y-flipping. The `RenderTexture` system already handles coordinate transformations internally - manual Y-flips will cause misalignment.
-
-Shader hot reloading has known issues (see important_notes.md).
