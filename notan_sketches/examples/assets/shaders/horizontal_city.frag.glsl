@@ -75,12 +75,8 @@ void main() {
     float curve_offset = get_curve_offset(x_norm);
 
     // Warp the y coordinate based on the curve
-    // The curve offset is relative to strip_y, so we need to adjust st.y accordingly
-    float strip_y_norm = strip_y + curve_offset;
-    float pixel_y_norm = st.y;
-
-    // Shift the pattern coordinates to follow the curve
-    st.y = st.y - curve_offset;
+    // When the curve goes up (positive offset), shift the pattern up to follow
+    st.y = st.y + curve_offset;
 
     vec2 grid = vec2(100.0, 50.0);
     st *= grid;

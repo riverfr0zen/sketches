@@ -79,7 +79,10 @@ The shader patterns warp along the Bezier curves rather than remaining static:
 ### Shader Implementation (horizontal_city.frag.glsl)
 1. **`get_sample(int idx)`** - Unpacks a single sample from the Vec4 fields
 2. **`get_curve_offset(float x_norm)`** - Interpolates curve offset at a given x position
-3. **Pattern warping** - The shader adjusts texture coordinates: `st.y = st.y - curve_offset`
+3. **Pattern warping** - The shader adjusts texture coordinates: `st.y = st.y + curve_offset`
+   - **Important**: Use addition (+) not subtraction (-) for correct orientation
+   - When curve goes up (positive offset), pattern shifts up to follow
+   - When curve goes down (negative offset), pattern shifts down to follow
 
 This makes the horizontal scrolling pattern follow the undulating waves of each strip's Bezier curve.
 
