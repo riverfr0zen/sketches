@@ -20,9 +20,7 @@ struct State {
 
 fn init(gfx: &mut Graphics) -> State {
     let pipeline =
-        // create_hot_shape_pipeline(gfx, "examples/assets/shaders/horizontal_city.frag.glsl")
-        //     .unwrap();
-        create_hot_shape_pipeline(gfx, "examples/assets/shaders/erratic_wave.frag.glsl")
+        create_hot_shape_pipeline(gfx, "examples/assets/shaders/horizontal_city.frag.glsl")
             .unwrap();
 
     let common_data = CommonData::new(0.0, WORK_SIZE);

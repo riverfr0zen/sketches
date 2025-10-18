@@ -167,7 +167,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let shader_rt = ShaderRenderTexture::new(gfx, work_size.x, work_size.y);
 
     let shader_ubo = gfx
-        .create_uniform_buffer(0, "Common")
+        .create_uniform_buffer(1, "Common")
         .with_data(&CommonData::new(0.0, work_size))
         .build()
         .unwrap();
@@ -416,11 +416,11 @@ fn update_strip(
     }
 }
 
-fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) {
+fn draw_strip(draw: &mut Draw, strip: &Strip, ypos: f32, strip_height: f32) {
     let path = &mut draw.path();
     path.move_to(0.0, ypos);
 
-    for seg in strip.segs.iter_mut() {
+    for seg in strip.segs.iter() {
         if USE_CUBIC_BEZIER {
             path.cubic_bezier_to(
                 (seg.ctrl.x, seg.ctrl.y),
@@ -435,7 +435,7 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
         strip.segs.last().unwrap().to.x,
         strip.segs.last().unwrap().to.y + strip_height,
     );
-    for seg in strip.segs.iter_mut().rev() {
+    for seg in strip.segs.iter().rev() {
         if USE_CUBIC_BEZIER {
             path.cubic_bezier_to(
                 (seg.ctrl2.x, seg.ctrl2.y + strip_height),
@@ -454,6 +454,68 @@ fn draw_strip(draw: &mut Draw, strip: &mut Strip, ypos: f32, strip_height: f32) 
         .stroke(STRIP_STROKE)
         .fill_color(strip.color)
         .fill()
+        .alpha(strip.alpha);
+}
+
+fn draw_shader_strip(
+    draw: &mut Draw,
+    gfx: &mut Graphics,
+    strip: &Strip,
+    shader_rt: &mut ShaderRenderTexture,
+    shader_pipeline: &Pipeline,
+    shader_ubo: &Buffer,
+    strip_height: f32,
+    work_size: Vec2,
+) {
+    let ypos = strip.segs[0].from.y;
+
+    shader_rt.draw(
+        gfx,
+        shader_pipeline,
+        vec![shader_ubo],
+        |shader_draw| {
+            let path = &mut shader_draw.path();
+            path.move_to(0.0, ypos);
+
+            for seg in strip.segs.iter() {
+                if USE_CUBIC_BEZIER {
+                    path.cubic_bezier_to(
+                        (seg.ctrl.x, seg.ctrl.y),
+                        (seg.ctrl2.x, seg.ctrl2.y),
+                        (seg.to.x, seg.to.y),
+                    );
+                } else {
+                    path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y));
+                }
+            }
+            path.line_to(
+                strip.segs.last().unwrap().to.x,
+                strip.segs.last().unwrap().to.y + strip_height,
+            );
+            for seg in strip.segs.iter().rev() {
+                if USE_CUBIC_BEZIER {
+                    path.cubic_bezier_to(
+                        (seg.ctrl2.x, seg.ctrl2.y + strip_height),
+                        (seg.ctrl.x, seg.ctrl.y + strip_height),
+                        (seg.from.x, seg.from.y + strip_height),
+                    );
+                } else {
+                    path.quadratic_bezier_to(
+                        (seg.ctrl.x, seg.ctrl.y + strip_height),
+                        (seg.from.x, seg.from.y + strip_height),
+                    );
+                }
+            }
+            path.close()
+                .fill_color(Color::WHITE)
+                .fill();
+        },
+    );
+
+    // Draw the shader texture
+    draw.image(&shader_rt.rt)
+        .position(0.0, 0.0)
+        .size(work_size.x, work_size.y)
         .alpha(strip.alpha);
 }
 
@@ -483,16 +545,17 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         }
 
         if strip.use_shader {
-            // Draw a simple rectangle with the shader texture for now
-            // This is a simplified version - just to get the shader visible
-            let ypos = strip.segs[0].from.y;
-            draw.image(&state.shader_rt.rt)
-                .position(0.0, ypos)
-                .size(state.work_size.x, state.gen.strip_height)
-                .crop((0.0, ypos), (state.work_size.x, state.gen.strip_height))
-                .alpha(strip.alpha);
+            draw_shader_strip(
+                draw,
+                gfx,
+                strip,
+                &mut state.shader_rt,
+                &state.shader_pipeline,
+                &state.shader_ubo,
+                state.gen.strip_height,
+                state.work_size,
+            );
         } else {
-            // Regular strip drawing
             draw_strip(draw, strip, strip.segs[0].from.y, state.gen.strip_height);
         }
     }
