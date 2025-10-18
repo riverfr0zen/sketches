@@ -1,6 +1,6 @@
 use notan::draw::*;
 use notan::log;
-use notan::math::{vec2, Vec2};
+use notan::math::{vec2, Vec2, Vec4};
 use notan::prelude::*;
 use notan_sketches::colors;
 use notan_sketches::colors::Palettes;
@@ -51,6 +51,23 @@ pub struct Strip {
     last_distance: f32,
     displaced: bool,
     shader_rt: Option<ShaderRenderTexture>,
+    shader_curve_ubo: Option<Buffer>,
+}
+
+// Uniform data for curve warping (8 Vec4 = 32 samples)
+const CURVE_SAMPLES: usize = 32;
+
+#[uniform]
+#[repr(C)]
+#[derive(Copy, Clone)]
+struct CurveData {
+    // Using 8 separate Vec4s instead of an array to avoid std140 limitations
+    s0: Vec4, s1: Vec4, s2: Vec4, s3: Vec4,
+    s4: Vec4, s5: Vec4, s6: Vec4, s7: Vec4,
+    strip_y: f32,                    // Base Y position of the strip
+    strip_height: f32,               // Height of the strip
+    num_samples: f32,                // Number of valid samples
+    _padding: f32,                   // Alignment padding
 }
 
 #[derive(Debug)]
@@ -211,11 +228,25 @@ fn add_strip(state: &mut State, gfx: &mut Graphics) {
     let stroke_color = Srgb::from_color(stroke_color);
 
     let use_shader = state.rng.gen_bool(0.3); // 30% chance of using shader
-    let shader_rt = if use_shader {
+    let (shader_rt, shader_curve_ubo) = if use_shader {
         log::debug!("Strip at y={} will use shader", state.cursor.y);
-        Some(ShaderRenderTexture::new(gfx, state.work_size.x, state.work_size.y))
+        let rt = Some(ShaderRenderTexture::new(gfx, state.work_size.x, state.work_size.y));
+        let curve_ubo = Some(
+            gfx.create_uniform_buffer(2, "CurveData")
+                .with_data(&CurveData {
+                    s0: Vec4::ZERO, s1: Vec4::ZERO, s2: Vec4::ZERO, s3: Vec4::ZERO,
+                    s4: Vec4::ZERO, s5: Vec4::ZERO, s6: Vec4::ZERO, s7: Vec4::ZERO,
+                    strip_y: 0.0,
+                    strip_height: 0.0,
+                    num_samples: CURVE_SAMPLES as f32,
+                    _padding: 0.0,
+                })
+                .build()
+                .unwrap(),
+        );
+        (rt, curve_ubo)
     } else {
-        None
+        (None, None)
     };
 
     let mut strip = Strip {
@@ -226,6 +257,7 @@ fn add_strip(state: &mut State, gfx: &mut Graphics) {
         last_distance: 0.0,
         displaced: false,
         shader_rt,
+        shader_curve_ubo,
     };
     while state.cursor.x < state.work_size.x {
         let from = vec2(state.cursor.x, state.cursor.y);
@@ -454,6 +486,68 @@ fn draw_strip(draw: &mut Draw, strip: &Strip, ypos: f32, strip_height: f32) {
         .alpha(strip.alpha);
 }
 
+// Sample the Bezier curve at regular intervals and return y-offsets
+fn sample_curve(strip: &Strip, work_size: Vec2, strip_height: f32) -> CurveData {
+    let mut samples = [0.0; CURVE_SAMPLES];
+    let base_y = strip.segs[0].from.y;
+    let step = work_size.x / (CURVE_SAMPLES as f32);
+
+    for i in 0..CURVE_SAMPLES {
+        let x = i as f32 * step;
+
+        // Find which segment this x falls into
+        let mut y = base_y;
+        for seg in &strip.segs {
+            if x >= seg.from.x && x <= seg.to.x {
+                // Interpolate along the cubic bezier curve
+                let t = (x - seg.from.x) / (seg.to.x - seg.from.x);
+
+                if USE_CUBIC_BEZIER {
+                    // Cubic bezier formula: (1-t)^3 * P0 + 3(1-t)^2 * t * P1 + 3(1-t) * t^2 * P2 + t^3 * P3
+                    let t2 = t * t;
+                    let t3 = t2 * t;
+                    let mt = 1.0 - t;
+                    let mt2 = mt * mt;
+                    let mt3 = mt2 * mt;
+
+                    y = mt3 * seg.from.y +
+                        3.0 * mt2 * t * seg.ctrl.y +
+                        3.0 * mt * t2 * seg.ctrl2.y +
+                        t3 * seg.to.y;
+                } else {
+                    // Quadratic bezier formula: (1-t)^2 * P0 + 2(1-t) * t * P1 + t^2 * P2
+                    let t2 = t * t;
+                    let mt = 1.0 - t;
+                    let mt2 = mt * mt;
+
+                    y = mt2 * seg.from.y +
+                        2.0 * mt * t * seg.ctrl.y +
+                        t2 * seg.to.y;
+                }
+                break;
+            }
+        }
+
+        // Store the normalized offset from base position
+        samples[i] = (y - base_y) / work_size.y;
+    }
+
+    CurveData {
+        s0: Vec4::new(samples[0], samples[1], samples[2], samples[3]),
+        s1: Vec4::new(samples[4], samples[5], samples[6], samples[7]),
+        s2: Vec4::new(samples[8], samples[9], samples[10], samples[11]),
+        s3: Vec4::new(samples[12], samples[13], samples[14], samples[15]),
+        s4: Vec4::new(samples[16], samples[17], samples[18], samples[19]),
+        s5: Vec4::new(samples[20], samples[21], samples[22], samples[23]),
+        s6: Vec4::new(samples[24], samples[25], samples[26], samples[27]),
+        s7: Vec4::new(samples[28], samples[29], samples[30], samples[31]),
+        strip_y: base_y / work_size.y,
+        strip_height: strip_height / work_size.y,
+        num_samples: CURVE_SAMPLES as f32,
+        _padding: 0.0,
+    }
+}
+
 fn draw_shader_strip(
     draw: &mut Draw,
     gfx: &mut Graphics,
@@ -465,8 +559,20 @@ fn draw_shader_strip(
 ) {
     let ypos = strip.segs[0].from.y;
 
+    // Sample the curve and update the curve uniform buffer
+    if let Some(curve_ubo) = &strip.shader_curve_ubo {
+        let curve_data = sample_curve(strip, work_size, strip_height);
+        gfx.set_buffer_data(curve_ubo, &curve_data);
+    }
+
     if let Some(shader_rt) = &mut strip.shader_rt {
-        shader_rt.draw(gfx, shader_pipeline, vec![shader_ubo], |shader_draw| {
+        let ubos = if let Some(curve_ubo) = &strip.shader_curve_ubo {
+            vec![shader_ubo, curve_ubo]
+        } else {
+            vec![shader_ubo]
+        };
+
+        shader_rt.draw(gfx, shader_pipeline, ubos, |shader_draw| {
             let path = &mut shader_draw.path();
             path.move_to(0.0, ypos);
 

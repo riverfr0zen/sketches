@@ -20,7 +20,8 @@ pub struct Strip {
     alpha: f32,
     last_distance: f32,
     displaced: bool,
-    shader_rt: Option<ShaderRenderTexture>,  // Each strip gets its own render texture
+    shader_rt: Option<ShaderRenderTexture>,     // Each strip gets its own render texture
+    shader_curve_ubo: Option<Buffer>,           // Per-strip curve data uniform buffer
 }
 ```
 
@@ -43,19 +44,53 @@ Shaders are randomly assigned when strips are created in `add_strip()`:
 **`add_strip(state: &mut State, gfx: &mut Graphics)`**
 - Creates strips with random shader assignment
 - Instantiates `ShaderRenderTexture` for shader strips (dimensions match work_size)
+- Creates per-strip curve uniform buffer for shader warping
+
+**`sample_curve(strip: &Strip, work_size: Vec2, strip_height: f32) -> CurveData`**
+- Samples the strip's Bezier curve at 32 regular intervals across the width
+- Uses cubic Bezier interpolation to calculate y-position at each sample point
+- Stores normalized y-offsets from the base position for shader use
+- Returns `CurveData` struct packed into 8 Vec4 fields (to satisfy std140 uniform constraints)
 
 **`draw_shader_strip(...)`**
+- Samples the current curve state using `sample_curve()` and updates the curve uniform buffer
 - Draws the strip's bezier path into the strip's shader render texture
 - Fills the path with `Color::WHITE` as a mask
+- Passes both common uniforms (time, resolution) and curve data to shader
 - Renders the shader texture to screen with the strip's alpha
 
 **`draw_strip(...)`**
 - Standard rendering for non-shader strips
 - Uses fill colors and stroke
 
+## Shader Curve Warping
+
+The shader patterns warp along the Bezier curves rather than remaining static:
+
+### Curve Data Transmission
+- Each shader strip has a `shader_curve_ubo` buffer containing curve profile data
+- The `CurveData` struct contains:
+  - 8 Vec4 fields (`s0` through `s7`) storing 32 curve samples (4 per Vec4)
+  - `strip_y`: normalized base Y position of the strip
+  - `strip_height`: normalized height of the strip
+  - `num_samples`: number of valid samples (32)
+- Structure uses individual Vec4 fields instead of arrays to work around std140 uniform buffer limitations
+
+### Shader Implementation (horizontal_city.frag.glsl)
+1. **`get_sample(int idx)`** - Unpacks a single sample from the Vec4 fields
+2. **`get_curve_offset(float x_norm)`** - Interpolates curve offset at a given x position
+3. **Pattern warping** - The shader adjusts texture coordinates: `st.y = st.y - curve_offset`
+
+This makes the horizontal scrolling pattern follow the undulating waves of each strip's Bezier curve.
+
+### Update Frequency
+- Curve data is sampled and updated every frame in `draw_shader_strip()`
+- As the Bezier control points animate during displacement, the shader pattern warps accordingly
+- Creates organic, flowing visual integration between the strips and shader effects
+
 ## Global Shader Resources
 
-While each strip has its own render texture, shader pipeline and uniform buffer are shared globally in `State`:
+While each strip has its own render texture and curve uniform buffer, some resources are shared globally in `State`:
 - `shader_pipeline: Pipeline` - Loaded from `horizontal_city.frag.glsl`
 - `shader_ubo: Buffer` - Common uniforms (u_time, u_resolution)
 
