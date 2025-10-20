@@ -14,6 +14,7 @@ layout(binding = 1) uniform CurveData {
     float strip_height;     // Height of the strip
     float num_samples;      // Number of valid samples
     float _padding;         // Alignment padding
+    vec4 bg_color;          // Background color of the strip (rgba)
 };
 
 float random (in float x) {
@@ -24,7 +25,8 @@ float random (in vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898,78.233)))* 43758.5453123);
 }
 
-float pattern(vec2 st, vec2 v, float t) {
+// Returns vec2: x = circle shape, y = random opacity for this cell
+vec2 pattern(vec2 st, vec2 v, float t) {
     vec2 p = floor(st+v);
     vec2 f = fract(st+v);
 
@@ -46,7 +48,10 @@ float pattern(vec2 st, vec2 v, float t) {
     float rand_val = random(p);
     float circle = step(dist, radius) * step(t, rand_val);
 
-    return circle;
+    // Random opacity per cell (between 0.3 and 1.0 for visibility)
+    float opacity = 0.3 + random(p * 1.5) * 0.7;
+
+    return vec2(circle, opacity);
 }
 
 // Get a single sample value from the packed vec4s
@@ -110,15 +115,33 @@ void main() {
     // Assign a random value base on the integer coord
     vec2 offset = vec2(0.1); // Fixed offset instead of time-based
 
-    vec3 out_color = vec3(0.905, 0.613, 0.081);
-    out_color.r = pattern(st + offset, vel, 0.5); // Fixed threshold
-    out_color.g = pattern(st, vel, 0.5);
-    out_color.b = pattern(st - offset, vel, 0.5);
+    vec3 pattern_color = vec3(0.905, 0.613, 0.081);
+
+    // Get pattern shape and opacity for each color channel
+    vec2 pattern_r = pattern(st + offset, vel, 0.5); // Fixed threshold
+    vec2 pattern_g = pattern(st, vel, 0.5);
+    vec2 pattern_b = pattern(st - offset, vel, 0.5);
+
+    pattern_color.r = pattern_r.x;
+    pattern_color.g = pattern_g.x;
+    pattern_color.b = pattern_b.x;
 
     // Margins - removed time-based effects
-    out_color *= step(0.2, fpos.y);
+    pattern_color *= step(0.2, fpos.y);
 
-    // Make patterns semi-transparent so background color shows through
-    float pattern_alpha = 0.4;  // Adjust this value (0.0-1.0) to control transparency
-    color = vec4(out_color * (0.8 + step(random(ipos.y), random(vel.y))), pattern_alpha);
+    // Use the average opacity from the patterns that are visible
+    float avg_opacity = (pattern_r.y * pattern_r.x + pattern_g.y * pattern_g.x + pattern_b.y * pattern_b.x) / max(pattern_r.x + pattern_g.x + pattern_b.x, 1.0);
+
+    // Calculate pattern presence (1.0 if any pattern visible, 0.0 if not)
+    float has_pattern = min(pattern_r.x + pattern_g.x + pattern_b.x, 1.0);
+
+    // Apply the pattern's random opacity to blend pattern color with strip background
+    vec3 pattern_with_brightness = pattern_color * (0.8 + step(random(ipos.y), random(vel.y)));
+
+    // Blend pattern with background based on both presence and per-ellipse opacity
+    // When has_pattern=1 and avg_opacity is low, show more of the strip background
+    vec3 out_color = mix(bg_color.rgb, pattern_with_brightness, has_pattern * avg_opacity);
+
+    // Keep the strip itself fully opaque (alpha=1.0)
+    color = vec4(out_color, 1.0);
 }

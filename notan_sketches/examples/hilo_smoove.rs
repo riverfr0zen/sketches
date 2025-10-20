@@ -76,6 +76,7 @@ struct CurveData {
     strip_height: f32,               // Height of the strip
     num_samples: f32,                // Number of valid samples
     _padding: f32,                   // Alignment padding
+    bg_color: Vec4,                  // Background color of the strip (rgba)
 }
 
 #[derive(Debug)]
@@ -243,6 +244,7 @@ fn add_strip(state: &mut State, gfx: &mut Graphics) {
                     strip_height: 0.0,
                     num_samples: CURVE_SAMPLES as f32,
                     _padding: 0.0,
+                    bg_color: Vec4::new(color.r, color.g, color.b, color.a),
                 })
                 .build()
                 .unwrap(),
@@ -551,6 +553,7 @@ fn sample_curve(strip: &Strip, work_size: Vec2, strip_height: f32) -> CurveData 
         strip_height: strip_height / work_size.y,
         num_samples: CURVE_SAMPLES as f32,
         _padding: 0.0,
+        bg_color: Vec4::new(strip.color.r, strip.color.g, strip.color.b, strip.color.a),
     }
 }
 
@@ -611,7 +614,7 @@ fn draw_shader_strip(
                     );
                 }
             }
-            path.close().fill_color(Color::WHITE).fill();
+            path.close().fill_color(strip.color).fill();
         });
 
         // Draw the shader texture
