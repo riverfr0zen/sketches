@@ -26,7 +26,28 @@ float random (in vec2 st) {
 
 float pattern(vec2 st, vec2 v, float t) {
     vec2 p = floor(st+v);
-    return step(t, random(cos(u_time/1e6)+p*0.00000001)+random(p.x)*0.5 );
+    vec2 f = fract(st+v);
+
+    // Create circular patterns instead of squares
+    // Center the coordinate at (0.5, 0.5) within each cell
+    vec2 centered = f - 0.5;
+
+    // Calculate distance from center for circular shape
+    float dist = length(centered);
+
+    // Create ellipse by scaling x/y differently (random aspect ratio per cell)
+    float aspect = 0.5 + random(p) * 1.5; // Random aspect ratio between 0.5 and 2.0
+    centered.x *= aspect;
+    dist = length(centered);
+
+    // Use distance to create circular patterns
+    // Smaller radius = smaller circles, adjust 0.4 to change circle size
+    float radius = 0.3 + random(p.y) * 0.2; // Random radius between 0.3 and 0.5
+    float circle = step(dist, radius);
+
+    // Mix with random threshold for variation
+    float rand_val = random(cos(u_time/1e6)+p*0.00000001)+random(p.x)*0.5;
+    return circle * step(t, rand_val);
 }
 
 // Get a single sample value from the packed vec4s
