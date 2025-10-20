@@ -34,11 +34,7 @@ vec2 pattern(vec2 st, vec2 v, float t) {
     // Center the coordinate at (0.5, 0.5) within each cell
     vec2 centered = f - 0.5;
 
-    // Create ellipse by scaling x/y differently (random aspect ratio per cell)
-    float aspect = 0.5 + random(p) * 1.5; // Random aspect ratio between 0.5 and 2.0
-    centered.x *= aspect;
-
-    // Calculate distance from center for circular shape
+    // Calculate distance from center for perfectly circular shape
     float dist = length(centered);
 
     // Use distance to create circular patterns with fixed sizes
@@ -125,9 +121,6 @@ void main() {
     pattern_color.r = pattern_r.x;
     pattern_color.g = pattern_g.x;
     pattern_color.b = pattern_b.x;
-
-    // Margins - removed time-based effects
-    pattern_color *= step(0.2, fpos.y);
 
     // Use the average opacity from the patterns that are visible
     float avg_opacity = (pattern_r.y * pattern_r.x + pattern_g.y * pattern_g.x + pattern_b.y * pattern_b.x) / max(pattern_r.x + pattern_g.x + pattern_b.x, 1.0);
