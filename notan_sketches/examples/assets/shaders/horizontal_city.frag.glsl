@@ -32,22 +32,21 @@ float pattern(vec2 st, vec2 v, float t) {
     // Center the coordinate at (0.5, 0.5) within each cell
     vec2 centered = f - 0.5;
 
-    // Calculate distance from center for circular shape
-    float dist = length(centered);
-
     // Create ellipse by scaling x/y differently (random aspect ratio per cell)
     float aspect = 0.5 + random(p) * 1.5; // Random aspect ratio between 0.5 and 2.0
     centered.x *= aspect;
-    dist = length(centered);
 
-    // Use distance to create circular patterns
-    // Smaller radius = smaller circles, adjust 0.4 to change circle size
+    // Calculate distance from center for circular shape
+    float dist = length(centered);
+
+    // Use distance to create circular patterns with fixed sizes
     float radius = 0.3 + random(p.y) * 0.2; // Random radius between 0.3 and 0.5
-    float circle = step(dist, radius);
 
-    // Mix with random threshold for variation
-    float rand_val = random(cos(u_time/1e6)+p*0.00000001)+random(p.x)*0.5;
-    return circle * step(t, rand_val);
+    // Simple threshold without time-based variation
+    float rand_val = random(p);
+    float circle = step(dist, radius) * step(t, rand_val);
+
+    return circle;
 }
 
 // Get a single sample value from the packed vec4s
@@ -109,16 +108,15 @@ void main() {
     vel *= vec2(-1.0, 0.0) * random(1.0 + ipos.y); // direction
 
     // Assign a random value base on the integer coord
-    vec2 offset = vec2(cos(u_time * 1e5));
+    vec2 offset = vec2(0.1); // Fixed offset instead of time-based
 
     vec3 out_color = vec3(0.905, 0.613, 0.081);
-    out_color.r = pattern(st + offset, vel, max(random(abs(tan(u_time))), 0.5));
+    out_color.r = pattern(st + offset, vel, 0.5); // Fixed threshold
     out_color.g = pattern(st, vel, 0.5);
     out_color.b = pattern(st - offset, vel, 0.5);
 
-    // Margins
+    // Margins - removed time-based effects
     out_color *= step(0.2, fpos.y);
-    out_color *= step(abs(sin(u_time)), fpos.y) - step(u_time, fpos.x / fpos.y);
 
     // Make patterns semi-transparent so background color shows through
     float pattern_alpha = 0.4;  // Adjust this value (0.0-1.0) to control transparency
