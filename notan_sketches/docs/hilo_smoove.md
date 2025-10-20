@@ -7,6 +7,8 @@ Exploration with bezier curves and displacement. There is a ["glitchy" variant h
 
 This is still a work in progress. Mobile controls are currently unavailable.
 
+UPDATE: Added shader to some strips, adapted from [horizontal city on ShaderToy.com](https://www.shadertoy.com/view/3tKyzG)
+
 Desktop controls:
 
 * Press "R" to shuffle parameters

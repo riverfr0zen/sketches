@@ -81,6 +81,9 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 cargo build --release --example erratic_wave_shader --target wasm32-unknown-unknown
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/erratic_wave_shader.wasm
 
+cargo build --release --example hilo_smoove --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/hilo_smoove.wasm
+
 
 ```
 
