@@ -18,15 +18,15 @@ use notan_sketches::utils::{
 
 const ROWS: u32 = 8;
 const COLS: u32 = 8;
-const GRID_STROKE: f32 = 2.0;
+const GRID_STROKE: f32 = 5.0;
 
 // Cell data using NORMALIZED coordinates (0.0-1.0)
 // This makes the sketch resolution-independent!
 #[derive(Clone)]
 struct CellData {
-    circle_pos: Vec2,     // Normalized 0-1 within cell
-    rect_pos: Vec2,       // Normalized 0-1 within cell
-    rect_size: Vec2,      // Normalized 0-1 scale
+    circle_pos: Vec2, // Normalized 0-1 within cell
+    rect_pos: Vec2,   // Normalized 0-1 within cell
+    rect_size: Vec2,  // Normalized 0-1 scale
     circle_color: Color,
     rect_color: Color,
     bg_color: Color,
@@ -36,7 +36,7 @@ struct CellData {
 struct State {
     rng: Random,
     work_size: Vec2,
-    grid: Grid<CellData>,  // All cell data in one unified structure!
+    grid: Grid<CellData>, // All cell data in one unified structure!
     palette: PalettesSelection,
     show_grid: bool,
 }
@@ -53,18 +53,15 @@ fn generate_cell_data(
     // The grid utilities will handle conversion to pixels automatically
 
     let circle_pos = vec2(
-        rng.gen_range(0.2..0.8),  // Keep away from edges
+        rng.gen_range(0.2..0.8), // Keep away from edges
         rng.gen_range(0.2..0.8),
     );
 
-    let rect_pos = vec2(
-        rng.gen_range(0.1..0.9),
-        rng.gen_range(0.1..0.9),
-    );
+    let rect_pos = vec2(rng.gen_range(0.1..0.9), rng.gen_range(0.1..0.9));
 
     let rect_size = vec2(
-        rng.gen_range(0.2..0.5),  // 20-50% of cell width
-        rng.gen_range(0.2..0.5),  // 20-50% of cell height
+        rng.gen_range(0.2..0.5), // 20-50% of cell width
+        rng.gen_range(0.2..0.5), // 20-50% of cell height
     );
 
     let circle_color = colors::Palettes::choose_color(palette);
@@ -95,9 +92,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     // Create grid using the builder pattern
     // Notice how clean this is - no manual loops or index tracking!
     let grid = Grid::builder(ROWS, COLS, work_size)
-        .with_cell_data(|row, col, bounds, rng| {
-            generate_cell_data(row, col, bounds, rng, &palette)
-        })
+        .with_cell_data(|row, col, bounds, rng| generate_cell_data(row, col, bounds, rng, &palette))
         .build(&mut rng);
 
     log::info!("Created {}x{} grid", ROWS, COLS);
@@ -109,7 +104,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         work_size,
         grid,
         palette,
-        show_grid: true,
+        show_grid: false,
     }
 }
 
@@ -126,9 +121,11 @@ fn update(app: &mut App, state: &mut State) {
 
         // Regenerate all cell data with ONE method call!
         // No need to manually loop, clear vectors, etc.
-        state.grid.regenerate_cells(&mut state.rng, |row, col, bounds, rng| {
-            generate_cell_data(row, col, bounds, rng, &state.palette)
-        });
+        state
+            .grid
+            .regenerate_cells(&mut state.rng, |row, col, bounds, rng| {
+                generate_cell_data(row, col, bounds, rng, &state.palette)
+            });
     }
 
     // G key - toggle grid overlay
@@ -166,8 +163,11 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     // Draw backgrounds first
     for cell in state.grid.cells() {
-        draw.rect((cell.offset.x, cell.offset.y), (cell.bounds.width, cell.bounds.height))
-            .color(cell.data.bg_color);
+        draw.rect(
+            (cell.offset.x, cell.offset.y),
+            (cell.bounds.width, cell.bounds.height),
+        )
+        .color(cell.data.bg_color);
     }
 
     // Draw rectangles
@@ -194,7 +194,9 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     // Draw grid overlay with ONE method call!
     if state.show_grid {
-        state.grid.draw_overlay(&mut draw, Color::BLACK, GRID_STROKE);
+        state
+            .grid
+            .draw_overlay(&mut draw, Color::GREEN, GRID_STROKE);
     }
 
     gfx.render(&draw);
