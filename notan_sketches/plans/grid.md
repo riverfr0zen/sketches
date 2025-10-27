@@ -13,9 +13,10 @@
 - [ ] Step 6: Implement random access (`get()`, `get_mut()`)
 - [ ] Step 7: Implement bulk operations (`regenerate_cells()`)
 - [ ] Step 8: Implement debug helpers (`draw_overlay()`)
-- [ ] Step 9: Add module to `lib.rs`
-- [ ] Step 10: Write documentation emphasizing normalized coordinates as primary approach
-- [ ] Step 11: (Optional) Refactor `claudes_first.rs` as demonstration
+- [ ] Step 9: Write comprehensive tests (see Testing Strategy section)
+- [ ] Step 10: Add module to `lib.rs`
+- [ ] Step 11: Write documentation emphasizing normalized coordinates as primary approach
+- [ ] Step 12: (Optional) Refactor `claudes_first.rs` as demonstration
 
 ---
 
@@ -336,6 +337,165 @@ impl<T> Grid<T> {
 3. **Coordinate Mapping**: Support for different grid layouts (hex, triangular)
 4. **Shader Integration**: Helper to generate uniform data for shaders (like `TileGridInfo`)
 
+## Testing Strategy
+
+Testing is critical for this module due to the mathematical nature of coordinate transformations and the importance of getting indexing right.
+
+### Test Categories
+
+#### 1. Core Grid Functionality
+```rust
+#[test]
+fn test_grid_creation_dimensions()
+fn test_grid_cell_count()
+fn test_cell_dimensions_calculated_correctly()
+fn test_grid_with_different_aspect_ratios()
+fn test_single_cell_grid()
+fn test_large_grid()
+```
+
+#### 2. Cell Indexing
+```rust
+#[test]
+fn test_row_col_to_index()
+fn test_cell_iteration_visits_all_cells_once()
+fn test_cell_iteration_order_is_row_major()
+fn test_get_returns_correct_cell()
+fn test_get_out_of_bounds_returns_none()
+```
+
+#### 3. Coordinate Transformations - Normalized (CRITICAL!)
+```rust
+#[test]
+fn test_norm_converts_cell_normalized_to_abs_pixels()
+fn test_norm_at_origin()  // vec2(0.0, 0.0) -> tile offset
+fn test_norm_at_center()  // vec2(0.5, 0.5) -> tile center
+fn test_norm_at_max()     // vec2(1.0, 1.0) -> tile bottom-right
+fn test_norm_abs_converts_to_canvas_normalized()
+fn test_to_norm_reverse_conversion()
+fn test_center_norm_always_returns_half()
+fn test_center_norm_abs_varies_by_cell()
+```
+
+#### 4. Coordinate Transformations - Pixels
+```rust
+#[test]
+fn test_abs_converts_local_pixels_to_absolute()
+fn test_to_local_reverse_conversion()
+fn test_center_returns_absolute_pixel_center()
+```
+
+#### 5. Canvas-Wide Helpers
+```rust
+#[test]
+fn test_grid_norm_to_pixels_full_canvas()
+fn test_grid_pixels_to_norm_full_canvas()
+fn test_roundtrip_canvas_conversions()
+```
+
+#### 6. Builder Pattern
+```rust
+#[test]
+fn test_builder_with_cell_data()
+fn test_builder_passes_correct_bounds_to_closure()
+fn test_builder_with_empty_data()
+```
+
+#### 7. Iteration
+```rust
+#[test]
+fn test_cells_iterator_is_immutable()
+fn test_cells_mut_allows_mutation()
+fn test_iteration_provides_correct_row_col()
+fn test_iteration_provides_correct_bounds()
+fn test_iteration_provides_correct_offset()
+```
+
+#### 8. Data Management
+```rust
+#[test]
+fn test_regenerate_cells_replaces_all_data()
+fn test_get_mut_allows_modification()
+fn test_cell_data_persists_across_iterations()
+```
+
+#### 9. Edge Cases
+```rust
+#[test]
+fn test_non_square_cells()
+fn test_very_small_work_size()
+fn test_very_large_work_size()
+fn test_fractional_cell_dimensions()
+```
+
+### Test Organization
+
+Tests should be in a `#[cfg(test)]` module at the end of `gridutils.rs`:
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use notan::math::vec2;
+    use notan::prelude::Random;
+
+    // Helper function for common test setup
+    fn create_test_grid() -> Grid<i32> {
+        Grid::builder(3, 3, vec2(300.0, 300.0))
+            .with_cell_data(|row, col, _bounds, _rng| {
+                (row * 3 + col) as i32  // Simple test data
+            })
+            .build(&mut Random::default())
+    }
+
+    #[test]
+    fn test_grid_creation_dimensions() {
+        let grid = create_test_grid();
+        assert_eq!(grid.rows(), 3);
+        assert_eq!(grid.cols(), 3);
+        assert_eq!(grid.total_cells(), 9);
+    }
+
+    #[test]
+    fn test_norm_at_center() {
+        let grid = create_test_grid();
+        let cell = grid.get(1, 1).unwrap();  // Middle cell
+
+        let abs_pos = cell.norm(vec2(0.5, 0.5));
+
+        // Middle cell offset is (100, 100), center is at +50,+50
+        assert_eq!(abs_pos, vec2(150.0, 150.0));
+    }
+
+    // ... more tests
+}
+```
+
+### Testing Benefits
+
+1. **Fast Development Iteration** - Run `cargo test` instead of launching sketches
+2. **Coordinate Math Validation** - Ensure all transformations are correct
+3. **Regression Prevention** - Changes won't break existing functionality
+4. **Documentation** - Tests show how the API is meant to be used
+5. **Edge Case Coverage** - Test boundary conditions systematically
+6. **TDD-Friendly** - Can write tests first, implement to pass them
+
+### Running Tests
+
+```bash
+# Run all tests
+cargo test
+
+# Run only gridutils tests
+cargo test gridutils
+
+# Run specific test
+cargo test test_norm_at_center
+
+# Run with output
+cargo test -- --nocapture
+```
+
 ## Implementation Steps
 
 1. Create `notan_sketches/src/gridutils.rs` with core types
@@ -349,9 +509,10 @@ impl<T> Grid<T> {
 6. Implement random access (`get()`, `get_mut()`)
 7. Implement bulk operations (`regenerate_cells()`)
 8. Implement debug helpers (`draw_overlay()`)
-9. Add module to `lib.rs`
-10. Write documentation emphasizing normalized coordinates as primary approach
-11. (Optional) Refactor `claudes_first.rs` as demonstration
+9. **Write comprehensive tests following the Testing Strategy above**
+10. Add module to `lib.rs`
+11. Write documentation emphasizing normalized coordinates as primary approach
+12. (Optional) Refactor `claudes_first.rs` as demonstration
 
 ## Success Criteria
 
