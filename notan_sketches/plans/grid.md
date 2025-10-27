@@ -1,5 +1,24 @@
 # Grid Utilities Module Plan
 
+## Implementation Progress
+
+- [ ] Step 1: Create `notan_sketches/src/gridutils.rs` with core types
+- [ ] Step 2: Implement `Grid<T>` struct with storage and metadata
+- [ ] Step 3: Implement `GridBuilder<T>` with builder pattern
+- [ ] Step 4: Implement `CellContext<T>` and `CellContextMut<T>` with ALL coordinate helpers
+  - [ ] Normalized coordinate methods (PRIMARY): `norm()`, `norm_abs()`, `to_norm()`, etc.
+  - [ ] Pixel coordinate methods (SECONDARY): `abs()`, `to_local()`, `center()`, etc.
+  - [ ] Canvas-wide helpers on Grid: `norm_to_pixels()`, `pixels_to_norm()`
+- [ ] Step 5: Implement iteration methods (`cells()`, `cells_mut()`)
+- [ ] Step 6: Implement random access (`get()`, `get_mut()`)
+- [ ] Step 7: Implement bulk operations (`regenerate_cells()`)
+- [ ] Step 8: Implement debug helpers (`draw_overlay()`)
+- [ ] Step 9: Add module to `lib.rs`
+- [ ] Step 10: Write documentation emphasizing normalized coordinates as primary approach
+- [ ] Step 11: (Optional) Refactor `claudes_first.rs` as demonstration
+
+---
+
 ## Goal
 Create a reusable grid utilities module (`gridutils.rs`) to eliminate boilerplate when creating grid-based generative art sketches in Notan.
 
