@@ -279,6 +279,23 @@ impl<'a, T> CellContext<'a, T> {
         self.norm_abs(self.center_norm())
     }
 
+    /// Convert cell-local normalized size (0-1 scale) to absolute pixel size.
+    ///
+    /// This is for converting sizes/dimensions, not positions. Unlike `norm()`,
+    /// this doesn't add the cell offset - it just scales by cell dimensions.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let rect_size = cell.norm_size(vec2(0.5, 0.3)); // 50% width, 30% height
+    /// draw.rect((x, y), (rect_size.x, rect_size.y));
+    /// ```
+    pub fn norm_size(&self, norm_size: Vec2) -> Vec2 {
+        Vec2::new(
+            norm_size.x * self.bounds.width,
+            norm_size.y * self.bounds.height,
+        )
+    }
+
     // ===== SECONDARY METHODS: Pixel Coordinates =====
 
     /// Convert cell-local pixel coordinates to absolute pixel coordinates.
@@ -590,6 +607,16 @@ impl<'a, T> CellContextMut<'a, T> {
     pub fn center(&self) -> Vec2 {
         self.offset
             + Vec2::new(self.bounds.width * 0.5, self.bounds.height * 0.5)
+    }
+
+    /// Convert cell-local normalized size (0-1 scale) to absolute pixel size.
+    ///
+    /// This is for converting sizes/dimensions, not positions.
+    pub fn norm_size(&self, norm_size: Vec2) -> Vec2 {
+        Vec2::new(
+            norm_size.x * self.bounds.width,
+            norm_size.y * self.bounds.height,
+        )
     }
 
     /// Get the flattened index of this cell (row-major order).
