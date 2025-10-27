@@ -2,21 +2,84 @@
 
 ## Implementation Progress
 
-- [ ] Step 1: Create `notan_sketches/src/gridutils.rs` with core types
-- [ ] Step 2: Implement `Grid<T>` struct with storage and metadata
-- [ ] Step 3: Implement `GridBuilder<T>` with builder pattern
-- [ ] Step 4: Implement `CellContext<T>` and `CellContextMut<T>` with ALL coordinate helpers
-  - [ ] Normalized coordinate methods (PRIMARY): `norm()`, `norm_abs()`, `to_norm()`, etc.
-  - [ ] Pixel coordinate methods (SECONDARY): `abs()`, `to_local()`, `center()`, etc.
-  - [ ] Canvas-wide helpers on Grid: `norm_to_pixels()`, `pixels_to_norm()`
-- [ ] Step 5: Implement iteration methods (`cells()`, `cells_mut()`)
-- [ ] Step 6: Implement random access (`get()`, `get_mut()`)
-- [ ] Step 7: Implement bulk operations (`regenerate_cells()`)
-- [ ] Step 8: Implement debug helpers (`draw_overlay()`)
-- [ ] Step 9: Write comprehensive tests (see Testing Strategy section)
-- [ ] Step 10: Add module to `lib.rs`
-- [ ] Step 11: Write documentation emphasizing normalized coordinates as primary approach
-- [ ] Step 12: (Optional) Refactor `claudes_first.rs` as demonstration
+- [x] Step 1: Create `notan_sketches/src/gridutils.rs` with core types
+- [x] Step 2: Implement `Grid<T>` struct with storage and metadata
+- [x] Step 3: Implement `GridBuilder<T>` with builder pattern
+- [x] Step 4: Implement `CellContext<T>` and `CellContextMut<T>` with ALL coordinate helpers
+  - [x] Normalized coordinate methods (PRIMARY): `norm()`, `norm_abs()`, `to_norm()`, etc.
+  - [x] Pixel coordinate methods (SECONDARY): `abs()`, `to_local()`, `center()`, etc.
+  - [x] Canvas-wide helpers on Grid: `norm_to_pixels()`, `pixels_to_norm()`
+- [x] Step 5: Implement iteration methods (`cells()`, `cells_mut()`)
+- [x] Step 6: Implement random access (`get()`, `get_mut()`)
+- [x] Step 7: Implement bulk operations (`regenerate_cells()`)
+- [x] Step 8: Implement debug helpers (`draw_overlay()`)
+- [x] Step 9: Write comprehensive tests (see Testing Strategy section) - **31 tests, all passing!**
+- [x] Step 10: Add module to `lib.rs`
+- [x] Step 11: Write documentation emphasizing normalized coordinates as primary approach
+- [x] Step 12: (Optional) Refactor `claudes_first.rs` as demonstration - **DONE!** See `examples/claudes_first_grid.rs`
+
+## Refactoring Results
+
+✅ **Successfully refactored `claudes_first.rs` to demonstrate grid utilities!**
+
+**File**: `examples/claudes_first_grid.rs`
+
+**Code Reduction:**
+- Original: 427 lines
+- Refactored: 360 lines
+- **67 lines eliminated** (~16% reduction)
+
+**Key Improvements:**
+
+1. **Eliminated Manual Grid Management**
+   - No more `tile_width`, `tile_height` tracking
+   - No more manual tile offset calculations
+   - No more `tile_index` tracking in loops
+
+2. **Unified Cell Data Storage**
+   - Before: 4 separate `Vec` collections (`circle_positions`, `circle_colors`, `child_circles`, `tile_bg_colors`)
+   - After: Single `Grid<CellData>` structure
+
+3. **Normalized Coordinates**
+   - All positions stored as 0.0-1.0 (resolution-independent!)
+   - Automatic conversion to pixels with `cell.norm()`
+   - Sketch now works at ANY work_size without changes
+
+4. **Cleaner Code Patterns**
+
+   **Before (manual loop with index tracking):**
+   ```rust
+   let mut tile_index = 0;
+   for row in 0..ROWS {
+       for col in 0..COLS {
+           let tile_x = col as f32 * state.tile_width;
+           let tile_y = row as f32 * state.tile_height;
+           let circle_pos = state.circle_positions[tile_index];
+           let abs_x = tile_x + circle_pos.x;
+           let abs_y = tile_y + circle_pos.y;
+           // ... draw code ...
+           tile_index += 1;
+       }
+   }
+   ```
+
+   **After (clean iterator):**
+   ```rust
+   for cell in state.grid.cells() {
+       let abs_pos = cell.norm(cell.data.position);
+       // ... draw code ...
+   }
+   ```
+
+5. **Built-in Grid Overlay**
+   - Before: 20 lines of manual grid drawing code
+   - After: `state.grid.draw_overlay(&mut draw, Color::GREEN, GRID_STROKE);`
+
+6. **Simplified Regeneration**
+   - Before: Manual clearing of 4 separate vectors, nested loops, manual index management
+   - After: `state.grid.regenerate_cells(&mut rng, |row, col, bounds, rng| { ... });`
+
+**Functionality**: Identical to original - all features work exactly the same!
 
 ---
 
