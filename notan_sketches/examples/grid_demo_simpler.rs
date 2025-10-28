@@ -8,8 +8,8 @@ use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions,
 };
 
-const ROWS: u32 = 8;
-const COLS: u32 = 8;
+const MAX_ROWS: u32 = 20;
+const MAX_COLS: u32 = 20;
 const GRID_STROKE: f32 = 5.0;
 
 /// Simple grid example with no cell-specific data. Drawing only happens if `needs_redraw` is true,
@@ -20,6 +20,11 @@ const GRID_STROKE: f32 = 5.0;
 ///
 /// This kind of setup is enough for static (no animation) sketches where the next redraw does not depend
 /// on the previous draw details.
+///
+/// KNOWN ISSUES: Unfortunately, one of the caveats of this simpler setup is that the grid overlay does not
+/// disappear immediately once toggled off, and only disappears on the next redraw. The alternative would be
+/// to use 2 draws and render the state.draw into the other one on every call to draw(), as done in
+/// `radial_pointillist.rs`.
 #[derive(AppState)]
 struct State {
     rng: Random,
@@ -43,13 +48,16 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let palette: PalettesSelection = rng.gen();
     log::info!("Palette: {:?}", palette);
 
+    let rows = rng.gen_range(1..MAX_ROWS);
+    let cols = rng.gen_range(1..MAX_COLS);
+
     // Very simple grid with no cell data
-    let grid = Grid::builder(ROWS, COLS, work_size)
+    let grid = Grid::builder(rows, cols, work_size)
         // .with_cell_data(|row, col, bounds, rng| generate_cell_data(row, col, bounds, rng, &palette))
         .with_cell_data(|row, col, bounds, rng| false)
         .build(&mut rng);
 
-    log::info!("Created {}x{} grid", ROWS, COLS);
+    log::info!("Created {}x{} grid", rows, cols);
     log::info!("Press R to regenerate with new palette");
     log::info!("Press G to toggle grid overlay");
 
@@ -76,6 +84,18 @@ fn update(app: &mut App, state: &mut State) {
         // Choose new palette
         state.palette = state.rng.gen();
         log::info!("Palette: {:?}", state.palette);
+
+        // Create a new grid with different size
+        let rows = state.rng.gen_range(1..MAX_ROWS);
+        let cols = state.rng.gen_range(1..MAX_COLS);
+
+        state.grid = Grid::builder(rows, cols, state.work_size)
+            // .with_cell_data(|row, col, bounds, rng| generate_cell_data(row, col, bounds, rng, &palette))
+            .with_cell_data(|row, col, bounds, rng| false)
+            .build(&mut state.rng);
+
+        log::info!("Created {}x{} grid", rows, cols);
+
 
         state.needs_redraw = true;
     }
@@ -143,7 +163,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
             // Draw triangle
             let color = Palettes::choose_color(&state.palette);
-            log::info!("color: {}", color);
+            // log::info!("color: {}", color);
             state
                 .draw
                 .triangle((a.x, a.y), (b.x, b.y), (c.x, c.y))
