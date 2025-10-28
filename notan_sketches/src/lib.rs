@@ -3,6 +3,7 @@ pub mod emotion;
 pub mod emotion_bg_visualizer;
 pub mod enums;
 pub mod fractals;
+pub mod gridutils;
 pub mod mathutils;
 pub mod schotter;
 pub mod shaderutils;
