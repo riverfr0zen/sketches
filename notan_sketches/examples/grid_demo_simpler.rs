@@ -42,7 +42,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (mut rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
-    let work_size = get_work_size_for_screen(app, gfx);
+    // let work_size = get_work_size_for_screen(app, gfx);
+    let work_size = ScreenDimensions::RES_4K;
     log::info!("Work size: {:?}", work_size);
 
     // // Choose a color palette
