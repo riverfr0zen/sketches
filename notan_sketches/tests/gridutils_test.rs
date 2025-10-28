@@ -82,44 +82,44 @@ fn test_get_out_of_bounds_returns_none() {
 // ===== Coordinate Transformations - Normalized (CRITICAL!) =====
 
 #[test]
-fn test_norm_at_origin() {
+fn test_to_px_at_origin() {
     let grid = create_test_grid();
     let cell = grid.get(0, 0).unwrap();
 
-    let abs_pos = cell.norm(vec2(0.0, 0.0));
+    let abs_pos = cell.to_px(vec2(0.0, 0.0));
 
     // First cell offset is (0, 0), normalized (0, 0) = absolute (0, 0)
     assert_eq!(abs_pos, vec2(0.0, 0.0));
 }
 
 #[test]
-fn test_norm_at_center() {
+fn test_to_px_at_center() {
     let grid = create_test_grid();
     let cell = grid.get(1, 1).unwrap(); // Middle cell
 
-    let abs_pos = cell.norm(vec2(0.5, 0.5));
+    let abs_pos = cell.to_px(vec2(0.5, 0.5));
 
     // Middle cell offset is (100, 100), center is at +50,+50
     assert_eq!(abs_pos, vec2(150.0, 150.0));
 }
 
 #[test]
-fn test_norm_at_max() {
+fn test_to_px_at_max() {
     let grid = create_test_grid();
     let cell = grid.get(0, 0).unwrap();
 
-    let abs_pos = cell.norm(vec2(1.0, 1.0));
+    let abs_pos = cell.to_px(vec2(1.0, 1.0));
 
     // First cell, normalized (1, 1) = bottom-right of cell = (100, 100)
     assert_eq!(abs_pos, vec2(100.0, 100.0));
 }
 
 #[test]
-fn test_norm_abs_converts_to_canvas_normalized() {
+fn test_to_canvas_norm_converts_to_canvas_normalized() {
     let grid = create_test_grid();
     let cell = grid.get(1, 1).unwrap(); // Middle cell
 
-    let canvas_norm = cell.norm_abs(vec2(0.5, 0.5));
+    let canvas_norm = cell.to_canvas_norm(vec2(0.5, 0.5));
 
     // Middle cell center at (150, 150), canvas is 300x300
     // So canvas norm = (150/300, 150/300) = (0.5, 0.5)

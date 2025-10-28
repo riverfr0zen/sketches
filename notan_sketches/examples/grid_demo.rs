@@ -172,7 +172,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     // Draw rectangles
     for cell in state.grid.cells() {
-        let rect_center = cell.norm(cell.data.rect_pos);
+        let rect_center = cell.to_px(cell.data.rect_pos);
         let rect_size = cell.norm_size(cell.data.rect_size);
 
         // draw.rect() uses the position as top-left corner, not center
@@ -183,7 +183,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     // Draw circles last
     for cell in state.grid.cells() {
-        let circle_pos = cell.norm(cell.data.circle_pos);
+        let circle_pos = cell.to_px(cell.data.circle_pos);
         let cell_min_dim = cell.bounds.width.min(cell.bounds.height);
         let circle_radius = cell_min_dim * 0.15;
 

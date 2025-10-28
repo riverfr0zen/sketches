@@ -338,7 +338,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     // ✨ Draw circles using grid iterator - NO manual tile_index tracking!
     for cell in state.grid.cells() {
         // Convert normalized position (0-1) to absolute pixels - ONE method call!
-        let abs_pos = cell.norm(cell.data.position);
+        let abs_pos = cell.to_px(cell.data.position);
 
         // Draw parent circle
         draw.circle(state.circle_radius)
