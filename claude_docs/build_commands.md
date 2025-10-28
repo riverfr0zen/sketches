@@ -2,13 +2,19 @@
 
 ## IMPORTANT: Working Directory
 
-**ALWAYS change to the `notan_sketches` directory before running any cargo commands:**
+**ALWAYS change to the appropriate package directory before running cargo commands:**
 
 ```bash
+# When working on notan_sketches:
 cd notan_sketches
+
+# When working on notan_touchy:
+cd notan_touchy
 ```
 
-All cargo commands (build, test, run) must be executed from within the `notan_sketches` directory, NOT from the parent `sketches` directory. Running cargo from the wrong directory will result in "could not find Cargo.toml" errors.
+All cargo commands (build, test, run) must be executed from within the package directory (where Cargo.toml is located), NOT from the parent `sketches` directory. Running cargo from the wrong directory will result in "could not find Cargo.toml" errors.
+
+The `sketches` directory is a workspace parent that contains multiple packages. Always cd into the specific package you're working on.
 
 ## Running Native Examples
 
