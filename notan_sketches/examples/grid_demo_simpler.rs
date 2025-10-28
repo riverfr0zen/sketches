@@ -16,11 +16,16 @@ const SHADOW_COLOR: Color = Color::new(0.25, 0.25, 0.25, 0.25);
 /// Simple grid example with no cell-specific data. Drawing only happens if `needs_redraw` is true,
 /// and drawing persists by keeping the Draw in the AppState.
 ///
-/// Hence, we don't need any cell-specific data to persist the drawing (note that in other sketches,
-/// cell-specific data may still be needed to persist non-drawing related elements).
+/// Hence, we don't need any cell-specific data to persist the drawing
 ///
-/// This kind of setup is enough for static (no animation) sketches where the next redraw does not depend
-/// on the previous draw details.
+/// NOTE: In other sketches, cell-specific data may still be needed to persist non-drawing related elements
+///
+/// NOTE: Another reason to use cell-specific data (persist data in state) is for performance. In more complex
+/// sketches, there may be a lot of calculations for each drawing, and this method would require doing all
+/// those calculations in every draw.
+///
+/// This kind of setup is enough for simple static (no animation) sketches where the next redraw does not depend
+/// on the previous draw details, and where the drawing is simple enough as to not incur performance issues.
 ///
 /// KNOWN ISSUES: Unfortunately, one of the caveats of this simpler setup is that the grid overlay does not
 /// disappear immediately once toggled off, and only disappears on the next redraw. The alternative would be

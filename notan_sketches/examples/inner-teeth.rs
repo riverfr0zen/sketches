@@ -13,6 +13,14 @@ const MAX_COLS: u32 = 20;
 const GRID_STROKE: f32 = 5.0;
 const SHADOW_COLOR: Color = Color::new(0.25, 0.25, 0.25, 0.25);
 
+
+#[derive(Debug)]
+struct Tooth {
+    start: Vec2,
+    mid: Vec2,
+    end: Vec2,
+}
+
 /// Simple grid example with no cell-specific data. Drawing only happens if `needs_redraw` is true,
 /// and drawing persists by keeping the Draw in the AppState.
 ///
@@ -108,51 +116,21 @@ fn update(app: &mut App, state: &mut State) {
     }
 }
 
-#[notan_main]
-fn main() -> Result<(), String> {
-    #[cfg(not(target_arch = "wasm32"))]
-    let win_config = get_common_win_config()
-        .set_high_dpi(true)
-        .set_vsync(true)
-        .set_multisampling(8)
-        .set_size(
-            ScreenDimensions::RES_1080P.x as u32,
-            ScreenDimensions::RES_1080P.y as u32,
-            // ScreenDimensions::RES_4K.x as u32,
-            // ScreenDimensions::RES_4K.y as u32,
-        );
 
-    #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().set_high_dpi(true);
-
-    notan::init_with(init)
-        .add_config(log::LogConfig::debug())
-        .add_config(win_config)
-        .add_config(DrawConfig)
-        .update(update)
-        .draw(draw)
-        .build()
-}
-
-#[derive(Debug)]
-struct Tooth {
-    start: Vec2,
-    mid: Vec2,
-    end: Vec2,
-}
-
-fn get_cell_teeth<T>(cell: CellContext<T>) -> Vec<Tooth> {
+fn get_cell_teeth<T>(cell: CellContext<T>, rng: &mut Random) -> Vec<Tooth> {
     let mut teeth: Vec<Tooth> = vec![];
     // log::info!("{}, {}, {:?}", cell.row, cell.col, cell.bounds);
 
     // The height and width of the tooth if situated upright
-    let height = 0.25;
+    let max_height = 0.25;
+    let min_height = 0.10;
     let width = 0.1;
     let padding = 0.05;
 
 
-    // Bottom teeth
     for i in 2..10 {
+        let height = rng.gen_range(min_height..max_height);
+        // Bottom teeth
         let boundary: f32 = i as f32 / 10.0;
         // let mid = (boundary * 0.5, height);
         // let start = (boundary - width, 1.0);
@@ -162,10 +140,9 @@ fn get_cell_teeth<T>(cell: CellContext<T>) -> Vec<Tooth> {
         let start = cell.to_px(vec2(boundary - width, 1.0 - padding));
         let end = cell.to_px(vec2(boundary, 1.0 - padding));
         teeth.push(Tooth { start, mid, end });
-    }
 
-    // Top teeth
-    for i in 2..10 {
+        // Top teeth
+        let height = rng.gen_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
         // let mid = (boundary * 0.5, height);
         // let start = (boundary - width, 1.0);
@@ -176,7 +153,6 @@ fn get_cell_teeth<T>(cell: CellContext<T>) -> Vec<Tooth> {
         teeth.push(Tooth { start, mid, end });
     }
 
-
     teeth
 }
 
@@ -184,11 +160,11 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.needs_redraw {
         state.draw = get_draw_setup(gfx, state.work_size, false, Color::WHITE);
         for cell in state.grid.cells() {
-            let teeth = get_cell_teeth(cell);
+            let teeth = get_cell_teeth(cell, &mut state.rng);
             // log::info!("{:?}", teeth);
 
             // let color = Palettes::choose_color(&state.palette);
-            let color = Color::YELLOW;
+            let color = Color::new(1.0, 1.0, 0.8, 1.0);
             for tooth in teeth {
                 state
                     .draw
@@ -202,44 +178,6 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                     .fill_color(color)
                     .fill();
             }
-            // let a = cell.to_px(vec2(
-            //     state.rng.gen_range(0.25..0.5),
-            //     state.rng.gen_range(0.0..0.25),
-            // ));
-            // let b = cell.to_px(vec2(
-            //     state.rng.gen_range(0.0..0.25),
-            //     state.rng.gen_range(0.75..1.0),
-            // ));
-            // let c = cell.to_px(vec2(
-            //     state.rng.gen_range(0.75..1.0),
-            //     state.rng.gen_range(0.75..1.0),
-            // ));
-
-            // // Draw shadow first
-            // let offset_amt = state.rng.gen_range(0.025..0.2);
-            // let shadow_offset = cell.norm_size(vec2(offset_amt, offset_amt));
-            // state
-            //     .draw
-            //     .triangle(
-            //         (a.x + shadow_offset.x, a.y + shadow_offset.y),
-            //         (b.x + shadow_offset.x, b.y + shadow_offset.y),
-            //         (c.x + shadow_offset.x, c.y + shadow_offset.y),
-            //     )
-            //     // .stroke(5.0)
-            //     // .stroke_color(Color::BLACK)
-            //     .fill_color(SHADOW_COLOR)
-            //     .fill();
-
-            // // Draw triangle
-            // let color = Palettes::choose_color(&state.palette);
-            // // log::info!("color: {}", color);
-            // state
-            //     .draw
-            //     .triangle((a.x, a.y), (b.x, b.y), (c.x, c.y))
-            //     // .stroke(5.0)
-            //     // .stroke_color(Color::BLACK)
-            //     .fill_color(color)
-            //     .fill();
         }
         state.needs_redraw = false;
     }
@@ -251,4 +189,33 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     }
 
     gfx.render(&state.draw);
+}
+
+
+#[notan_main]
+fn main() -> Result<(), String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    let win_config = get_common_win_config()
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_multisampling(8)
+        .set_size(
+            // ScreenDimensions::RES_1080P.x as u32,
+            // ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::RES_4K.x as u32,
+            // ScreenDimensions::RES_4K.y as u32,
+            ScreenDimensions::RES_4KISH.x as u32,
+            ScreenDimensions::RES_4KISH.y as u32,
+        );
+
+    #[cfg(target_arch = "wasm32")]
+    let win_config = get_common_win_config().set_high_dpi(true);
+
+    notan::init_with(init)
+        .add_config(log::LogConfig::debug())
+        .add_config(win_config)
+        .add_config(DrawConfig)
+        .update(update)
+        .draw(draw)
+        .build()
 }
