@@ -11,6 +11,7 @@ use notan_sketches::utils::{
 const MAX_ROWS: u32 = 20;
 const MAX_COLS: u32 = 20;
 const GRID_STROKE: f32 = 5.0;
+const SHADOW_COLOR: Color = Color::new(0.25, 0.25, 0.25, 0.25);
 
 /// Simple grid example with no cell-specific data. Drawing only happens if `needs_redraw` is true,
 /// and drawing persists by keeping the Draw in the AppState.
@@ -113,9 +114,12 @@ fn main() -> Result<(), String> {
     let win_config = get_common_win_config()
         .set_high_dpi(true)
         .set_vsync(true)
+        .set_multisampling(8)
         .set_size(
             ScreenDimensions::RES_1080P.x as u32,
             ScreenDimensions::RES_1080P.y as u32,
+            // ScreenDimensions::RES_4K.x as u32,
+            // ScreenDimensions::RES_4K.y as u32,
         );
 
     #[cfg(target_arch = "wasm32")]
@@ -148,7 +152,8 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
             ));
 
             // Draw shadow first
-            let shadow_offset = cell.norm_size(vec2(0.05, 0.05));
+            let offset_amt = state.rng.gen_range(0.025..0.1);
+            let shadow_offset = cell.norm_size(vec2(offset_amt, offset_amt));
             state
                 .draw
                 .triangle(
@@ -158,7 +163,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 )
                 // .stroke(5.0)
                 // .stroke_color(Color::BLACK)
-                .fill_color(Color::new(0.5, 0.5, 0.5, 0.5))
+                .fill_color(SHADOW_COLOR)
                 .fill();
 
             // Draw triangle

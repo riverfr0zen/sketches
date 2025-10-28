@@ -954,6 +954,7 @@ fn main() -> Result<(), String> {
     #[cfg(not(target_arch = "wasm32"))]
     let win_config = get_common_win_config()
         .set_high_dpi(true)
+        .set_multisampling(8)
         .set_vsync(true)
         .set_size(
             // let win_config = get_common_win_config().high_dpi(true).size(
