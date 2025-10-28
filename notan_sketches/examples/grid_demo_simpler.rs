@@ -1,0 +1,165 @@
+use notan::draw::*;
+use notan::log;
+use notan::math::{vec2, Vec2};
+use notan::prelude::*;
+use notan_sketches::colors::{Palettes, PalettesSelection};
+use notan_sketches::gridutils::Grid;
+use notan_sketches::utils::{
+    get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions,
+};
+
+const ROWS: u32 = 8;
+const COLS: u32 = 8;
+const GRID_STROKE: f32 = 5.0;
+
+/// Simple grid example with no cell-specific data. Drawing only happens if `needs_redraw` is true,
+/// and drawing persists by keeping the Draw in the AppState.
+///
+/// Hence, we don't need any cell-specific data to persist the drawing (note that in other sketches,
+/// cell-specific data may still be needed to persist non-drawing related elements).
+///
+/// This kind of setup is enough for static (no animation) sketches where the next redraw does not depend
+/// on the previous draw details.
+#[derive(AppState)]
+struct State {
+    rng: Random,
+    work_size: Vec2,
+    // Simple grid with no cell-specific data
+    grid: Grid<bool>,
+    palette: PalettesSelection,
+    show_grid: bool,
+    needs_redraw: bool,
+    draw: Draw,
+}
+
+fn init(app: &mut App, gfx: &mut Graphics) -> State {
+    let (mut rng, seed) = get_rng(None);
+    log::info!("Seed: {}", seed);
+
+    let work_size = get_work_size_for_screen(app, gfx);
+    log::info!("Work size: {:?}", work_size);
+
+    // // Choose a color palette
+    let palette: PalettesSelection = rng.gen();
+    log::info!("Palette: {:?}", palette);
+
+    // Very simple grid with no cell data
+    let grid = Grid::builder(ROWS, COLS, work_size)
+        // .with_cell_data(|row, col, bounds, rng| generate_cell_data(row, col, bounds, rng, &palette))
+        .with_cell_data(|row, col, bounds, rng| false)
+        .build(&mut rng);
+
+    log::info!("Created {}x{} grid", ROWS, COLS);
+    log::info!("Press R to regenerate with new palette");
+    log::info!("Press G to toggle grid overlay");
+
+    let draw = get_draw_setup(gfx, work_size, false, Color::WHITE);
+
+    State {
+        rng,
+        work_size,
+        grid,
+        palette,
+        show_grid: false,
+        needs_redraw: true,
+        draw,
+    }
+}
+
+fn update(app: &mut App, state: &mut State) {
+    // R key - redraw
+    if app.keyboard.was_pressed(KeyCode::R) {
+        let new_seed = state.rng.gen();
+        state.rng.reseed(new_seed);
+        log::info!("New seed: {}", new_seed);
+
+        // Choose new palette
+        state.palette = state.rng.gen();
+        log::info!("Palette: {:?}", state.palette);
+
+        state.needs_redraw = true;
+    }
+
+    // G key - toggle grid overlay
+    if app.keyboard.was_pressed(KeyCode::G) {
+        state.show_grid = !state.show_grid;
+        log::debug!("Grid overlay: {}", state.show_grid);
+    }
+}
+
+#[notan_main]
+fn main() -> Result<(), String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    let win_config = get_common_win_config()
+        .set_high_dpi(true)
+        .set_vsync(true)
+        .set_size(
+            ScreenDimensions::RES_1080P.x as u32,
+            ScreenDimensions::RES_1080P.y as u32,
+        );
+
+    #[cfg(target_arch = "wasm32")]
+    let win_config = get_common_win_config().set_high_dpi(true);
+
+    notan::init_with(init)
+        .add_config(log::LogConfig::debug())
+        .add_config(win_config)
+        .add_config(DrawConfig)
+        .update(update)
+        .draw(draw)
+        .build()
+}
+
+fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
+    if state.needs_redraw {
+        state.draw = get_draw_setup(gfx, state.work_size, false, Color::WHITE);
+        for cell in state.grid.cells() {
+            let a = cell.to_px(vec2(
+                state.rng.gen_range(0.25..0.5),
+                state.rng.gen_range(0.0..0.25),
+            ));
+            let b = cell.to_px(vec2(
+                state.rng.gen_range(0.0..0.25),
+                state.rng.gen_range(0.75..1.0),
+            ));
+            let c = cell.to_px(vec2(
+                state.rng.gen_range(0.75..1.0),
+                state.rng.gen_range(0.75..1.0),
+            ));
+
+            // Draw shadow first
+            let shadow_offset = cell.norm_size(vec2(0.05, 0.05));
+            state
+                .draw
+                .triangle(
+                    (a.x + shadow_offset.x, a.y + shadow_offset.y),
+                    (b.x + shadow_offset.x, b.y + shadow_offset.y),
+                    (c.x + shadow_offset.x, c.y + shadow_offset.y),
+                )
+                // .stroke(5.0)
+                // .stroke_color(Color::BLACK)
+                .fill_color(Color::new(0.5, 0.5, 0.5, 0.5))
+                .fill();
+
+            // Draw triangle
+            let color = Palettes::choose_color(&state.palette);
+            log::info!("color: {}", color);
+            state
+                .draw
+                .triangle((a.x, a.y), (b.x, b.y), (c.x, c.y))
+                // .stroke(5.0)
+                // .stroke_color(Color::BLACK)
+                .fill_color(color)
+                .fill();
+        }
+        state.needs_redraw = false;
+    }
+
+    if state.show_grid {
+        state
+            .grid
+            .draw_overlay(&mut state.draw, Color::GREEN, GRID_STROKE);
+    }
+
+    gfx.render(&state.draw);
+}
