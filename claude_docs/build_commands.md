@@ -1,11 +1,48 @@
 # Build Commands
 
+## IMPORTANT: Working Directory
+
+**ALWAYS change to the `notan_sketches` directory before running any cargo commands:**
+
+```bash
+cd notan_sketches
+```
+
+All cargo commands (build, test, run) must be executed from within the `notan_sketches` directory, NOT from the parent `sketches` directory. Running cargo from the wrong directory will result in "could not find Cargo.toml" errors.
+
 ## Running Native Examples
 
 ```bash
 cd notan_sketches
 cargo run --example <example_name>
 # Example: cargo run --example sierpinski_gasket
+```
+
+## Running Tests
+
+```bash
+cd notan_sketches
+
+# Run all tests
+cargo test
+
+# Run tests for a specific module
+cargo test gridutils
+
+# Run a specific test file
+cargo test --test gridutils_test
+```
+
+## Building Examples
+
+```bash
+cd notan_sketches
+
+# Build a single example
+cargo build --release --example <example_name>
+
+# Build all examples
+cargo build --release --examples
 ```
 
 ## Building for WASM
