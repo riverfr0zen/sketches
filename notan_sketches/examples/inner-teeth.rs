@@ -122,7 +122,7 @@ fn get_cell_teeth<T>(cell: CellContext<T>, rng: &mut Random) -> Vec<Tooth> {
     // log::info!("{}, {}, {:?}", cell.row, cell.col, cell.bounds);
 
     // The height and width of the tooth if situated upright
-    let max_height = 0.25;
+    let max_height = 0.4;
     let min_height = 0.10;
     let width = 0.1;
     let padding = 0.05;
@@ -160,6 +160,31 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.needs_redraw {
         state.draw = get_draw_setup(gfx, state.work_size, false, Color::WHITE);
         for cell in state.grid.cells() {
+            // Draw "gums"
+            state
+                .draw
+                .rect(
+                    (cell.offset.x, cell.offset.y),
+                    (cell.bounds.width, cell.bounds.height),
+                )
+                .color(Color::new(0.9, 0.2, 0.1, 1.0));
+
+            // Draw "gums"
+            let padding = cell.norm_size(vec2(0.05, 0.05));
+            state
+                .draw
+                .rect(
+                    (
+                        cell.offset.x + padding.x * 0.5,
+                        cell.offset.y + padding.y * 0.5,
+                    ),
+                    (
+                        cell.bounds.width - padding.x,
+                        cell.bounds.height - padding.y,
+                    ),
+                )
+                .color(Color::new(0.7, 0.2, 0.1, 1.0));
+
             let teeth = get_cell_teeth(cell, &mut state.rng);
             // log::info!("{:?}", teeth);
 
