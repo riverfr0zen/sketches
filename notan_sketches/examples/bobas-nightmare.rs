@@ -20,6 +20,9 @@ const BG_COLOR: Color = Color::new(0.6, 0.2, 0.2, 1.0);
 // const MOUTH_COLOR: Color = Color::new(0.1, 0.3, 0.1, 1.0);
 // const THROAT_COLOR: Color = Color::new(0.05, 0.15, 0.05, 1.0);
 // const BG_COLOR: Color = Color::new(0.0, 0.2, 0.0, 1.0);
+const TOOTH_COLOR: Color = Color::new(1.0, 1.0, 0.8, 1.0);
+// const TOOTH_STROKE: Color = Color::new(6.0, 6.0, 0.4, 1.0);
+const TOOTH_STROKE: Color = Color::new(4.0, 4.0, 0.2, 1.0);
 
 // Influence point system constants
 const CELLS_PER_INFLUENCE_POINT: f32 = 8.0; // Number of cells per influence point
@@ -27,6 +30,7 @@ const BASE_MAX_HEIGHT: f32 = 0.08; // Base max height for teeth far from influen
 const MIN_TOOTH_HEIGHT: f32 = 0.06; // Minimum possible tooth height (must be > padding)
 const INFLUENCE_RADIUS: f32 = 0.3; // Radius of influence in normalized space
 const MAX_HEIGHT_BOOST: f32 = 0.42; // Maximum additional height from influence
+
 
 #[derive(Debug)]
 struct Tooth {
@@ -242,11 +246,12 @@ fn generate_cell_data_influenced(
     // Calculate max height based on distance to nearest influence point
     let distance = distance_to_nearest_influence(cell_center_norm, influence_points);
 
-    // Horizontal teeth (top/bottom): taller when CLOSER to influence (normal behavior)
-    let max_height_horizontal = calculate_max_height_from_influence(distance);
+    // Randomly choose whether horizontal or vertical teeth react to influence
+    let horizontal_influenced = rng.gen_bool(0.5);
 
-    // Vertical teeth (left/right): taller when FARTHER from influence (inverse behavior)
-    let max_height_vertical = calculate_inverse_max_height_from_influence(distance);
+    // Calculate max heights for influenced and non-influenced teeth
+    let max_height_influenced = calculate_max_height_from_influence(distance);
+    let max_height_base = BASE_MAX_HEIGHT;
 
     let mut teeth: Vec<Tooth> = vec![];
 
@@ -254,34 +259,44 @@ fn generate_cell_data_influenced(
     let padding = 0.05;
 
     for i in 2..10 {
-        // Bottom teeth - taller when CLOSER to influence points
-        let min_height_h = MIN_TOOTH_HEIGHT.min(max_height_horizontal * 0.5);
-        let tooth_height = rng.gen_range(min_height_h..max_height_horizontal);
+        // Bottom teeth (horizontal)
+        let max_height = if horizontal_influenced {
+            max_height_influenced
+        } else {
+            max_height_base
+        };
+        let min_height = MIN_TOOTH_HEIGHT.min(max_height * 0.5);
+        let tooth_height = rng.gen_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(boundary - 0.05, 1.0 - tooth_height);
         let start = vec2(boundary - tooth_width, 1.0 - padding);
         let end = vec2(boundary, 1.0 - padding);
         teeth.push(Tooth { start, mid, end });
 
-        // Top teeth - taller when CLOSER to influence points
-        let tooth_height = rng.gen_range(min_height_h..max_height_horizontal);
+        // Top teeth (horizontal)
+        let tooth_height = rng.gen_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(boundary - 0.05, tooth_height);
         let start = vec2(boundary - tooth_width, padding);
         let end = vec2(boundary, padding);
         teeth.push(Tooth { start, mid, end });
 
-        // Left teeth - taller when FARTHER from influence points
-        let min_height_v = MIN_TOOTH_HEIGHT.min(max_height_vertical * 0.5);
-        let tooth_height = rng.gen_range(min_height_v..max_height_vertical);
+        // Left teeth (vertical)
+        let max_height = if horizontal_influenced {
+            max_height_base
+        } else {
+            max_height_influenced
+        };
+        let min_height = MIN_TOOTH_HEIGHT.min(max_height * 0.5);
+        let tooth_height = rng.gen_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(tooth_height, boundary - 0.05);
         let start = vec2(padding, boundary - tooth_width);
         let end = vec2(padding, boundary);
         teeth.push(Tooth { start, mid, end });
 
-        // Right teeth - taller when FARTHER from influence points
-        let tooth_height = rng.gen_range(min_height_v..max_height_vertical);
+        // Right teeth (vertical)
+        let tooth_height = rng.gen_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(1.0 - tooth_height, boundary - 0.05);
         let start = vec2(1.0 - padding, boundary - tooth_width);
@@ -344,7 +359,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 .color(THROAT_COLOR);
 
             // Draw teeth from cell data (pre-generated in normalized coords, converted to pixels here)
-            let color = Color::new(1.0, 1.0, 0.8, 1.0);
             for tooth in &cell.data.teeth {
                 let start_px = cell.to_px(tooth.start);
                 let mid_px = cell.to_px(tooth.mid);
@@ -358,8 +372,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                         (end_px.x, end_px.y),
                     )
                     .stroke(5.0)
-                    .stroke_color(Color::BLACK)
-                    .fill_color(color)
+                    // .stroke_color(Color::BLACK)
+                    .stroke_color(TOOTH_STROKE)
+                    .fill_color(TOOTH_COLOR)
                     .fill();
             }
         }
@@ -382,7 +397,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
         // Render the existing draw to the supersampled texture
         gfx.render_to(&capture.render_texture, &state.draw);
         capture.capture(app, gfx);
-        log::info!("Capture completed with {}x supersampling", supersample_factor);
+        log::info!(
+            "Capture completed with {}x supersampling",
+            supersample_factor
+        );
         state.capture_next_draw = false;
     }
 
@@ -398,22 +416,26 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 .draw
                 .circle(radius_pixels)
                 .position(abs_pos.x, abs_pos.y)
-                .color(Color::from_rgba(1.0, 1.0, 0.0, 0.12))
+                .fill_color(Color::from_rgba(0.0, 0.0, 1.0, 0.12))
+                .fill()
                 .stroke(2.0)
-                .stroke_color(Color::from_rgba(1.0, 1.0, 0.0, 0.4));
+                .stroke_color(Color::from_rgba(0.0, 0.0, 1.0, 0.4));
 
             // Draw influence point marker
             state
                 .draw
                 .circle(8.0)
                 .position(abs_pos.x, abs_pos.y)
-                .color(Color::YELLOW)
+                .color(Color::BLUE)
                 .fill();
         }
 
         state
             .grid
             .draw_overlay(&mut state.draw, Color::GREEN, GRID_STROKE);
+
+        // When grid is enabled, we always redraw to ensure reactivity to grid controls
+        state.needs_redraw = true;
     }
 
     gfx.render(&state.draw);
@@ -437,7 +459,9 @@ fn main() -> Result<(), String> {
         );
 
     #[cfg(target_arch = "wasm32")]
-    let win_config = get_common_win_config().set_high_dpi(true);
+    let win_config = get_common_win_config()
+        .set_high_dpi(true)
+        .set_multisampling(8);
 
     notan::init_with(init)
         .add_config(log::LogConfig::debug())
