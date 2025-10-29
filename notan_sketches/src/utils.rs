@@ -1,11 +1,11 @@
+#[cfg(not(target_arch = "wasm32"))]
+use image::imageops::FilterType;
 use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, vec3, Mat4, Rect, Vec2};
 use notan::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use web_sys;
-#[cfg(not(target_arch = "wasm32"))]
-use image::imageops::FilterType;
 
 const HELP_PANEL_COLOR: Color = Color::GRAY;
 
@@ -534,7 +534,12 @@ impl CapturingTexture {
         supersample_factor: f32,
     ) -> Self {
         Self {
-            render_texture: Self::create_render_texture(gfx, work_size, bgcolor, supersample_factor),
+            render_texture: Self::create_render_texture(
+                gfx,
+                work_size,
+                bgcolor,
+                supersample_factor,
+            ),
             capture_to: capture_to,
             capture_interval: capture_interval,
             last_capture: 0.0,
@@ -549,7 +554,7 @@ impl CapturingTexture {
     /// On WASM: Saves the full supersampled image.
     #[cfg(not(target_arch = "wasm32"))]
     pub fn capture(&mut self, app: &mut App, gfx: &mut Graphics) {
-        log::debug!("Beginning capture at {}", app.timer.elapsed_f32());
+        log::info!("Beginning capture at {}", app.timer.elapsed_f32());
         let filepath = format!("{}_{}.png", self.capture_to, app.timer.elapsed_f32());
 
         if self.supersample_factor > 1.0 {
@@ -558,27 +563,28 @@ impl CapturingTexture {
             self.render_texture.to_file(gfx, &temp_filepath).unwrap();
 
             // Load, downsample, and save final version
+            log::info!("Downsampling the supersampled capture...");
             let img = image::open(&temp_filepath).expect("Failed to open temp capture");
             let (width, height) = (img.width(), img.height());
             let target_width = (width as f32 / self.supersample_factor) as u32;
             let target_height = (height as f32 / self.supersample_factor) as u32;
 
-            let downsampled = image::imageops::resize(
-                &img,
-                target_width,
-                target_height,
-                FilterType::Lanczos3,
-            );
+            let downsampled =
+                image::imageops::resize(&img, target_width, target_height, FilterType::Lanczos3);
 
-            downsampled.save(&filepath).expect("Failed to save downsampled image");
+            downsampled
+                .save(&filepath)
+                .expect("Failed to save downsampled image");
 
             // Remove temp file
             std::fs::remove_file(&temp_filepath).ok();
 
             log::info!(
                 "Saved downsampled capture: {}x{} -> {}x{} ({})",
-                width, height,
-                target_width, target_height,
+                width,
+                height,
+                target_width,
+                target_height,
                 filepath
             );
         } else {
@@ -596,7 +602,10 @@ impl CapturingTexture {
         let filepath = format!("{}_{}.png", self.capture_to, app.timer.elapsed_f32());
 
         if self.supersample_factor > 1.0 {
-            log::info!("WASM: Saving full {}x supersampled image", self.supersample_factor);
+            log::info!(
+                "WASM: Saving full {}x supersampled image",
+                self.supersample_factor
+            );
         }
 
         self.render_texture.to_file(gfx, &filepath).unwrap();
