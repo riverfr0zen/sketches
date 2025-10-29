@@ -81,6 +81,7 @@ const PALETTE: [Color; 21] = [
     colors::SCARLET,
     colors::SALMON,
 ];
+const COLOR_CHANGE_CHANCE_RANGE: RangeInclusive<f32> = 0.0..=0.5;
 const BRUSH_BASIC: usize = 0;
 const BRUSH_CIRCLE: usize = 1;
 const BRUSH_EMBOSSED: usize = 2;
@@ -200,6 +201,7 @@ pub struct Settings {
     parent_color: Color,
     spawn_color: Color,
     spawn2_color: Color,
+    color_change_chance: f32,
     parent_brush: Texture,
     spawn_brush: Texture,
     spawn2_brush: Texture,
@@ -230,6 +232,7 @@ impl Settings {
             parent_color: colors::AEGEAN,
             spawn_color: colors::SEAWEED,
             spawn2_color: colors::SALMON,
+            color_change_chance: 0.0,
             parent_brush,
             spawn_brush,
             spawn2_brush,
@@ -351,10 +354,13 @@ impl Settings {
         let spawn2_brush = brushes[rng.gen_range(0..brushes.len())].clone();
         let use_assigned_brushes: bool = rng.gen();
 
-        let mut palette = PALETTE.to_vec();
-        let parent_color = palette.remove(rng.gen_range(0..palette.len()));
-        let spawn_color = palette.remove(rng.gen_range(0..palette.len()));
-        let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
+        // let mut palette = PALETTE.to_vec();
+        // let parent_color = palette.remove(rng.gen_range(0..palette.len()));
+        // let spawn_color = palette.remove(rng.gen_range(0..palette.len()));
+        // let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
+
+        let (parent_color, spawn_color, spawn2_color) = Settings::choose_colors(rng);
+        let color_change_chance = rng.gen_range(COLOR_CHANGE_CHANCE_RANGE);
 
         let (radial_range_style, parent_radius, spawn_radius, spawn2_radius) =
             Self::gen_radial_ranges(rng, work_size, Some(0.0));
@@ -376,12 +382,44 @@ impl Settings {
             parent_color,
             spawn_color,
             spawn2_color,
+            color_change_chance,
             parent_brush,
             spawn_brush,
             spawn2_brush,
             use_assigned_brushes,
         }
     }
+
+    fn choose_colors(rng: &mut Random) -> (Color, Color, Color) {
+        let mut palette = PALETTE.to_vec();
+        (
+            palette.remove(rng.gen_range(0..palette.len())),
+            palette.remove(rng.gen_range(0..palette.len())),
+            palette.remove(rng.gen_range(0..palette.len())),
+        )
+    }
+
+    fn change_colors(&mut self, rng: &mut Random) {
+        let roll = rng.gen_range(0.0..1.0);
+        if roll < self.color_change_chance {
+            (self.parent_color, self.spawn_color, self.spawn2_color) = Settings::choose_colors(rng);
+            log::debug!(
+                "Changed colors: Chance {}, rolled {}\n: parent: {}, spawn: {}, spawn2: {}",
+                self.color_change_chance,
+                roll,
+                self.parent_color,
+                self.spawn_color,
+                self.spawn2_color
+            );
+        } else {
+            log::debug!(
+                "No color change. Chance {}, rolled {} ",
+                self.color_change_chance,
+                roll
+            );
+        }
+    }
+
 
     fn change_radial_ranges(&mut self, rng: &mut Random, work_size: &Vec2, for_time: Option<f32>) {
         (
@@ -787,6 +825,7 @@ fn update(app: &mut App, state: &mut State) {
         state
             .settings
             .change_radial_ranges(&mut state.rng, &state.work_size, Some(for_time));
+        state.settings.change_colors(&mut state.rng);
         state.last_radial_change = curr_time;
     }
 
