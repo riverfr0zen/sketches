@@ -21,10 +21,11 @@ const BG_COLOR: Color = Color::new(0.6, 0.2, 0.2, 1.0);
 // const BG_COLOR: Color = Color::new(0.0, 0.2, 0.0, 1.0);
 
 // Influence point system constants
-const BASE_MAX_HEIGHT: f32 = 0.05;  // Base height for teeth far from influence
-const MIN_TOOTH_HEIGHT: f32 = 0.05; // Minimum height for teeth (reduced from 0.10)
-const INFLUENCE_RADIUS: f32 = 0.3;  // Radius of influence in normalized space
-const MAX_HEIGHT_BOOST: f32 = 0.35; // Maximum additional height from influence
+const CELLS_PER_INFLUENCE_POINT: f32 = 8.0; // Number of cells per influence point
+const BASE_MAX_HEIGHT: f32 = 0.08; // Base max height for teeth far from influence
+const MIN_TOOTH_HEIGHT: f32 = 0.06; // Minimum possible tooth height (must be > padding)
+const INFLUENCE_RADIUS: f32 = 0.3; // Radius of influence in normalized space
+const MAX_HEIGHT_BOOST: f32 = 0.42; // Maximum additional height from influence
 
 #[derive(Debug)]
 struct Tooth {
@@ -35,14 +36,14 @@ struct Tooth {
 
 #[derive(Debug)]
 struct CellData {
-    teeth: Vec<Tooth>, // Teeth stored in normalized coordinates (0.0 to 1.0)
+    teeth: Vec<Tooth>,   // Teeth stored in normalized coordinates (0.0 to 1.0)
     throat_center: Vec2, // Normalized center position
     throat_radius: Vec2, // Normalized radii (x, y)
 }
 
-/// Calculate the number of influence points based on total cell count (1 per 4 cells).
+/// Calculate the number of influence points based on total cell count.
 fn calculate_influence_point_count(total_cells: usize) -> usize {
-    ((total_cells as f32 / 4.0).ceil() as usize).max(1)
+    ((total_cells as f32 / CELLS_PER_INFLUENCE_POINT).ceil() as usize).max(1)
 }
 
 /// Generate random influence points in normalized canvas space (0.0-1.0).
@@ -53,10 +54,7 @@ fn generate_influence_points(count: usize, rng: &mut Random) -> Vec<Vec2> {
 }
 
 /// Calculate distance from a point to the nearest influence point.
-fn distance_to_nearest_influence(
-    cell_center_norm: Vec2,
-    influence_points: &[Vec2],
-) -> f32 {
+fn distance_to_nearest_influence(cell_center_norm: Vec2, influence_points: &[Vec2]) -> f32 {
     influence_points
         .iter()
         .map(|&point| {
@@ -120,7 +118,12 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let influence_count = calculate_influence_point_count(total_cells);
     let influence_points = generate_influence_points(influence_count, &mut rng);
 
-    log::info!("Created {} influence points for {}x{} grid", influence_count, rows, cols);
+    log::info!(
+        "Created {} influence points for {}x{} grid",
+        influence_count,
+        rows,
+        cols
+    );
 
     // Grid with cell data containing teeth influenced by proximity to influence points
     let grid = Grid::builder(rows, cols, work_size)
@@ -168,13 +171,25 @@ fn update(app: &mut App, state: &mut State) {
         let influence_count = calculate_influence_point_count(total_cells);
         state.influence_points = generate_influence_points(influence_count, &mut state.rng);
 
-        log::info!("Created {} influence points for {}x{} grid", influence_count, rows, cols);
+        log::info!(
+            "Created {} influence points for {}x{} grid",
+            influence_count,
+            rows,
+            cols
+        );
 
         // Create grid with influence-based teeth
         state.grid = Grid::builder(rows, cols, state.work_size)
             .with_cell_data(|row, col, bounds, rng| {
                 let cell_center = cell_center_canvas_norm(row, col, rows, cols);
-                generate_cell_data_influenced(row, col, bounds, cell_center, &state.influence_points, rng)
+                generate_cell_data_influenced(
+                    row,
+                    col,
+                    bounds,
+                    cell_center,
+                    &state.influence_points,
+                    rng,
+                )
             })
             .build(&mut state.rng);
 
