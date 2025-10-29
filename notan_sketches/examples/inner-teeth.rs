@@ -151,6 +151,22 @@ fn get_cell_teeth<T>(cell: CellContext<T>, rng: &mut Random) -> Vec<Tooth> {
         let start = cell.to_px(vec2(boundary - width, padding));
         let end = cell.to_px(vec2(boundary, padding));
         teeth.push(Tooth { start, mid, end });
+
+        // Left teeth (horizontal)
+        let height = rng.gen_range(min_height..max_height);
+        let boundary: f32 = i as f32 / 10.0;
+        let mid = cell.to_px(vec2(height, boundary - 0.05));
+        let start = cell.to_px(vec2(padding, boundary - width));
+        let end = cell.to_px(vec2(padding, boundary));
+        teeth.push(Tooth { start, mid, end });
+
+        // Right teeth (horizontal)
+        let height = rng.gen_range(min_height..max_height);
+        let boundary: f32 = i as f32 / 10.0;
+        let mid = cell.to_px(vec2(1.0 - height, boundary - 0.05));
+        let start = cell.to_px(vec2(1.0 - padding, boundary - width));
+        let end = cell.to_px(vec2(1.0 - padding, boundary));
+        teeth.push(Tooth { start, mid, end });
     }
 
     teeth
