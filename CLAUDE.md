@@ -11,6 +11,7 @@ Documentation has been split into focused files for better context management. S
 
 ## Architecture & Systems
 - **[package_structure.md](claude_docs/package_structure.md)** - Package organization and module layout
+- **[grid_utilities.md](claude_docs/grid_utilities.md)** - Grid utilities for grid-based generative art sketches
 - **[emotion_system.md](claude_docs/emotion_system.md)** - Text-to-emotion analysis and color mapping system
 - **[shader_system.md](claude_docs/shader_system.md)** - Custom shader utilities and hot reloading
 - **[dependencies.md](claude_docs/dependencies.md)** - Target-specific dependency configuration
