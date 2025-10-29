@@ -368,6 +368,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     if state.capture_next_draw {
         // Use 2x supersampling for better antialiasing in captures
+        // On native: automatically downsamples to work_size for smaller files
+        // On WASM: saves full supersampled image (browser download)
         let supersample_factor = 2.0;
         let mut capture = CapturingTexture::new_with_supersample(
             gfx,

@@ -42,23 +42,24 @@ Render to a larger texture (e.g., 2x), then use the `image` crate to downsample 
 
 ---
 
-### Option C: Supersampling Only (CHOSEN SOLUTION)
+### Option C: Supersampling with Hybrid Downsampling (CHOSEN SOLUTION)
 
-Render to a larger texture (e.g., 2x or 4x) and save the larger image as-is using `RenderTexture::to_file()`.
+Render to a larger texture (e.g., 2x or 4x). On native, automatically downsample before final save. On WASM, save the larger image.
 
 **Pros:**
-- ✅ Simple implementation - just create a larger render texture
-- ✅ Works identically on native and WASM (uses Notan's built-in `to_file()`)
 - ✅ Excellent antialiasing quality through supersampling
+- ✅ Smaller file sizes on native (automatic downsampling)
+- ✅ Sketches don't need to know about downsampling - it's automatic
+- ✅ Works in WASM (saves full supersampled image for browser download)
 - ✅ Backward compatible - existing code continues to work
-- ✅ Can always downsample offline later if file size is a concern
-- ✅ PNG compression handles larger images reasonably well
+- ✅ Uses high-quality Lanczos3 filter for downsampling
 
 **Cons:**
-- Larger file sizes (but not prohibitively so with PNG compression)
-- Uses more memory during capture (temporary)
+- Requires temporary file write/read on native (negligible performance impact)
+- WASM gets larger files (but that's acceptable for browser downloads)
+- Adds `image` crate dependency for native builds
 
-**Decision:** ✅ **Selected** - Best balance of simplicity, cross-platform compatibility, and quality.
+**Decision:** ✅ **Selected** - Best balance of quality, file size, and cross-platform compatibility.
 
 ## Implementation
 
@@ -143,14 +144,39 @@ if state.capture_next_draw {
 }
 ```
 
-**Key insight:** No need to redraw at a different scale! The existing `state.draw` can be rendered directly to the larger texture - Notan handles the coordinate transformation automatically.
+**Key insights:**
+- No need to redraw at a different scale! The existing `state.draw` can be rendered directly to the larger texture - Notan handles the coordinate transformation automatically.
+- Downsampling happens automatically in `capture()` on native platforms - sketches don't need to know about it
+- On WASM, the full supersampled image is provided for browser download (downsampling would require complex JavaScript interop)
+
+## Implementation Details
+
+### Native Platforms
+
+On native (Linux, Windows, macOS), `capture()` automatically:
+1. Saves the supersampled render texture to a temporary file
+2. Loads it with the `image` crate
+3. Downsamples using Lanczos3 filter (high quality)
+4. Saves the downsampled version to the final filepath
+5. Removes the temporary file
+
+This happens transparently - sketches just call `capture()` and get antialiased, reasonably-sized files.
+
+### WASM Platform
+
+On WASM, `capture()` simply:
+1. Saves the full supersampled render texture
+2. Triggers browser download via Notan's built-in mechanism
+
+The larger file size is acceptable for browser downloads, and avoids the complexity of JavaScript interop for pixel manipulation.
 
 ## Results
 
 - **Quality**: Significant improvement in edge quality - smooth antialiased edges instead of jagged lines
-- **File size**: Approximately 4x larger for 2x supersampling (as expected), but acceptable with PNG compression
-- **Performance**: Minimal impact - only occurs during capture, not during regular rendering
-- **Cross-platform**: Works identically on native Linux, native Windows, and WASM targets
+- **File size (native)**: Same as original work_size thanks to automatic downsampling
+- **File size (WASM)**: Approximately 4x larger for 2x supersampling, acceptable for browser downloads
+- **Performance**: Minimal impact - temp file I/O during capture is negligible
+- **Cross-platform**: Works on native Linux, Windows, macOS, and WASM targets
 
 ## Recommendations
 
