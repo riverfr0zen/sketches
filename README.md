@@ -84,6 +84,8 @@ wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/rele
 cargo build --release --example hilo_smoove --target wasm32-unknown-unknown
 wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/hilo_smoove.wasm
 
+cargo build --release --example bobas-nightmare --target wasm32-unknown-unknown
+wasm-bindgen --out-dir www/wasms --target web target/wasm32-unknown-unknown/release/examples/bobas-nightmare.wasm
 
 ```
 
