@@ -13,9 +13,11 @@ const MAX_COLS: u32 = 20;
 const GRID_STROKE: f32 = 5.0;
 const GUMS_COLOR: Color = Color::new(0.9, 0.3, 0.3, 1.0);
 const MOUTH_COLOR: Color = Color::new(0.7, 0.2, 0.1, 1.0);
+const THROAT_COLOR: Color = Color::new(0.85, 0.27, 0.27, 1.0);
 const BG_COLOR: Color = Color::new(0.6, 0.2, 0.2, 1.0);
 // Green mouth
 // const MOUTH_COLOR: Color = Color::new(0.1, 0.3, 0.1, 1.0);
+// const THROAT_COLOR: Color = Color::new(0.05, 0.15, 0.05, 1.0);
 // const BG_COLOR: Color = Color::new(0.0, 0.2, 0.0, 1.0);
 
 #[derive(Debug)]
@@ -192,6 +194,15 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 )
                 .corner_radius(inner_corner_radius)
                 .color(GUMS_COLOR);
+
+            // Draw "throat" - dark ellipse at center (behind teeth)
+            let center = cell.to_px(vec2(0.5, 0.5));
+            let throat_radius_x = cell.bounds.width * 0.25;
+            let throat_radius_y = cell.bounds.height * 0.25;
+            state
+                .draw
+                .ellipse((center.x, center.y), (throat_radius_x, throat_radius_y))
+                .color(THROAT_COLOR);
 
             // Draw teeth from cell data (pre-generated in normalized coords, converted to pixels here)
             let color = Color::new(1.0, 1.0, 0.8, 1.0);
