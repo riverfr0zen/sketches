@@ -81,7 +81,7 @@ const PALETTE: [Color; 21] = [
     colors::SCARLET,
     colors::SALMON,
 ];
-const COLOR_CHANGE_CHANCE_RANGE: RangeInclusive<f32> = 0.0..=0.75;
+const COLOR_CHANGE_CHANCE_RANGE: RangeInclusive<f32> = 0.0..=0.5;
 const BRUSH_BASIC: usize = 0;
 const BRUSH_CIRCLE: usize = 1;
 const BRUSH_EMBOSSED: usize = 2;
@@ -404,7 +404,9 @@ impl Settings {
         if roll < self.color_change_chance {
             (self.parent_color, self.spawn_color, self.spawn2_color) = Settings::choose_colors(rng);
             log::debug!(
-                "Changed colors:\n: parent: {}, spawn: {}, spawn2: {}",
+                "Changed colors: Chance {}, rolled {}\n: parent: {}, spawn: {}, spawn2: {}",
+                self.color_change_chance,
+                roll,
                 self.parent_color,
                 self.spawn_color,
                 self.spawn2_color
