@@ -11,7 +11,9 @@ use notan_sketches::utils::{
 const MAX_ROWS: u32 = 20;
 const MAX_COLS: u32 = 20;
 const GRID_STROKE: f32 = 5.0;
-
+const BG_COLOR: Color = Color::new(0.9, 0.4, 0.4, 1.0);
+const GUMS_COLOR: Color = Color::new(0.9, 0.3, 0.3, 1.0);
+const MOUTH_COLOR: Color = Color::new(0.7, 0.2, 0.1, 1.0);
 
 #[derive(Debug)]
 struct Tooth {
@@ -62,7 +64,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Press R to regenerate with new palette");
     log::info!("Press G to toggle grid overlay");
 
-    let draw = get_draw_setup(gfx, work_size, false, Color::WHITE);
+    let draw = get_draw_setup(gfx, work_size, false, BG_COLOR);
 
     State {
         rng,
@@ -156,19 +158,23 @@ fn generate_cell_data(_bounds: Rect, rng: &mut Random) -> CellData {
 
 fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.needs_redraw {
-        state.draw = get_draw_setup(gfx, state.work_size, false, Color::WHITE);
+        state.draw = get_draw_setup(gfx, state.work_size, false, BG_COLOR);
         for cell in state.grid.cells() {
-            // Draw "gums" - outer layer
+            // Draw "gums" - outer layer with rounded corners
+            let corner_radius = cell.bounds.width.min(cell.bounds.height) * 0.1;
             state
                 .draw
                 .rect(
                     (cell.offset.x, cell.offset.y),
                     (cell.bounds.width, cell.bounds.height),
                 )
-                .color(Color::new(0.9, 0.2, 0.1, 1.0));
+                .corner_radius(corner_radius)
+                .color(GUMS_COLOR);
 
-            // Draw "mouth" - inner layer
+            // Draw "mouth" - inner layer with rounded corners
             let padding = cell.norm_size(vec2(0.05, 0.05));
+            let inner_corner_radius =
+                (cell.bounds.width - padding.x).min(cell.bounds.height - padding.y) * 0.12;
             state
                 .draw
                 .rect(
@@ -181,7 +187,8 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                         cell.bounds.height - padding.y,
                     ),
                 )
-                .color(Color::new(0.7, 0.2, 0.1, 1.0));
+                .corner_radius(inner_corner_radius)
+                .color(MOUTH_COLOR);
 
             // Draw teeth from cell data (pre-generated in normalized coords, converted to pixels here)
             let color = Color::new(1.0, 1.0, 0.8, 1.0);
