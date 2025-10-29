@@ -1,9 +1,9 @@
 use notan::draw::*;
 use notan::log;
-use notan::math::{vec2, Vec2};
+use notan::math::{vec2, Rect, Vec2};
 use notan::prelude::*;
-use notan_sketches::colors::{Palettes, PalettesSelection};
-use notan_sketches::gridutils::{CellContext, Grid};
+use notan_sketches::colors::PalettesSelection;
+use notan_sketches::gridutils::Grid;
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions,
 };
@@ -11,7 +11,6 @@ use notan_sketches::utils::{
 const MAX_ROWS: u32 = 20;
 const MAX_COLS: u32 = 20;
 const GRID_STROKE: f32 = 5.0;
-const SHADOW_COLOR: Color = Color::new(0.25, 0.25, 0.25, 0.25);
 
 
 #[derive(Debug)]
@@ -21,25 +20,19 @@ struct Tooth {
     end: Vec2,
 }
 
-/// Simple grid example with no cell-specific data. Drawing only happens if `needs_redraw` is true,
-/// and drawing persists by keeping the Draw in the AppState.
-///
-/// Hence, we don't need any cell-specific data to persist the drawing (note that in other sketches,
-/// cell-specific data may still be needed to persist non-drawing related elements).
-///
-/// This kind of setup is enough for static (no animation) sketches where the next redraw does not depend
-/// on the previous draw details.
-///
-/// KNOWN ISSUES: Unfortunately, one of the caveats of this simpler setup is that the grid overlay does not
-/// disappear immediately once toggled off, and only disappears on the next redraw. The alternative would be
-/// to use 2 draws and render the state.draw into the other one on every call to draw(), as done in
-/// `radial_pointillist.rs`.
+#[derive(Debug)]
+struct CellData {
+    teeth: Vec<Tooth>, // Teeth stored in normalized coordinates (0.0 to 1.0)
+}
+
+/// Grid example with cell-specific data (teeth) stored for performance.
+/// This approach is better when you have complex calculations that would be
+/// expensive to recompute on every draw.
 #[derive(AppState)]
 struct State {
     rng: Random,
     work_size: Vec2,
-    // Simple grid with no cell-specific data
-    grid: Grid<bool>,
+    grid: Grid<CellData>,
     palette: PalettesSelection,
     show_grid: bool,
     needs_redraw: bool,
@@ -60,10 +53,9 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let rows = rng.gen_range(1..MAX_ROWS);
     let cols = rng.gen_range(1..MAX_COLS);
 
-    // Very simple grid with no cell data
+    // Grid with cell data containing teeth
     let grid = Grid::builder(rows, cols, work_size)
-        // .with_cell_data(|row, col, bounds, rng| generate_cell_data(row, col, bounds, rng, &palette))
-        .with_cell_data(|row, col, bounds, rng| false)
+        .with_cell_data(|_row, _col, bounds, rng| generate_cell_data(bounds, rng))
         .build(&mut rng);
 
     log::info!("Created {}x{} grid", rows, cols);
@@ -99,8 +91,7 @@ fn update(app: &mut App, state: &mut State) {
         let cols = state.rng.gen_range(1..MAX_COLS);
 
         state.grid = Grid::builder(rows, cols, state.work_size)
-            // .with_cell_data(|row, col, bounds, rng| generate_cell_data(row, col, bounds, rng, &palette))
-            .with_cell_data(|row, col, bounds, rng| false)
+            .with_cell_data(|_row, _col, bounds, rng| generate_cell_data(bounds, rng))
             .build(&mut state.rng);
 
         log::info!("Created {}x{} grid", rows, cols);
@@ -117,66 +108,57 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 
-fn get_cell_teeth<T>(cell: CellContext<T>, rng: &mut Random) -> Vec<Tooth> {
+fn generate_cell_data(_bounds: Rect, rng: &mut Random) -> CellData {
     let mut teeth: Vec<Tooth> = vec![];
-    // log::info!("{}, {}, {:?}", cell.row, cell.col, cell.bounds);
 
     // The height and width of the tooth if situated upright
     let max_height = 0.4;
     let min_height = 0.10;
-    let width = 0.1;
+    let tooth_width = 0.1;
     let padding = 0.05;
 
-
     for i in 2..10 {
-        let height = rng.gen_range(min_height..max_height);
-        // Bottom teeth
+        let tooth_height = rng.gen_range(min_height..max_height);
+        // Bottom teeth (stored in normalized coordinates)
         let boundary: f32 = i as f32 / 10.0;
-        // let mid = (boundary * 0.5, height);
-        // let start = (boundary - width, 1.0);
-        // let end = (boundary, 1.0);
-        let mid = cell.to_px(vec2(boundary - 0.05, 1.0 - height));
-        // let start = cell.to_px(vec2(boundary - width, 1.0));
-        let start = cell.to_px(vec2(boundary - width, 1.0 - padding));
-        let end = cell.to_px(vec2(boundary, 1.0 - padding));
+        let mid = vec2(boundary - 0.05, 1.0 - tooth_height);
+        let start = vec2(boundary - tooth_width, 1.0 - padding);
+        let end = vec2(boundary, 1.0 - padding);
         teeth.push(Tooth { start, mid, end });
 
         // Top teeth
-        let height = rng.gen_range(min_height..max_height);
+        let tooth_height = rng.gen_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
-        // let mid = (boundary * 0.5, height);
-        // let start = (boundary - width, 1.0);
-        // let end = (boundary, 1.0);
-        let mid = cell.to_px(vec2(boundary - 0.05, height));
-        let start = cell.to_px(vec2(boundary - width, padding));
-        let end = cell.to_px(vec2(boundary, padding));
+        let mid = vec2(boundary - 0.05, tooth_height);
+        let start = vec2(boundary - tooth_width, padding);
+        let end = vec2(boundary, padding);
         teeth.push(Tooth { start, mid, end });
 
         // Left teeth (horizontal)
-        let height = rng.gen_range(min_height..max_height);
+        let tooth_height = rng.gen_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
-        let mid = cell.to_px(vec2(height, boundary - 0.05));
-        let start = cell.to_px(vec2(padding, boundary - width));
-        let end = cell.to_px(vec2(padding, boundary));
+        let mid = vec2(tooth_height, boundary - 0.05);
+        let start = vec2(padding, boundary - tooth_width);
+        let end = vec2(padding, boundary);
         teeth.push(Tooth { start, mid, end });
 
         // Right teeth (horizontal)
-        let height = rng.gen_range(min_height..max_height);
+        let tooth_height = rng.gen_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
-        let mid = cell.to_px(vec2(1.0 - height, boundary - 0.05));
-        let start = cell.to_px(vec2(1.0 - padding, boundary - width));
-        let end = cell.to_px(vec2(1.0 - padding, boundary));
+        let mid = vec2(1.0 - tooth_height, boundary - 0.05);
+        let start = vec2(1.0 - padding, boundary - tooth_width);
+        let end = vec2(1.0 - padding, boundary);
         teeth.push(Tooth { start, mid, end });
     }
 
-    teeth
+    CellData { teeth }
 }
 
 fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.needs_redraw {
         state.draw = get_draw_setup(gfx, state.work_size, false, Color::WHITE);
         for cell in state.grid.cells() {
-            // Draw "gums"
+            // Draw "gums" - outer layer
             state
                 .draw
                 .rect(
@@ -185,7 +167,7 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 )
                 .color(Color::new(0.9, 0.2, 0.1, 1.0));
 
-            // Draw "gums"
+            // Draw "mouth" - inner layer
             let padding = cell.norm_size(vec2(0.05, 0.05));
             state
                 .draw
@@ -201,18 +183,19 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 )
                 .color(Color::new(0.7, 0.2, 0.1, 1.0));
 
-            let teeth = get_cell_teeth(cell, &mut state.rng);
-            // log::info!("{:?}", teeth);
-
-            // let color = Palettes::choose_color(&state.palette);
+            // Draw teeth from cell data (pre-generated in normalized coords, converted to pixels here)
             let color = Color::new(1.0, 1.0, 0.8, 1.0);
-            for tooth in teeth {
+            for tooth in &cell.data.teeth {
+                let start_px = cell.to_px(tooth.start);
+                let mid_px = cell.to_px(tooth.mid);
+                let end_px = cell.to_px(tooth.end);
+
                 state
                     .draw
                     .triangle(
-                        (tooth.start.x, tooth.start.y),
-                        (tooth.mid.x, tooth.mid.y),
-                        (tooth.end.x, tooth.end.y),
+                        (start_px.x, start_px.y),
+                        (mid_px.x, mid_px.y),
+                        (end_px.x, end_px.y),
                     )
                     .stroke(5.0)
                     .stroke_color(Color::BLACK)
