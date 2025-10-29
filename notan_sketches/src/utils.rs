@@ -489,6 +489,8 @@ pub struct CapturingTexture {
     pub last_capture: f32,
     pub capture_lock: bool,
     pub num_captures: u32,
+    /// Supersampling factor for antialiasing (e.g., 2.0 for 2x supersampling)
+    pub supersample_factor: f32,
 }
 
 impl CapturingTexture {
@@ -496,12 +498,13 @@ impl CapturingTexture {
         gfx: &mut Graphics,
         work_size: &Vec2,
         bgcolor: Color,
+        supersample_factor: f32,
     ) -> RenderTexture {
+        let width = (work_size.x * supersample_factor) as u32;
+        let height = (work_size.y * supersample_factor) as u32;
         let render_texture = gfx
-            .create_render_texture(work_size.x as _, work_size.y as _)
-            // .create_render_texture(width, height)
-            // .with_filter(TextureFilter::Linear, TextureFilter::Linear)
-            // .with_depth()
+            .create_render_texture(width, height)
+            .with_filter(TextureFilter::Linear, TextureFilter::Linear)
             .build()
             .unwrap();
         let mut draw = render_texture.create_draw();
@@ -517,13 +520,25 @@ impl CapturingTexture {
         capture_to: String,
         capture_interval: f32,
     ) -> Self {
+        Self::new_with_supersample(gfx, work_size, bgcolor, capture_to, capture_interval, 1.0)
+    }
+
+    pub fn new_with_supersample(
+        gfx: &mut Graphics,
+        work_size: &Vec2,
+        bgcolor: Color,
+        capture_to: String,
+        capture_interval: f32,
+        supersample_factor: f32,
+    ) -> Self {
         Self {
-            render_texture: Self::create_render_texture(gfx, work_size, bgcolor),
+            render_texture: Self::create_render_texture(gfx, work_size, bgcolor, supersample_factor),
             capture_to: capture_to,
             capture_interval: capture_interval,
             last_capture: 0.0,
             capture_lock: false,
             num_captures: 0,
+            supersample_factor,
         }
     }
 

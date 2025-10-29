@@ -367,18 +367,20 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     }
 
     if state.capture_next_draw {
-        // let capture_work_size = vec2(state.work_size.x * 2.0, state.work_size.y * 2.0);
-        let mut capture = CapturingTexture::new(
+        // Use 2x supersampling for better antialiasing in captures
+        let supersample_factor = 2.0;
+        let mut capture = CapturingTexture::new_with_supersample(
             gfx,
             &state.work_size,
-            // &capture_work_size,
             BG_COLOR,
             format!("renders/bobas-nightmare/{}", state.current_seed),
             0.0,
+            supersample_factor,
         );
+        // Render the existing draw to the supersampled texture
         gfx.render_to(&capture.render_texture, &state.draw);
         capture.capture(app, gfx);
-        log::info!("Capture completed");
+        log::info!("Capture completed with {}x supersampling", supersample_factor);
         state.capture_next_draw = false;
     }
 
