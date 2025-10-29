@@ -18,6 +18,8 @@ The `sketches` directory is a workspace parent that contains multiple packages. 
 
 ## Running Native Examples
 
+**PREFERRED METHOD for testing:** Run examples directly - this will automatically build if needed and catch both compile-time and runtime errors:
+
 ```bash
 cd notan_sketches
 cargo run --example <example_name>
@@ -40,6 +42,8 @@ cargo test --test gridutils_test
 ```
 
 ## Building Examples
+
+**NOTE:** Prefer `cargo run --example` over `cargo build --example` for testing, as running will catch more issues.
 
 ```bash
 cd notan_sketches

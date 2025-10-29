@@ -1,3 +1,5 @@
+#[cfg(not(target_arch = "wasm32"))]
+use image::imageops::FilterType;
 use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, vec3, Mat4, Rect, Vec2};
@@ -489,6 +491,8 @@ pub struct CapturingTexture {
     pub last_capture: f32,
     pub capture_lock: bool,
     pub num_captures: u32,
+    /// Supersampling factor for antialiasing (e.g., 2.0 for 2x supersampling)
+    pub supersample_factor: f32,
 }
 
 impl CapturingTexture {
@@ -496,12 +500,13 @@ impl CapturingTexture {
         gfx: &mut Graphics,
         work_size: &Vec2,
         bgcolor: Color,
+        supersample_factor: f32,
     ) -> RenderTexture {
+        let width = (work_size.x * supersample_factor) as u32;
+        let height = (work_size.y * supersample_factor) as u32;
         let render_texture = gfx
-            .create_render_texture(work_size.x as _, work_size.y as _)
-            // .create_render_texture(width, height)
-            // .with_filter(TextureFilter::Linear, TextureFilter::Linear)
-            // .with_depth()
+            .create_render_texture(width, height)
+            .with_filter(TextureFilter::Linear, TextureFilter::Linear)
             .build()
             .unwrap();
         let mut draw = render_texture.create_draw();
@@ -517,19 +522,92 @@ impl CapturingTexture {
         capture_to: String,
         capture_interval: f32,
     ) -> Self {
+        Self::new_with_supersample(gfx, work_size, bgcolor, capture_to, capture_interval, 1.0)
+    }
+
+    pub fn new_with_supersample(
+        gfx: &mut Graphics,
+        work_size: &Vec2,
+        bgcolor: Color,
+        capture_to: String,
+        capture_interval: f32,
+        supersample_factor: f32,
+    ) -> Self {
         Self {
-            render_texture: Self::create_render_texture(gfx, work_size, bgcolor),
+            render_texture: Self::create_render_texture(
+                gfx,
+                work_size,
+                bgcolor,
+                supersample_factor,
+            ),
             capture_to: capture_to,
             capture_interval: capture_interval,
             last_capture: 0.0,
             capture_lock: false,
             num_captures: 0,
+            supersample_factor,
         }
     }
 
+    /// Capture render texture to file.
+    /// On native: If supersampled, saves then downsamples automatically.
+    /// On WASM: Saves the full supersampled image.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn capture(&mut self, app: &mut App, gfx: &mut Graphics) {
+        log::info!("Beginning capture at {}", app.timer.elapsed_f32());
+        let filepath = format!("{}_{}.png", self.capture_to, app.timer.elapsed_f32());
+
+        if self.supersample_factor > 1.0 {
+            // Save supersampled version temporarily
+            let temp_filepath = format!("{}_temp.png", self.capture_to);
+            self.render_texture.to_file(gfx, &temp_filepath).unwrap();
+
+            // Load, downsample, and save final version
+            log::info!("Downsampling the supersampled capture...");
+            let img = image::open(&temp_filepath).expect("Failed to open temp capture");
+            let (width, height) = (img.width(), img.height());
+            let target_width = (width as f32 / self.supersample_factor) as u32;
+            let target_height = (height as f32 / self.supersample_factor) as u32;
+
+            let downsampled =
+                image::imageops::resize(&img, target_width, target_height, FilterType::Lanczos3);
+
+            downsampled
+                .save(&filepath)
+                .expect("Failed to save downsampled image");
+
+            // Remove temp file
+            std::fs::remove_file(&temp_filepath).ok();
+
+            log::info!(
+                "Saved downsampled capture: {}x{} -> {}x{} ({})",
+                width,
+                height,
+                target_width,
+                target_height,
+                filepath
+            );
+        } else {
+            self.render_texture.to_file(gfx, &filepath).unwrap();
+            log::info!("Saved capture: {}", filepath);
+        }
+
+        self.capture_lock = true;
+    }
+
+    /// WASM version: saves full image (no downsampling)
+    #[cfg(target_arch = "wasm32")]
     pub fn capture(&mut self, app: &mut App, gfx: &mut Graphics) {
         log::debug!("Beginning capture at {}", app.timer.elapsed_f32());
         let filepath = format!("{}_{}.png", self.capture_to, app.timer.elapsed_f32());
+
+        if self.supersample_factor > 1.0 {
+            log::info!(
+                "WASM: Saving full {}x supersampled image",
+                self.supersample_factor
+            );
+        }
+
         self.render_texture.to_file(gfx, &filepath).unwrap();
         self.capture_lock = true;
     }

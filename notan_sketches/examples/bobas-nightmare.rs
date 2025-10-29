@@ -5,7 +5,8 @@ use notan::prelude::*;
 use notan_sketches::colors::PalettesSelection;
 use notan_sketches::gridutils::Grid;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions,
+    get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, CapturingTexture,
+    ScreenDimensions,
 };
 
 const MAX_ROWS: u32 = 20;
@@ -20,6 +21,13 @@ const BG_COLOR: Color = Color::new(0.6, 0.2, 0.2, 1.0);
 // const THROAT_COLOR: Color = Color::new(0.05, 0.15, 0.05, 1.0);
 // const BG_COLOR: Color = Color::new(0.0, 0.2, 0.0, 1.0);
 
+// Influence point system constants
+const CELLS_PER_INFLUENCE_POINT: f32 = 8.0; // Number of cells per influence point
+const BASE_MAX_HEIGHT: f32 = 0.08; // Base max height for teeth far from influence
+const MIN_TOOTH_HEIGHT: f32 = 0.06; // Minimum possible tooth height (must be > padding)
+const INFLUENCE_RADIUS: f32 = 0.3; // Radius of influence in normalized space
+const MAX_HEIGHT_BOOST: f32 = 0.42; // Maximum additional height from influence
+
 #[derive(Debug)]
 struct Tooth {
     start: Vec2,
@@ -29,9 +37,65 @@ struct Tooth {
 
 #[derive(Debug)]
 struct CellData {
-    teeth: Vec<Tooth>, // Teeth stored in normalized coordinates (0.0 to 1.0)
+    teeth: Vec<Tooth>,   // Teeth stored in normalized coordinates (0.0 to 1.0)
     throat_center: Vec2, // Normalized center position
     throat_radius: Vec2, // Normalized radii (x, y)
+}
+
+/// Calculate the number of influence points based on total cell count.
+fn calculate_influence_point_count(total_cells: usize) -> usize {
+    ((total_cells as f32 / CELLS_PER_INFLUENCE_POINT).ceil() as usize).max(1)
+}
+
+/// Generate random influence points in normalized canvas space (0.0-1.0).
+fn generate_influence_points(count: usize, rng: &mut Random) -> Vec<Vec2> {
+    (0..count)
+        .map(|_| vec2(rng.gen_range(0.0..1.0), rng.gen_range(0.0..1.0)))
+        .collect()
+}
+
+/// Calculate distance from a point to the nearest influence point.
+fn distance_to_nearest_influence(cell_center_norm: Vec2, influence_points: &[Vec2]) -> f32 {
+    influence_points
+        .iter()
+        .map(|&point| {
+            let dx = cell_center_norm.x - point.x;
+            let dy = cell_center_norm.y - point.y;
+            (dx * dx + dy * dy).sqrt()
+        })
+        .fold(f32::INFINITY, f32::min)
+}
+
+/// Calculate max tooth height based on distance to nearest influence point.
+/// Closer to influence = taller teeth (for horizontal teeth).
+fn calculate_max_height_from_influence(distance: f32) -> f32 {
+    if distance >= INFLUENCE_RADIUS {
+        BASE_MAX_HEIGHT
+    } else {
+        let influence_factor = 1.0 - (distance / INFLUENCE_RADIUS);
+        BASE_MAX_HEIGHT + (MAX_HEIGHT_BOOST * influence_factor)
+    }
+}
+
+/// Calculate INVERSE max tooth height - farther from influence = taller teeth (for vertical teeth).
+fn calculate_inverse_max_height_from_influence(distance: f32) -> f32 {
+    if distance >= INFLUENCE_RADIUS {
+        // Far away: maximum height
+        BASE_MAX_HEIGHT + MAX_HEIGHT_BOOST
+    } else {
+        // Close by: shorter teeth
+        let influence_factor = distance / INFLUENCE_RADIUS; // Inverted: distance/radius instead of 1.0 - distance/radius
+        BASE_MAX_HEIGHT + (MAX_HEIGHT_BOOST * influence_factor)
+    }
+}
+
+/// Calculate canvas-wide normalized center position for a cell during grid construction.
+/// This replicates what CellContext::center_norm_abs() will provide after construction.
+fn cell_center_canvas_norm(row: u32, col: u32, total_rows: u32, total_cols: u32) -> Vec2 {
+    vec2(
+        (col as f32 + 0.5) / total_cols as f32,
+        (row as f32 + 0.5) / total_rows as f32,
+    )
 }
 
 /// Grid example with cell-specific data (teeth) stored for performance.
@@ -40,12 +104,15 @@ struct CellData {
 #[derive(AppState)]
 struct State {
     rng: Random,
+    current_seed: u64,
     work_size: Vec2,
     grid: Grid<CellData>,
     palette: PalettesSelection,
     show_grid: bool,
     needs_redraw: bool,
+    capture_next_draw: bool,
     draw: Draw,
+    influence_points: Vec<Vec2>, // Stored in normalized canvas coords (0-1)
 }
 
 fn init(app: &mut App, gfx: &mut Graphics) -> State {
@@ -62,9 +129,24 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let rows = rng.gen_range(1..MAX_ROWS);
     let cols = rng.gen_range(1..MAX_COLS);
 
-    // Grid with cell data containing teeth
+    // Generate influence points
+    let total_cells = (rows * cols) as usize;
+    let influence_count = calculate_influence_point_count(total_cells);
+    let influence_points = generate_influence_points(influence_count, &mut rng);
+
+    log::info!(
+        "Created {} influence points for {}x{} grid",
+        influence_count,
+        rows,
+        cols
+    );
+
+    // Grid with cell data containing teeth influenced by proximity to influence points
     let grid = Grid::builder(rows, cols, work_size)
-        .with_cell_data(|_row, _col, bounds, rng| generate_cell_data(bounds, rng))
+        .with_cell_data(|row, col, bounds, rng| {
+            let cell_center = cell_center_canvas_norm(row, col, rows, cols);
+            generate_cell_data_influenced(row, col, bounds, cell_center, &influence_points, rng)
+        })
         .build(&mut rng);
 
     log::info!("Created {}x{} grid", rows, cols);
@@ -75,12 +157,15 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
     State {
         rng,
+        current_seed: seed,
         work_size,
         grid,
         palette,
         show_grid: false,
         needs_redraw: true,
+        capture_next_draw: false,
         draw,
+        influence_points,
     }
 }
 
@@ -89,6 +174,7 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::R) {
         let new_seed = state.rng.gen();
         state.rng.reseed(new_seed);
+        state.current_seed = new_seed;
         log::info!("New seed: {}", new_seed);
 
         // Choose new palette
@@ -99,14 +185,42 @@ fn update(app: &mut App, state: &mut State) {
         let rows = state.rng.gen_range(1..MAX_ROWS);
         let cols = state.rng.gen_range(1..MAX_COLS);
 
+        // Generate new influence points
+        let total_cells = (rows * cols) as usize;
+        let influence_count = calculate_influence_point_count(total_cells);
+        state.influence_points = generate_influence_points(influence_count, &mut state.rng);
+
+        log::info!(
+            "Created {} influence points for {}x{} grid",
+            influence_count,
+            rows,
+            cols
+        );
+
+        // Create grid with influence-based teeth
         state.grid = Grid::builder(rows, cols, state.work_size)
-            .with_cell_data(|_row, _col, bounds, rng| generate_cell_data(bounds, rng))
+            .with_cell_data(|row, col, bounds, rng| {
+                let cell_center = cell_center_canvas_norm(row, col, rows, cols);
+                generate_cell_data_influenced(
+                    row,
+                    col,
+                    bounds,
+                    cell_center,
+                    &state.influence_points,
+                    rng,
+                )
+            })
             .build(&mut state.rng);
 
         log::info!("Created {}x{} grid", rows, cols);
 
 
         state.needs_redraw = true;
+    }
+
+    // C key - queue capture next draw
+    if app.keyboard.was_pressed(KeyCode::C) {
+        state.capture_next_draw = true;
     }
 
     // G key - toggle grid overlay
@@ -117,42 +231,57 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 
-fn generate_cell_data(_bounds: Rect, rng: &mut Random) -> CellData {
+fn generate_cell_data_influenced(
+    _row: u32,
+    _col: u32,
+    _bounds: Rect,
+    cell_center_norm: Vec2,
+    influence_points: &[Vec2],
+    rng: &mut Random,
+) -> CellData {
+    // Calculate max height based on distance to nearest influence point
+    let distance = distance_to_nearest_influence(cell_center_norm, influence_points);
+
+    // Horizontal teeth (top/bottom): taller when CLOSER to influence (normal behavior)
+    let max_height_horizontal = calculate_max_height_from_influence(distance);
+
+    // Vertical teeth (left/right): taller when FARTHER from influence (inverse behavior)
+    let max_height_vertical = calculate_inverse_max_height_from_influence(distance);
+
     let mut teeth: Vec<Tooth> = vec![];
 
-    // The height and width of the tooth if situated upright
-    let max_height = 0.4;
-    let min_height = 0.10;
     let tooth_width = 0.1;
     let padding = 0.05;
 
     for i in 2..10 {
-        let tooth_height = rng.gen_range(min_height..max_height);
-        // Bottom teeth (stored in normalized coordinates)
+        // Bottom teeth - taller when CLOSER to influence points
+        let min_height_h = MIN_TOOTH_HEIGHT.min(max_height_horizontal * 0.5);
+        let tooth_height = rng.gen_range(min_height_h..max_height_horizontal);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(boundary - 0.05, 1.0 - tooth_height);
         let start = vec2(boundary - tooth_width, 1.0 - padding);
         let end = vec2(boundary, 1.0 - padding);
         teeth.push(Tooth { start, mid, end });
 
-        // Top teeth
-        let tooth_height = rng.gen_range(min_height..max_height);
+        // Top teeth - taller when CLOSER to influence points
+        let tooth_height = rng.gen_range(min_height_h..max_height_horizontal);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(boundary - 0.05, tooth_height);
         let start = vec2(boundary - tooth_width, padding);
         let end = vec2(boundary, padding);
         teeth.push(Tooth { start, mid, end });
 
-        // Left teeth (horizontal)
-        let tooth_height = rng.gen_range(min_height..max_height);
+        // Left teeth - taller when FARTHER from influence points
+        let min_height_v = MIN_TOOTH_HEIGHT.min(max_height_vertical * 0.5);
+        let tooth_height = rng.gen_range(min_height_v..max_height_vertical);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(tooth_height, boundary - 0.05);
         let start = vec2(padding, boundary - tooth_width);
         let end = vec2(padding, boundary);
         teeth.push(Tooth { start, mid, end });
 
-        // Right teeth (horizontal)
-        let tooth_height = rng.gen_range(min_height..max_height);
+        // Right teeth - taller when FARTHER from influence points
+        let tooth_height = rng.gen_range(min_height_v..max_height_vertical);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(1.0 - tooth_height, boundary - 0.05);
         let start = vec2(1.0 - padding, boundary - tooth_width);
@@ -171,7 +300,7 @@ fn generate_cell_data(_bounds: Rect, rng: &mut Random) -> CellData {
     }
 }
 
-fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
+fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.needs_redraw {
         state.draw = get_draw_setup(gfx, state.work_size, false, BG_COLOR);
         for cell in state.grid.cells() {
@@ -237,7 +366,51 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
         state.needs_redraw = false;
     }
 
+    if state.capture_next_draw {
+        // Use 2x supersampling for better antialiasing in captures
+        // On native: automatically downsamples to work_size for smaller files
+        // On WASM: saves full supersampled image (browser download)
+        let supersample_factor = 2.0;
+        let mut capture = CapturingTexture::new_with_supersample(
+            gfx,
+            &state.work_size,
+            BG_COLOR,
+            format!("renders/bobas-nightmare/{}", state.current_seed),
+            0.0,
+            supersample_factor,
+        );
+        // Render the existing draw to the supersampled texture
+        gfx.render_to(&capture.render_texture, &state.draw);
+        capture.capture(app, gfx);
+        log::info!("Capture completed with {}x supersampling", supersample_factor);
+        state.capture_next_draw = false;
+    }
+
+
     if state.show_grid {
+        // Draw influence points and their radii for debugging
+        for &point in &state.influence_points {
+            let abs_pos = state.grid.norm_to_pixels(point);
+
+            // Draw influence radius circle
+            let radius_pixels = INFLUENCE_RADIUS * state.work_size.x.min(state.work_size.y);
+            state
+                .draw
+                .circle(radius_pixels)
+                .position(abs_pos.x, abs_pos.y)
+                .color(Color::from_rgba(1.0, 1.0, 0.0, 0.12))
+                .stroke(2.0)
+                .stroke_color(Color::from_rgba(1.0, 1.0, 0.0, 0.4));
+
+            // Draw influence point marker
+            state
+                .draw
+                .circle(8.0)
+                .position(abs_pos.x, abs_pos.y)
+                .color(Color::YELLOW)
+                .fill();
+        }
+
         state
             .grid
             .draw_overlay(&mut state.draw, Color::GREEN, GRID_STROKE);
