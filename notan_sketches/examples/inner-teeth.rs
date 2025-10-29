@@ -66,11 +66,24 @@ fn distance_to_nearest_influence(cell_center_norm: Vec2, influence_points: &[Vec
 }
 
 /// Calculate max tooth height based on distance to nearest influence point.
+/// Closer to influence = taller teeth (for horizontal teeth).
 fn calculate_max_height_from_influence(distance: f32) -> f32 {
     if distance >= INFLUENCE_RADIUS {
         BASE_MAX_HEIGHT
     } else {
         let influence_factor = 1.0 - (distance / INFLUENCE_RADIUS);
+        BASE_MAX_HEIGHT + (MAX_HEIGHT_BOOST * influence_factor)
+    }
+}
+
+/// Calculate INVERSE max tooth height - farther from influence = taller teeth (for vertical teeth).
+fn calculate_inverse_max_height_from_influence(distance: f32) -> f32 {
+    if distance >= INFLUENCE_RADIUS {
+        // Far away: maximum height
+        BASE_MAX_HEIGHT + MAX_HEIGHT_BOOST
+    } else {
+        // Close by: shorter teeth
+        let influence_factor = distance / INFLUENCE_RADIUS; // Inverted: distance/radius instead of 1.0 - distance/radius
         BASE_MAX_HEIGHT + (MAX_HEIGHT_BOOST * influence_factor)
     }
 }
@@ -217,43 +230,47 @@ fn generate_cell_data_influenced(
 ) -> CellData {
     // Calculate max height based on distance to nearest influence point
     let distance = distance_to_nearest_influence(cell_center_norm, influence_points);
-    let max_height = calculate_max_height_from_influence(distance);
+
+    // Horizontal teeth (top/bottom): taller when CLOSER to influence (normal behavior)
+    let max_height_horizontal = calculate_max_height_from_influence(distance);
+
+    // Vertical teeth (left/right): taller when FARTHER from influence (inverse behavior)
+    let max_height_vertical = calculate_inverse_max_height_from_influence(distance);
 
     let mut teeth: Vec<Tooth> = vec![];
 
-    // The height and width of the tooth if situated upright
-    // Ensure min_height is always less than max_height to avoid empty range panics
-    let min_height = MIN_TOOTH_HEIGHT.min(max_height * 0.5);
     let tooth_width = 0.1;
     let padding = 0.05;
 
     for i in 2..10 {
-        let tooth_height = rng.gen_range(min_height..max_height);
-        // Bottom teeth (stored in normalized coordinates)
+        // Bottom teeth - taller when CLOSER to influence points
+        let min_height_h = MIN_TOOTH_HEIGHT.min(max_height_horizontal * 0.5);
+        let tooth_height = rng.gen_range(min_height_h..max_height_horizontal);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(boundary - 0.05, 1.0 - tooth_height);
         let start = vec2(boundary - tooth_width, 1.0 - padding);
         let end = vec2(boundary, 1.0 - padding);
         teeth.push(Tooth { start, mid, end });
 
-        // Top teeth
-        let tooth_height = rng.gen_range(min_height..max_height);
+        // Top teeth - taller when CLOSER to influence points
+        let tooth_height = rng.gen_range(min_height_h..max_height_horizontal);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(boundary - 0.05, tooth_height);
         let start = vec2(boundary - tooth_width, padding);
         let end = vec2(boundary, padding);
         teeth.push(Tooth { start, mid, end });
 
-        // Left teeth (horizontal)
-        let tooth_height = rng.gen_range(min_height..max_height);
+        // Left teeth - taller when FARTHER from influence points
+        let min_height_v = MIN_TOOTH_HEIGHT.min(max_height_vertical * 0.5);
+        let tooth_height = rng.gen_range(min_height_v..max_height_vertical);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(tooth_height, boundary - 0.05);
         let start = vec2(padding, boundary - tooth_width);
         let end = vec2(padding, boundary);
         teeth.push(Tooth { start, mid, end });
 
-        // Right teeth (horizontal)
-        let tooth_height = rng.gen_range(min_height..max_height);
+        // Right teeth - taller when FARTHER from influence points
+        let tooth_height = rng.gen_range(min_height_v..max_height_vertical);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(1.0 - tooth_height, boundary - 0.05);
         let start = vec2(1.0 - padding, boundary - tooth_width);
