@@ -5,7 +5,8 @@ use notan::prelude::*;
 use notan_sketches::colors::PalettesSelection;
 use notan_sketches::gridutils::Grid;
 use notan_sketches::utils::{
-    get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions,
+    get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, CapturingTexture,
+    ScreenDimensions,
 };
 
 const MAX_ROWS: u32 = 20;
@@ -103,11 +104,13 @@ fn cell_center_canvas_norm(row: u32, col: u32, total_rows: u32, total_cols: u32)
 #[derive(AppState)]
 struct State {
     rng: Random,
+    current_seed: u64,
     work_size: Vec2,
     grid: Grid<CellData>,
     palette: PalettesSelection,
     show_grid: bool,
     needs_redraw: bool,
+    capture_next_draw: bool,
     draw: Draw,
     influence_points: Vec<Vec2>, // Stored in normalized canvas coords (0-1)
 }
@@ -154,11 +157,13 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
     State {
         rng,
+        current_seed: seed,
         work_size,
         grid,
         palette,
         show_grid: false,
         needs_redraw: true,
+        capture_next_draw: false,
         draw,
         influence_points,
     }
@@ -169,6 +174,7 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::R) {
         let new_seed = state.rng.gen();
         state.rng.reseed(new_seed);
+        state.current_seed = new_seed;
         log::info!("New seed: {}", new_seed);
 
         // Choose new palette
@@ -210,6 +216,11 @@ fn update(app: &mut App, state: &mut State) {
 
 
         state.needs_redraw = true;
+    }
+
+    // C key - queue capture next draw
+    if app.keyboard.was_pressed(KeyCode::C) {
+        state.capture_next_draw = true;
     }
 
     // G key - toggle grid overlay
@@ -289,7 +300,7 @@ fn generate_cell_data_influenced(
     }
 }
 
-fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
+fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.needs_redraw {
         state.draw = get_draw_setup(gfx, state.work_size, false, BG_COLOR);
         for cell in state.grid.cells() {
@@ -354,6 +365,23 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
         }
         state.needs_redraw = false;
     }
+
+    if state.capture_next_draw {
+        // let capture_work_size = vec2(state.work_size.x * 2.0, state.work_size.y * 2.0);
+        let mut capture = CapturingTexture::new(
+            gfx,
+            &state.work_size,
+            // &capture_work_size,
+            BG_COLOR,
+            format!("renders/bobas-nightmare/{}", state.current_seed),
+            0.0,
+        );
+        gfx.render_to(&capture.render_texture, &state.draw);
+        capture.capture(app, gfx);
+        log::info!("Capture completed");
+        state.capture_next_draw = false;
+    }
+
 
     if state.show_grid {
         // Draw influence points and their radii for debugging
