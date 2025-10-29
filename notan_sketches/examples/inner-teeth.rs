@@ -30,6 +30,8 @@ struct Tooth {
 #[derive(Debug)]
 struct CellData {
     teeth: Vec<Tooth>, // Teeth stored in normalized coordinates (0.0 to 1.0)
+    throat_center: Vec2, // Normalized center position
+    throat_radius: Vec2, // Normalized radii (x, y)
 }
 
 /// Grid example with cell-specific data (teeth) stored for performance.
@@ -158,7 +160,15 @@ fn generate_cell_data(_bounds: Rect, rng: &mut Random) -> CellData {
         teeth.push(Tooth { start, mid, end });
     }
 
-    CellData { teeth }
+    // Throat details (normalized coordinates)
+    let throat_center = vec2(0.5, 0.5);
+    let throat_radius = vec2(0.25, 0.25);
+
+    CellData {
+        teeth,
+        throat_center,
+        throat_radius,
+    }
 }
 
 fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
@@ -196,9 +206,9 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 .color(GUMS_COLOR);
 
             // Draw "throat" - dark ellipse at center (behind teeth)
-            let center = cell.to_px(vec2(0.5, 0.5));
-            let throat_radius_x = cell.bounds.width * 0.25;
-            let throat_radius_y = cell.bounds.height * 0.25;
+            let center = cell.to_px(cell.data.throat_center);
+            let throat_radius_x = cell.bounds.width * cell.data.throat_radius.x;
+            let throat_radius_y = cell.bounds.height * cell.data.throat_radius.y;
             state
                 .draw
                 .ellipse((center.x, center.y), (throat_radius_x, throat_radius_y))
