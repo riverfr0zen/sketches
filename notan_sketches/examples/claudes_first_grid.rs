@@ -14,7 +14,7 @@ use notan_sketches::shaderutils::{
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, ScreenDimensions,
 };
-use palette::{FromColor, Hsv, Shade, Srgb};
+use palette::{Darken, FromColor, Hsv, Lighten, Srgb};
 use std::f32::consts::PI;
 
 const ROWS: u32 = 10;

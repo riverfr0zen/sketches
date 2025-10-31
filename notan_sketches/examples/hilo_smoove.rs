@@ -16,7 +16,7 @@ use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, set_html_bgcolor,
     ScreenDimensions,
 };
-use palette::{FromColor, Hsv, Shade, Srgb};
+use palette::{Darken, FromColor, Hsv, Lighten, Srgb};
 use std::ops::RangeInclusive;
 
 // const CLEAR_COLOR: Color = Color::WHITE;
