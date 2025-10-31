@@ -5,7 +5,6 @@ pub mod tiled_shaders;
 use crate::emotion::EmocatTextAnalysis;
 use crate::utils::scale_font;
 use notan::draw::*;
-use notan::log;
 use notan::math::Vec2;
 use notan::prelude::*;
 

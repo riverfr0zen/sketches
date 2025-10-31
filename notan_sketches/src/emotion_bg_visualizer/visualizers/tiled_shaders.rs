@@ -10,7 +10,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use palette::{FromColor, Shade, Srgb};
+use palette::{Darken, FromColor, Lighten, Srgb};
 use shader::{TileShaderBundle, FRAG};
 use std::collections::HashMap;
 #[cfg(target_arch = "wasm32")]

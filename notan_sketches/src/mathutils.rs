@@ -1,4 +1,3 @@
-use notan::log;
 use notan::math::{vec2, Vec2};
 
 

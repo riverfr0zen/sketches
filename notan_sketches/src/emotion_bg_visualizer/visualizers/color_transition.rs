@@ -82,7 +82,7 @@ impl ColorTransition {
             );
             let mut bg_color = LinSrgb::from_color(bg_color);
             let target_color = LinSrgb::from_color(target_color);
-            bg_color = bg_color.mix(&target_color, self.mix_factor);
+            bg_color = bg_color.mix(target_color, self.mix_factor);
             let bg_color = Srgb::from_color(bg_color);
             self.color = Color::from_rgb(bg_color.red, bg_color.green, bg_color.blue);
             self.mix_factor += MIX_RATE;

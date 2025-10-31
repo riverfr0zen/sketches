@@ -6,7 +6,7 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use palette::{FromColor, Shade, Srgb};
+use palette::{Darken, FromColor, Lighten, Srgb};
 use std::collections::HashMap;
 
 

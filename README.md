@@ -108,7 +108,7 @@ Also run cargo update on local dependencies: `../notan_touchy`
 2. Test
 
 * test sketches natively
-* test sketches on wasm 
+* build and test sketches on wasm 
 
 3. Check what wasn't updated manually, and try to update
 

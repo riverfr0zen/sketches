@@ -298,7 +298,7 @@ impl TopEmotionsModel {
                     //     mix_factor
                     // );
                     // final_color = final_color.mix(&emocolor.hsv, 0.5);
-                    final_color = final_color.mix(&emocolor.hsv, mix_factor);
+                    final_color = final_color.mix(emocolor.hsv, mix_factor);
                     log::debug!("After mix: {:?}", final_color);
                 }
                 let color = Srgb::from_color(final_color);
