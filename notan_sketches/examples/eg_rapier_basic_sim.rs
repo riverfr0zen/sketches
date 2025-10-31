@@ -83,7 +83,7 @@ struct State {
     integration_parameters: IntegrationParameters,
     physics_pipeline: PhysicsPipeline,
     island_manager: IslandManager,
-    broad_phase: BroadPhase,
+    broad_phase: BroadPhaseBvh,
     narrow_phase: NarrowPhase,
     impulse_joint_set: ImpulseJointSet,
     multibody_joint_set: MultibodyJointSet,
@@ -149,7 +149,7 @@ impl Default for State {
         // but here they don't have to be because this is a simple example.
         let physics_pipeline = PhysicsPipeline::new();
         let island_manager = IslandManager::new();
-        let broad_phase = BroadPhase::new();
+        let broad_phase = BroadPhaseBvh::new();
         let narrow_phase = NarrowPhase::new();
         let impulse_joint_set = ImpulseJointSet::new();
         let multibody_joint_set = MultibodyJointSet::new();
