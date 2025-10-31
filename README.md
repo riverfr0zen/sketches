@@ -114,6 +114,16 @@ Also run cargo update on local dependencies: `../notan_touchy`
 
 `cargo update --verbose`
 
+NOTE: The following packages (versions may be different) are notan dependencies, and will need a future notan update, so you can leave those alone.
+
+```
+   Unchanged block-sys v0.1.0-beta.1 (available: v0.1.0-beta.2)
+   Unchanged block2 v0.2.0-alpha.6 (available: v0.2.0)
+   Unchanged objc-sys v0.2.0-beta.2 (available: v0.2.0-beta.3)
+   Unchanged objc2 v0.3.0-beta.3.patch-leaks.3 (available: v0.3.0-beta.5)
+   Unchanged objc2-encode v2.0.0-pre.2 (available: v2.0.0)
+```
+
 4. Test again
 
 
