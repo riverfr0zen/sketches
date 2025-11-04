@@ -8,6 +8,7 @@ use notan_sketches::utils::{
     CapturingTexture, CommonHelpModal, EventsFocus, ScreenDimensions,
 };
 use notan_touchy::{TouchGesture, TouchState};
+use palette::{Darken, FromColor, Hsv, Lighten, Srgb};
 use std::mem::size_of_val;
 use std::ops::RangeInclusive;
 use uuid::Uuid;
@@ -417,7 +418,7 @@ impl Settings {
             self.spawn_color = Self::adjust_color_brightness(rng, self.spawn_color);
             self.spawn2_color = Self::adjust_color_brightness(rng, self.spawn2_color);
             log::debug!(
-                "Adjusted color brightness. Chance {}, rolled {}\nparent: {}, spawn: {}, spawn2: {}",
+                "Adjusted color brightness. Color change chance was {}, rolled {}\nparent: {}, spawn: {}, spawn2: {}",
                 self.color_change_chance,
                 roll,
                 self.parent_color,
@@ -428,26 +429,26 @@ impl Settings {
     }
 
     fn adjust_color_brightness(rng: &mut Random, color: Color) -> Color {
+        // Convert notan Color to palette Srgb, then to HSV for perceptual adjustment
+        let srgb = Srgb::new(color.r, color.g, color.b);
+        let mut hsv_color = Hsv::from_color(srgb);
+
         // Randomly decide whether to lighten or darken (50% chance each)
         let lighten = rng.gen_bool(0.5);
         // Random adjustment factor between 0.05 and 0.2 (5% to 20%)
         let factor = rng.gen_range(0.05..0.2);
 
-        if lighten {
-            // Lighten: move towards white by interpolating
-            Color::from_rgb(
-                color.r + (1.0 - color.r) * factor,
-                color.g + (1.0 - color.g) * factor,
-                color.b + (1.0 - color.b) * factor,
-            )
+        hsv_color = if lighten {
+            // Lighten: increases value while preserving hue and saturation
+            hsv_color.lighten(factor)
         } else {
-            // Darken: move towards black by scaling down
-            Color::from_rgb(
-                color.r * (1.0 - factor),
-                color.g * (1.0 - factor),
-                color.b * (1.0 - factor),
-            )
-        }
+            // Darken: decreases value while preserving hue and saturation
+            hsv_color.darken(factor)
+        };
+
+        // Convert back to Srgb, then to notan Color
+        let adjusted_srgb = Srgb::from_color(hsv_color);
+        Color::from_rgb(adjusted_srgb.red, adjusted_srgb.green, adjusted_srgb.blue)
     }
 
 
