@@ -412,11 +412,41 @@ impl Settings {
                 self.spawn2_color
             );
         } else {
+            // Instead of doing nothing, lighten or darken each color
+            self.parent_color = Self::adjust_color_brightness(rng, self.parent_color);
+            self.spawn_color = Self::adjust_color_brightness(rng, self.spawn_color);
+            self.spawn2_color = Self::adjust_color_brightness(rng, self.spawn2_color);
             log::debug!(
-                "No color change. Chance {}, rolled {} ",
+                "Adjusted color brightness. Chance {}, rolled {}\nparent: {}, spawn: {}, spawn2: {}",
                 self.color_change_chance,
-                roll
+                roll,
+                self.parent_color,
+                self.spawn_color,
+                self.spawn2_color
             );
+        }
+    }
+
+    fn adjust_color_brightness(rng: &mut Random, color: Color) -> Color {
+        // Randomly decide whether to lighten or darken (50% chance each)
+        let lighten = rng.gen_bool(0.5);
+        // Random adjustment factor between 0.05 and 0.2 (5% to 20%)
+        let factor = rng.gen_range(0.05..0.2);
+
+        if lighten {
+            // Lighten: move towards white by interpolating
+            Color::from_rgb(
+                color.r + (1.0 - color.r) * factor,
+                color.g + (1.0 - color.g) * factor,
+                color.b + (1.0 - color.b) * factor,
+            )
+        } else {
+            // Darken: move towards black by scaling down
+            Color::from_rgb(
+                color.r * (1.0 - factor),
+                color.g * (1.0 - factor),
+                color.b * (1.0 - factor),
+            )
         }
     }
 
