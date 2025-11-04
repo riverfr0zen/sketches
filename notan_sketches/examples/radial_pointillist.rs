@@ -701,8 +701,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     );
 
     let info_text = concat!(
-        "\"Radial Pointillist 0.7.0\"\n",
-        "Copyright 2023 Irfan Baig\n",
+        "\"Radial Pointillist 1.7.0\"\n",
+        "Copyright 2023,2025 Irfan Baig\n",
         "License: MIT"
     );
 
