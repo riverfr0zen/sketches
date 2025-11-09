@@ -182,7 +182,6 @@ struct State {
     grid: Grid<SmileyData>,
     palette: PalettesSelection,
     show_grid: bool,
-    needs_redraw: bool,
     capture_next_draw: bool,
     draw: Draw,
 }
@@ -234,7 +233,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         grid,
         palette,
         show_grid: false,
-        needs_redraw: true,
         capture_next_draw: false,
         draw,
     }
@@ -265,8 +263,6 @@ fn update(app: &mut App, state: &mut State) {
             .build(&mut state.rng);
 
         log::info!("Created {}x{} grid", rows, cols);
-
-        state.needs_redraw = true;
     }
 
     // C key - queue capture next draw
@@ -278,13 +274,11 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::G) {
         state.show_grid = !state.show_grid;
         log::debug!("Grid overlay: {}", state.show_grid);
-        // state.needs_redraw = true;
     }
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
     state.draw = get_draw_setup(gfx, state.full_work_size, true, Color::BLACK);
-    state.needs_redraw = true;
 
     // Render egui UI first to get its actual height
     let mut ui_panel_height_screen = 0.0;
@@ -317,98 +311,83 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
         state.grid_work_size = new_grid_work_size;
         // Use resize() to update dimensions without regenerating cell data
         state.grid.resize(state.grid_work_size);
-        state.needs_redraw = true;
     }
 
-    if state.needs_redraw {
-        // Use first cell's bg color for overall background
-        let bg_color = state
-            .grid
-            .cells()
-            .next()
-            .map(|c| c.data.bg_color)
-            .unwrap_or(Color::BLACK);
-        // Use full_work_size for the draw canvas so we can render the full height
-        // state.draw = get_draw_setup(gfx, state.full_work_size, true, bg_color);
+    for cell in state.grid.cells() {
+        let smiley = &cell.data;
 
-        for cell in state.grid.cells() {
-            let smiley = &cell.data;
+        // Draw cell background (per-cell background color) with UI offset
+        let cell_y = cell.offset.y + state.ui_offset;
+        state
+            .draw
+            .rect(
+                (cell.offset.x, cell_y),
+                (cell.bounds.width, cell.bounds.height),
+            )
+            .color(smiley.bg_color)
+            .fill();
 
-            // Draw cell background (per-cell background color) with UI offset
-            let cell_y = cell.offset.y + state.ui_offset;
-            state
-                .draw
-                .rect(
-                    (cell.offset.x, cell_y),
-                    (cell.bounds.width, cell.bounds.height),
-                )
-                .color(smiley.bg_color)
-                .fill();
+        // Draw face circle with UI offset
+        let face_center_px = cell.to_px(smiley.face_center);
+        let face_radius_px = cell.bounds.width.min(cell.bounds.height) * smiley.face_radius;
 
-            // Draw face circle with UI offset
-            let face_center_px = cell.to_px(smiley.face_center);
-            let face_radius_px = cell.bounds.width.min(cell.bounds.height) * smiley.face_radius;
+        state
+            .draw
+            .circle(face_radius_px)
+            .position(face_center_px.x, face_center_px.y + state.ui_offset)
+            .color(smiley.face_color)
+            .fill();
 
-            state
-                .draw
-                .circle(face_radius_px)
-                .position(face_center_px.x, face_center_px.y + state.ui_offset)
-                .color(smiley.face_color)
-                .fill();
+        // Draw left eye with UI offset
+        let left_eye_center_px = cell.to_px(smiley.left_eye.center);
+        let left_eye_radius_px = vec2(
+            cell.bounds.width * smiley.left_eye.radius.x,
+            cell.bounds.height * smiley.left_eye.radius.y,
+        );
 
-            // Draw left eye with UI offset
-            let left_eye_center_px = cell.to_px(smiley.left_eye.center);
-            let left_eye_radius_px = vec2(
-                cell.bounds.width * smiley.left_eye.radius.x,
-                cell.bounds.height * smiley.left_eye.radius.y,
-            );
+        state
+            .draw
+            .ellipse(
+                (left_eye_center_px.x, left_eye_center_px.y + state.ui_offset),
+                (left_eye_radius_px.x, left_eye_radius_px.y),
+            )
+            .color(smiley.eye_color)
+            .fill();
 
-            state
-                .draw
-                .ellipse(
-                    (left_eye_center_px.x, left_eye_center_px.y + state.ui_offset),
-                    (left_eye_radius_px.x, left_eye_radius_px.y),
-                )
-                .color(smiley.eye_color)
-                .fill();
+        // Draw right eye with UI offset
+        let right_eye_center_px = cell.to_px(smiley.right_eye.center);
+        let right_eye_radius_px = vec2(
+            cell.bounds.width * smiley.right_eye.radius.x,
+            cell.bounds.height * smiley.right_eye.radius.y,
+        );
 
-            // Draw right eye with UI offset
-            let right_eye_center_px = cell.to_px(smiley.right_eye.center);
-            let right_eye_radius_px = vec2(
-                cell.bounds.width * smiley.right_eye.radius.x,
-                cell.bounds.height * smiley.right_eye.radius.y,
-            );
+        state
+            .draw
+            .ellipse(
+                (
+                    right_eye_center_px.x,
+                    right_eye_center_px.y + state.ui_offset,
+                ),
+                (right_eye_radius_px.x, right_eye_radius_px.y),
+            )
+            .color(smiley.eye_color)
+            .fill();
 
-            state
-                .draw
-                .ellipse(
-                    (
-                        right_eye_center_px.x,
-                        right_eye_center_px.y + state.ui_offset,
-                    ),
-                    (right_eye_radius_px.x, right_eye_radius_px.y),
-                )
-                .color(smiley.eye_color)
-                .fill();
+        // Draw mouth with UI offset
+        let mouth_center_px = cell.to_px(smiley.mouth.center);
+        let mouth_radius_px = vec2(
+            cell.bounds.width * smiley.mouth.radius.x,
+            cell.bounds.height * smiley.mouth.radius.y,
+        );
 
-            // Draw mouth with UI offset
-            let mouth_center_px = cell.to_px(smiley.mouth.center);
-            let mouth_radius_px = vec2(
-                cell.bounds.width * smiley.mouth.radius.x,
-                cell.bounds.height * smiley.mouth.radius.y,
-            );
-
-            state
-                .draw
-                .ellipse(
-                    (mouth_center_px.x, mouth_center_px.y + state.ui_offset),
-                    (mouth_radius_px.x, mouth_radius_px.y),
-                )
-                .color(smiley.mouth_color)
-                .fill();
-        }
-
-        state.needs_redraw = false;
+        state
+            .draw
+            .ellipse(
+                (mouth_center_px.x, mouth_center_px.y + state.ui_offset),
+                (mouth_radius_px.x, mouth_radius_px.y),
+            )
+            .color(smiley.mouth_color)
+            .fill();
     }
 
     if state.capture_next_draw {
@@ -465,9 +444,6 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
                 .stroke_color(grid_color)
                 .stroke(GRID_STROKE);
         }
-
-        // When grid is enabled, we always redraw to ensure reactivity to grid controls
-        state.needs_redraw = true;
     }
 
     gfx.render(&state.draw);
