@@ -223,7 +223,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         .map(|c| c.data.bg_color)
         .unwrap_or(Color::BLACK);
     // Use full_work_size for draw canvas so it covers the entire window
-    let draw = get_draw_setup(gfx, full_work_size, false, bg_color);
+    let draw = get_draw_setup(gfx, full_work_size, true, bg_color);
 
     State {
         rng,
@@ -283,6 +283,9 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
+    state.draw = get_draw_setup(gfx, state.full_work_size, true, Color::BLACK);
+    state.needs_redraw = true;
+
     // Render egui UI first to get its actual height
     let mut ui_panel_height_screen = 0.0;
     let ui_output = plugins.egui(|ctx| {
@@ -326,7 +329,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
             .map(|c| c.data.bg_color)
             .unwrap_or(Color::BLACK);
         // Use full_work_size for the draw canvas so we can render the full height
-        state.draw = get_draw_setup(gfx, state.full_work_size, false, bg_color);
+        // state.draw = get_draw_setup(gfx, state.full_work_size, true, bg_color);
 
         for cell in state.grid.cells() {
             let smiley = &cell.data;
