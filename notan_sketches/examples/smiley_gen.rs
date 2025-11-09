@@ -12,7 +12,6 @@ use notan_sketches::utils::{
 
 const MAX_DIMENSION: u32 = 10;
 const GRID_STROKE: f32 = 5.0;
-const UI_PANEL_HEIGHT: f32 = 40.0;
 
 #[derive(Debug, Clone)]
 struct Eye {
@@ -191,9 +190,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (mut rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
-    let full_work_size = get_work_size_for_screen(app, gfx);
-    let ui_offset = UI_PANEL_HEIGHT;
-    let work_size = vec2(full_work_size.x, full_work_size.y - ui_offset);
+    let work_size = get_work_size_for_screen(app, gfx);
     log::info!("Work size: {:?}", work_size);
 
     // Choose a color palette
@@ -224,7 +221,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         rng,
         current_seed: seed,
         work_size,
-        ui_offset,
+        ui_offset: 0.0, // Will be set dynamically in draw()
         grid,
         palette,
         show_grid: false,
@@ -277,6 +274,24 @@ fn update(app: &mut App, state: &mut State) {
 }
 
 fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
+    // Render egui UI first to get its actual height
+    let mut ui_panel_height_screen = 0.0;
+    let ui_output = plugins.egui(|ctx| {
+        let response = egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label("Seed:");
+                ui.label(state.current_seed.to_string());
+            });
+        });
+        ui_panel_height_screen = response.response.rect.height();
+    });
+
+    // Calculate the offset in work_size space
+    // The UI is rendered in screen space, so we need to scale it to work_size
+    let window_size = app.window().size();
+    let scale_factor = state.work_size.y / window_size.1 as f32;
+    state.ui_offset = ui_panel_height_screen * scale_factor;
+
     if state.needs_redraw {
         // Use first cell's bg color for overall background
         let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
@@ -408,17 +423,8 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
 
     gfx.render(&state.draw);
 
-    // Add egui UI on top
-    let output = plugins.egui(|ctx| {
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.label("Seed:");
-                ui.label(state.current_seed.to_string());
-            });
-        });
-    });
-
-    gfx.render(&output);
+    // Render the UI output we created earlier
+    gfx.render(&ui_output);
 }
 
 #[notan_main]
