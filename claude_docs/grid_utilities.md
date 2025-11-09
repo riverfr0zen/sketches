@@ -100,6 +100,21 @@ state.grid.regenerate_cells(&mut state.rng, |row, col, bounds, rng| {
 });
 ```
 
+### Resizing Grid (Window Resize)
+
+When the canvas size changes but you want to preserve cell data:
+
+```rust
+// Window resized, need to update grid dimensions but keep cell data
+let new_work_size = get_work_size_for_screen(app, gfx);
+state.grid.resize(new_work_size);
+```
+
+This updates cell dimensions (width/height) without regenerating cell data. Useful for:
+- Window resize events
+- Canvas dimension changes (e.g., accounting for UI panels)
+- Responsive layouts
+
 ### Grid Overlay (Debug)
 
 ```rust

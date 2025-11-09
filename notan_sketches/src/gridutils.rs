@@ -90,6 +90,19 @@ impl<T> Grid<T> {
     fn cell_offset(&self, row: u32, col: u32) -> Vec2 {
         Vec2::new(col as f32 * self.cell_width, row as f32 * self.cell_height)
     }
+
+    /// Resize the grid to a new work_size without changing cell data.
+    ///
+    /// This updates the cell dimensions (width and height) based on the new work_size
+    /// while preserving all cell data and grid dimensions (rows, cols).
+    ///
+    /// Use this when the canvas size changes but you want to keep the same grid layout
+    /// and cell data (e.g., window resize).
+    pub fn resize(&mut self, new_work_size: Vec2) {
+        self.work_size = new_work_size;
+        self.cell_width = new_work_size.x / self.cols as f32;
+        self.cell_height = new_work_size.y / self.rows as f32;
+    }
 }
 
 /// Builder for constructing a Grid with cell data.

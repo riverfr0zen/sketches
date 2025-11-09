@@ -218,7 +218,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
     // Use background color from first cell (they can vary per cell now)
     let bg_color = grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
-    let draw = get_draw_setup(gfx, grid_work_size, false, bg_color);
+    // Use full_work_size for draw canvas so it covers the entire window
+    let draw = get_draw_setup(gfx, full_work_size, false, bg_color);
 
     State {
         rng,
@@ -299,28 +300,21 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
     // Calculate the reduced work size for the grid
     let new_grid_work_size = vec2(state.full_work_size.x, state.full_work_size.y - state.ui_offset);
 
-    // If grid work size changed, regenerate the grid
+    // If grid work size changed, resize the grid without changing cell data
     if (new_grid_work_size.x - state.grid_work_size.x).abs() > 0.1
         || (new_grid_work_size.y - state.grid_work_size.y).abs() > 0.1
     {
         state.grid_work_size = new_grid_work_size;
-
-        // Regenerate grid with new work size
-        let rows = state.grid.rows();
-        let cols = state.grid.cols();
-        state.grid = Grid::builder(rows, cols, state.grid_work_size)
-            .with_cell_data(|row, col, bounds, rng| {
-                generate_smiley_data(row, col, bounds, &state.palette, rng)
-            })
-            .build(&mut state.rng);
-
+        // Use resize() to update dimensions without regenerating cell data
+        state.grid.resize(state.grid_work_size);
         state.needs_redraw = true;
     }
 
     if state.needs_redraw {
         // Use first cell's bg color for overall background
         let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
-        state.draw = get_draw_setup(gfx, state.grid_work_size, false, bg_color);
+        // Use full_work_size for the draw canvas so we can render the full height
+        state.draw = get_draw_setup(gfx, state.full_work_size, false, bg_color);
 
         for cell in state.grid.cells() {
             let smiley = &cell.data;
