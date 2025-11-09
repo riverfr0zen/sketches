@@ -1,4 +1,5 @@
 use notan::draw::*;
+use notan::egui::{self, *};
 use notan::log;
 use notan::math::{vec2, Rect, Vec2};
 use notan::prelude::*;
@@ -270,7 +271,7 @@ fn update(app: &mut App, state: &mut State) {
     }
 }
 
-fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
+fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
     if state.needs_redraw {
         // Use first cell's bg color for overall background
         let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
@@ -381,6 +382,18 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     }
 
     gfx.render(&state.draw);
+
+    // Add egui UI on top
+    let output = plugins.egui(|ctx| {
+        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label("Seed:");
+                ui.label(state.current_seed.to_string());
+            });
+        });
+    });
+
+    gfx.render(&output);
 }
 
 #[notan_main]
@@ -404,6 +417,7 @@ fn main() -> Result<(), String> {
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig)
+        .add_config(EguiConfig)
         .update(update)
         .draw(draw)
         .build()
