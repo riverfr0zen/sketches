@@ -31,6 +31,11 @@ struct SmileyData {
     left_eye: Eye,
     right_eye: Eye,
     mouth: Mouth,
+    // Colors
+    bg_color: Color,
+    face_color: Color,
+    eye_color: Color,
+    mouth_color: Color,
 }
 
 /// Check if an ellipse's extreme points are all within a circle
@@ -57,40 +62,6 @@ fn ellipse_fits_in_circle(
         }
     }
     true
-}
-
-/// Generate colors for all cells in the grid
-fn generate_cell_colors(
-    palette: &PalettesSelection,
-    num_cells: usize,
-) -> (Color, Vec<(Color, Color, Color)>) {
-    let bg_color = Palettes::choose_color(palette);
-
-    let cell_colors = (0..num_cells)
-        .map(|_| {
-            // Ensure face color is different from background
-            let mut face_color = Palettes::choose_color(palette);
-            while face_color == bg_color {
-                face_color = Palettes::choose_color(palette);
-            }
-
-            // Ensure eye color is different from face
-            let mut eye_color = Palettes::choose_color(palette);
-            while eye_color == face_color {
-                eye_color = Palettes::choose_color(palette);
-            }
-
-            // Ensure mouth color is different from face
-            let mut mouth_color = Palettes::choose_color(palette);
-            while mouth_color == face_color {
-                mouth_color = Palettes::choose_color(palette);
-            }
-
-            (face_color, eye_color, mouth_color)
-        })
-        .collect();
-
-    (bg_color, cell_colors)
 }
 
 fn generate_round_eyes(rng: &mut Random) -> (Eye, Eye) {
@@ -126,7 +97,13 @@ fn generate_round_eyes(rng: &mut Random) -> (Eye, Eye) {
 }
 
 /// Generate random smiley data for a cell
-fn generate_smiley_data(_row: u32, _col: u32, _bounds: Rect, rng: &mut Random) -> SmileyData {
+fn generate_smiley_data(
+    _row: u32,
+    _col: u32,
+    _bounds: Rect,
+    palette: &PalettesSelection,
+    rng: &mut Random,
+) -> SmileyData {
     // Face: consistent across cells
     let face_center = vec2(0.5, 0.5);
     let face_radius = 0.48;
@@ -147,7 +124,6 @@ fn generate_smiley_data(_row: u32, _col: u32, _bounds: Rect, rng: &mut Random) -
 
         let mouth_radius_x = rng.gen_range(0.01..0.15);
         let mouth_radius_y: f32 = rng.gen_range(0.01..0.15);
-        // let mouth_y_offset = rng.gen_range(0.05..0.18);
         let mouth_y_offset = rng.gen_range(0.05..0.4);
         let mouth_y = face_center.y + mouth_y_offset;
 
@@ -161,12 +137,37 @@ fn generate_smiley_data(_row: u32, _col: u32, _bounds: Rect, rng: &mut Random) -
         }
     };
 
+    // Generate colors for this cell
+    let bg_color = Palettes::choose_color(palette);
+
+    // Ensure face color is different from background
+    let mut face_color = Palettes::choose_color(palette);
+    while face_color == bg_color {
+        face_color = Palettes::choose_color(palette);
+    }
+
+    // Ensure eye color is different from face
+    let mut eye_color = Palettes::choose_color(palette);
+    while eye_color == face_color {
+        eye_color = Palettes::choose_color(palette);
+    }
+
+    // Ensure mouth color is different from face
+    let mut mouth_color = Palettes::choose_color(palette);
+    while mouth_color == face_color {
+        mouth_color = Palettes::choose_color(palette);
+    }
+
     SmileyData {
         face_center,
         face_radius,
         left_eye,
         right_eye,
         mouth,
+        bg_color,
+        face_color,
+        eye_color,
+        mouth_color,
     }
 }
 
@@ -177,8 +178,6 @@ struct State {
     work_size: Vec2,
     grid: Grid<SmileyData>,
     palette: PalettesSelection,
-    bg_color: Color,
-    cell_colors: Vec<(Color, Color, Color)>, // (face, eyes, mouth) for each cell
     show_grid: bool,
     needs_redraw: bool,
     capture_next_draw: bool,
@@ -200,9 +199,11 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let rows = dimensional_count;
     let cols = dimensional_count;
 
-    // Grid with cell data containing smiley faces
+    // Grid with cell data containing smiley faces (including colors)
     let grid = Grid::builder(rows, cols, work_size)
-        .with_cell_data(generate_smiley_data)
+        .with_cell_data(|row, col, bounds, rng| {
+            generate_smiley_data(row, col, bounds, &palette, rng)
+        })
         .build(&mut rng);
 
     log::info!("Created {}x{} grid", rows, cols);
@@ -210,10 +211,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Press G to toggle grid overlay");
     log::info!("Press C to capture");
 
-    // Generate colors for all cells
-    let num_cells = (rows * cols) as usize;
-    let (bg_color, cell_colors) = generate_cell_colors(&palette, num_cells);
-
+    // Use background color from first cell (they can vary per cell now)
+    let bg_color = grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
     let draw = get_draw_setup(gfx, work_size, false, bg_color);
 
     State {
@@ -222,8 +221,6 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         work_size,
         grid,
         palette,
-        bg_color,
-        cell_colors,
         show_grid: false,
         needs_redraw: true,
         capture_next_draw: false,
@@ -248,18 +245,14 @@ fn update(app: &mut App, state: &mut State) {
         let rows = dimensional_count;
         let cols = dimensional_count;
 
-        // Create grid with smiley data
+        // Create grid with smiley data (including colors)
         state.grid = Grid::builder(rows, cols, state.work_size)
-            .with_cell_data(generate_smiley_data)
+            .with_cell_data(|row, col, bounds, rng| {
+                generate_smiley_data(row, col, bounds, &state.palette, rng)
+            })
             .build(&mut state.rng);
 
         log::info!("Created {}x{} grid", rows, cols);
-
-        // Generate new colors for all cells
-        let num_cells = (rows * cols) as usize;
-        let (bg_color, cell_colors) = generate_cell_colors(&state.palette, num_cells);
-        state.bg_color = bg_color;
-        state.cell_colors = cell_colors;
 
         state.needs_redraw = true;
     }
@@ -279,11 +272,19 @@ fn update(app: &mut App, state: &mut State) {
 
 fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.needs_redraw {
-        state.draw = get_draw_setup(gfx, state.work_size, false, state.bg_color);
+        // Use first cell's bg color for overall background
+        let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
+        state.draw = get_draw_setup(gfx, state.work_size, false, bg_color);
 
-        for (cell_index, cell) in state.grid.cells().enumerate() {
+        for cell in state.grid.cells() {
             let smiley = &cell.data;
-            let (face_color, eye_color, mouth_color) = state.cell_colors[cell_index];
+
+            // Draw cell background (per-cell background color)
+            state
+                .draw
+                .rect((cell.offset.x, cell.offset.y), (cell.bounds.width, cell.bounds.height))
+                .color(smiley.bg_color)
+                .fill();
 
             // Draw face circle
             let face_center_px = cell.to_px(smiley.face_center);
@@ -293,7 +294,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                 .draw
                 .circle(face_radius_px)
                 .position(face_center_px.x, face_center_px.y)
-                .color(face_color)
+                .color(smiley.face_color)
                 .fill();
 
             // Draw left eye
@@ -309,7 +310,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                     (left_eye_center_px.x, left_eye_center_px.y),
                     (left_eye_radius_px.x, left_eye_radius_px.y),
                 )
-                .color(eye_color)
+                .color(smiley.eye_color)
                 .fill();
 
             // Draw right eye
@@ -325,7 +326,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                     (right_eye_center_px.x, right_eye_center_px.y),
                     (right_eye_radius_px.x, right_eye_radius_px.y),
                 )
-                .color(eye_color)
+                .color(smiley.eye_color)
                 .fill();
 
             // Draw mouth
@@ -341,7 +342,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
                     (mouth_center_px.x, mouth_center_px.y),
                     (mouth_radius_px.x, mouth_radius_px.y),
                 )
-                .color(mouth_color)
+                .color(smiley.mouth_color)
                 .fill();
         }
 
@@ -351,10 +352,11 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     if state.capture_next_draw {
         // Use 2x supersampling for better antialiasing in captures
         let supersample_factor = 2.0;
+        let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
         let mut capture = CapturingTexture::new_with_supersample(
             gfx,
             &state.work_size,
-            state.bg_color,
+            bg_color,
             format!("renders/smiley_gen/{}", state.current_seed),
             0.0,
             supersample_factor,
