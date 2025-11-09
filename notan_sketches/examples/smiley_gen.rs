@@ -9,8 +9,7 @@ use notan_sketches::utils::{
     ScreenDimensions,
 };
 
-const MAX_ROWS: u32 = 20;
-const MAX_COLS: u32 = 20;
+const MAX_DIMENSION: u32 = 20;
 const GRID_STROKE: f32 = 5.0;
 
 #[derive(Debug, Clone)]
@@ -61,7 +60,10 @@ fn ellipse_fits_in_circle(
 }
 
 /// Generate colors for all cells in the grid
-fn generate_cell_colors(palette: &PalettesSelection, num_cells: usize) -> (Color, Vec<(Color, Color, Color)>) {
+fn generate_cell_colors(
+    palette: &PalettesSelection,
+    num_cells: usize,
+) -> (Color, Vec<(Color, Color, Color)>) {
     let bg_color = Palettes::choose_color(palette);
 
     let cell_colors = (0..num_cells)
@@ -97,46 +99,64 @@ fn generate_smiley_data(_row: u32, _col: u32, _bounds: Rect, rng: &mut Random) -
     let face_center = vec2(0.5, 0.5);
     let face_radius = 0.4;
 
-    // Generate eyes with validation
+    // Generate left eye with validation (left side of face)
     let mut attempts = 0;
-    let (left_eye, right_eye) = loop {
+    let left_eye = loop {
         attempts += 1;
         if attempts > 100 {
-            // Fallback to safe defaults
-            let safe_eye = Eye {
-                center: vec2(0.4, 0.4),
+            // Fallback to safe default
+            break Eye {
+                center: vec2(0.35, 0.38),
                 radius: vec2(0.02, 0.03),
             };
-            break (
-                safe_eye.clone(),
-                Eye {
-                    center: vec2(0.6, 0.4),
-                    radius: vec2(0.02, 0.03),
-                },
-            );
         }
 
-        let eye_radius_x = rng.gen_range(0.02..0.04);
-        let eye_radius_y = rng.gen_range(0.025..0.05);
-        let eye_y_offset = rng.gen_range(0.05..0.18);
-        let eye_y = face_center.y - eye_y_offset;
-        let eye_spacing = rng.gen_range(0.06..0.13);
+        let eye_radius_x = rng.gen_range(0.02..0.035);
+        let eye_radius_y = rng.gen_range(0.025..0.04);
+
+        // Left eye: position on left side of face (x < face_center.x)
+        // Keep within a safer zone: face is 0.1-0.9, center at 0.5
+        let eye_x = rng.gen_range(0.25..0.45);
+        let eye_y = rng.gen_range(0.32..0.45);
 
         let left_eye = Eye {
-            center: vec2(face_center.x - eye_spacing, eye_y),
+            center: vec2(eye_x, eye_y),
             radius: vec2(eye_radius_x, eye_radius_y),
         };
+
+        // Validate left eye fits
+        if ellipse_fits_in_circle(left_eye.center, left_eye.radius, face_center, face_radius) {
+            break left_eye;
+        }
+    };
+
+    // Generate right eye with validation (right side of face)
+    let mut attempts = 0;
+    let right_eye = loop {
+        attempts += 1;
+        if attempts > 100 {
+            // Fallback to safe default
+            break Eye {
+                center: vec2(0.65, 0.38),
+                radius: vec2(0.02, 0.03),
+            };
+        }
+
+        let eye_radius_x = rng.gen_range(0.02..0.035);
+        let eye_radius_y = rng.gen_range(0.025..0.04);
+
+        // Right eye: position on right side of face (x > face_center.x)
+        let eye_x = rng.gen_range(0.55..0.75);
+        let eye_y = rng.gen_range(0.32..0.45);
 
         let right_eye = Eye {
-            center: vec2(face_center.x + eye_spacing, eye_y),
+            center: vec2(eye_x, eye_y),
             radius: vec2(eye_radius_x, eye_radius_y),
         };
 
-        // Validate both eyes fit
-        if ellipse_fits_in_circle(left_eye.center, left_eye.radius, face_center, face_radius)
-            && ellipse_fits_in_circle(right_eye.center, right_eye.radius, face_center, face_radius)
-        {
-            break (left_eye, right_eye);
+        // Validate right eye fits
+        if ellipse_fits_in_circle(right_eye.center, right_eye.radius, face_center, face_radius) {
+            break right_eye;
         }
     };
 
@@ -202,8 +222,9 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let palette: PalettesSelection = rng.gen();
     log::info!("Palette: {:?}", palette);
 
-    let rows = rng.gen_range(1..MAX_ROWS);
-    let cols = rng.gen_range(1..MAX_COLS);
+    let dimensional_count = rng.gen_range(1..MAX_DIMENSION);
+    let rows = dimensional_count;
+    let cols = dimensional_count;
 
     // Grid with cell data containing smiley faces
     let grid = Grid::builder(rows, cols, work_size)
@@ -249,8 +270,9 @@ fn update(app: &mut App, state: &mut State) {
         log::info!("Palette: {:?}", state.palette);
 
         // Create a new grid with different size
-        let rows = state.rng.gen_range(1..MAX_ROWS);
-        let cols = state.rng.gen_range(1..MAX_COLS);
+        let dimensional_count = state.rng.gen_range(1..MAX_DIMENSION);
+        let rows = dimensional_count;
+        let cols = dimensional_count;
 
         // Create grid with smiley data
         state.grid = Grid::builder(rows, cols, state.work_size)
