@@ -12,6 +12,7 @@ use notan_sketches::utils::{
 
 const MAX_DIMENSION: u32 = 10;
 const GRID_STROKE: f32 = 5.0;
+const UI_PANEL_HEIGHT: f32 = 40.0;
 
 #[derive(Debug, Clone)]
 struct Eye {
@@ -177,6 +178,7 @@ struct State {
     rng: Random,
     current_seed: u64,
     work_size: Vec2,
+    ui_offset: f32,
     grid: Grid<SmileyData>,
     palette: PalettesSelection,
     show_grid: bool,
@@ -189,7 +191,9 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (mut rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
-    let work_size = get_work_size_for_screen(app, gfx);
+    let full_work_size = get_work_size_for_screen(app, gfx);
+    let ui_offset = UI_PANEL_HEIGHT;
+    let work_size = vec2(full_work_size.x, full_work_size.y - ui_offset);
     log::info!("Work size: {:?}", work_size);
 
     // Choose a color palette
@@ -220,6 +224,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         rng,
         current_seed: seed,
         work_size,
+        ui_offset,
         grid,
         palette,
         show_grid: false,
@@ -280,25 +285,26 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
         for cell in state.grid.cells() {
             let smiley = &cell.data;
 
-            // Draw cell background (per-cell background color)
+            // Draw cell background (per-cell background color) with UI offset
+            let cell_y = cell.offset.y + state.ui_offset;
             state
                 .draw
-                .rect((cell.offset.x, cell.offset.y), (cell.bounds.width, cell.bounds.height))
+                .rect((cell.offset.x, cell_y), (cell.bounds.width, cell.bounds.height))
                 .color(smiley.bg_color)
                 .fill();
 
-            // Draw face circle
+            // Draw face circle with UI offset
             let face_center_px = cell.to_px(smiley.face_center);
             let face_radius_px = cell.bounds.width.min(cell.bounds.height) * smiley.face_radius;
 
             state
                 .draw
                 .circle(face_radius_px)
-                .position(face_center_px.x, face_center_px.y)
+                .position(face_center_px.x, face_center_px.y + state.ui_offset)
                 .color(smiley.face_color)
                 .fill();
 
-            // Draw left eye
+            // Draw left eye with UI offset
             let left_eye_center_px = cell.to_px(smiley.left_eye.center);
             let left_eye_radius_px = vec2(
                 cell.bounds.width * smiley.left_eye.radius.x,
@@ -308,13 +314,13 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
             state
                 .draw
                 .ellipse(
-                    (left_eye_center_px.x, left_eye_center_px.y),
+                    (left_eye_center_px.x, left_eye_center_px.y + state.ui_offset),
                     (left_eye_radius_px.x, left_eye_radius_px.y),
                 )
                 .color(smiley.eye_color)
                 .fill();
 
-            // Draw right eye
+            // Draw right eye with UI offset
             let right_eye_center_px = cell.to_px(smiley.right_eye.center);
             let right_eye_radius_px = vec2(
                 cell.bounds.width * smiley.right_eye.radius.x,
@@ -324,13 +330,13 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
             state
                 .draw
                 .ellipse(
-                    (right_eye_center_px.x, right_eye_center_px.y),
+                    (right_eye_center_px.x, right_eye_center_px.y + state.ui_offset),
                     (right_eye_radius_px.x, right_eye_radius_px.y),
                 )
                 .color(smiley.eye_color)
                 .fill();
 
-            // Draw mouth
+            // Draw mouth with UI offset
             let mouth_center_px = cell.to_px(smiley.mouth.center);
             let mouth_radius_px = vec2(
                 cell.bounds.width * smiley.mouth.radius.x,
@@ -340,7 +346,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
             state
                 .draw
                 .ellipse(
-                    (mouth_center_px.x, mouth_center_px.y),
+                    (mouth_center_px.x, mouth_center_px.y + state.ui_offset),
                     (mouth_radius_px.x, mouth_radius_px.y),
                 )
                 .color(smiley.mouth_color)
@@ -373,9 +379,28 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
     }
 
     if state.show_grid {
-        state
-            .grid
-            .draw_overlay(&mut state.draw, Color::GREEN, GRID_STROKE);
+        // Draw grid overlay with UI offset
+        let grid_color = Color::GREEN;
+
+        // Draw vertical lines
+        for col in 0..=state.grid.cols() {
+            let x = col as f32 * state.grid.cell_width();
+            state.draw.path()
+                .move_to(x, state.ui_offset)
+                .line_to(x, state.work_size.y + state.ui_offset)
+                .stroke_color(grid_color)
+                .stroke(GRID_STROKE);
+        }
+
+        // Draw horizontal lines
+        for row in 0..=state.grid.rows() {
+            let y = row as f32 * state.grid.cell_height() + state.ui_offset;
+            state.draw.path()
+                .move_to(0.0, y)
+                .line_to(state.work_size.x, y)
+                .stroke_color(grid_color)
+                .stroke(GRID_STROKE);
+        }
 
         // When grid is enabled, we always redraw to ensure reactivity to grid controls
         state.needs_redraw = true;
