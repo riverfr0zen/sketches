@@ -40,7 +40,7 @@ struct ChildCircle {
 // Cell data - now using NORMALIZED coordinates (0.0-1.0)!
 #[derive(Clone)]
 struct CellData {
-    position: Vec2,  // Normalized 0-1 within cell - resolution independent!
+    position: Vec2, // Normalized 0-1 within cell - resolution independent!
     color: Color,
     bg_color: Color,
     children: Vec<ChildCircle>,
@@ -70,7 +70,7 @@ fn vary_color(color: Color, rng: &mut Random) -> Color {
 struct State {
     rng: Random,
     work_size: Vec2,
-    grid: Grid<CellData>,  // ✨ All cell data in one place!
+    grid: Grid<CellData>, // ✨ All cell data in one place!
     circle_radius: f32,
     palette: PalettesSelection,
     bg_palette: PalettesSelection,
@@ -243,17 +243,19 @@ fn update(app: &mut App, state: &mut State) {
         log::info!("Background Palette: {:?}", state.bg_palette);
 
         // ✨ Regenerate all cell data with ONE method call!
-        state.grid.regenerate_cells(&mut state.rng, |row, col, bounds, rng| {
-            generate_cell_data(
-                row,
-                col,
-                bounds,
-                rng,
-                state.circle_radius,
-                &state.palette,
-                &state.bg_palette,
-            )
-        });
+        state
+            .grid
+            .regenerate_cells(&mut state.rng, |row, col, bounds, rng| {
+                generate_cell_data(
+                    row,
+                    col,
+                    bounds,
+                    rng,
+                    state.circle_radius,
+                    &state.palette,
+                    &state.bg_palette,
+                )
+            });
 
         state.tile_colors_dirty = true;
     }
@@ -298,8 +300,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     // Update tile colors if needed
     if state.tile_colors_dirty {
-        let mut tile_colors_flat: Vec<f32> =
-            Vec::with_capacity(ROWS as usize * COLS as usize * 4);
+        let mut tile_colors_flat: Vec<f32> = Vec::with_capacity(ROWS as usize * COLS as usize * 4);
         for cell in state.grid.cells() {
             tile_colors_flat.push(cell.data.bg_color.r);
             tile_colors_flat.push(cell.data.bg_color.g);
@@ -332,7 +333,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 
     // ✨ Draw grid overlay using grid utilities!
     if state.show_grid {
-        state.grid.draw_overlay(&mut draw, Color::GREEN, GRID_STROKE);
+        state
+            .grid
+            .draw_overlay(&mut draw, Color::GREEN, GRID_STROKE);
     }
 
     // ✨ Draw circles using grid iterator - NO manual tile_index tracking!

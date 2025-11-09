@@ -263,20 +263,14 @@ impl<'a, T> CellContext<'a, T> {
     /// Useful for converting mouse/touch positions to normalized cell coordinates.
     pub fn to_norm(&self, abs_pixels: Vec2) -> Vec2 {
         let local = abs_pixels - self.offset;
-        Vec2::new(
-            local.x / self.bounds.width,
-            local.y / self.bounds.height,
-        )
+        Vec2::new(local.x / self.bounds.width, local.y / self.bounds.height)
     }
 
     /// Convert canvas-wide normalized coordinates (0-1) to cell-local normalized (0-1).
     ///
     /// Useful for converting shader output or canvas-wide effects to cell coordinates.
     pub fn to_norm_local(&self, norm_abs: Vec2) -> Vec2 {
-        let abs_pixels = Vec2::new(
-            norm_abs.x * self.work_size.x,
-            norm_abs.y * self.work_size.y,
-        );
+        let abs_pixels = Vec2::new(norm_abs.x * self.work_size.x, norm_abs.y * self.work_size.y);
         self.to_norm(abs_pixels)
     }
 
@@ -325,8 +319,7 @@ impl<'a, T> CellContext<'a, T> {
 
     /// Get the center point of the cell in absolute pixel coordinates.
     pub fn center(&self) -> Vec2 {
-        self.offset
-            + Vec2::new(self.bounds.width * 0.5, self.bounds.height * 0.5)
+        self.offset + Vec2::new(self.bounds.width * 0.5, self.bounds.height * 0.5)
     }
 
     // ===== METADATA =====
@@ -581,18 +574,12 @@ impl<'a, T> CellContextMut<'a, T> {
     /// Convert absolute pixel coordinates to cell-local normalized (0-1).
     pub fn to_norm(&self, abs_pixels: Vec2) -> Vec2 {
         let local = abs_pixels - self.offset;
-        Vec2::new(
-            local.x / self.bounds.width,
-            local.y / self.bounds.height,
-        )
+        Vec2::new(local.x / self.bounds.width, local.y / self.bounds.height)
     }
 
     /// Convert canvas-wide normalized coordinates (0-1) to cell-local normalized (0-1).
     pub fn to_norm_local(&self, norm_abs: Vec2) -> Vec2 {
-        let abs_pixels = Vec2::new(
-            norm_abs.x * self.work_size.x,
-            norm_abs.y * self.work_size.y,
-        );
+        let abs_pixels = Vec2::new(norm_abs.x * self.work_size.x, norm_abs.y * self.work_size.y);
         self.to_norm(abs_pixels)
     }
 
@@ -618,8 +605,7 @@ impl<'a, T> CellContextMut<'a, T> {
 
     /// Get the center point of the cell in absolute pixel coordinates.
     pub fn center(&self) -> Vec2 {
-        self.offset
-            + Vec2::new(self.bounds.width * 0.5, self.bounds.height * 0.5)
+        self.offset + Vec2::new(self.bounds.width * 0.5, self.bounds.height * 0.5)
     }
 
     /// Convert cell-local normalized size (0-1 scale) to absolute pixel size.
