@@ -176,8 +176,8 @@ fn generate_smiley_data(
 struct State {
     rng: Random,
     current_seed: u64,
-    full_work_size: Vec2,  // Full canvas size including UI area
-    grid_work_size: Vec2,  // Reduced size for grid (excludes UI panel)
+    full_work_size: Vec2, // Full canvas size including UI area
+    grid_work_size: Vec2, // Reduced size for grid (excludes UI panel)
     ui_offset: f32,
     grid: Grid<SmileyData>,
     palette: PalettesSelection,
@@ -217,7 +217,11 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Press C to capture");
 
     // Use background color from first cell (they can vary per cell now)
-    let bg_color = grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
+    let bg_color = grid
+        .cells()
+        .next()
+        .map(|c| c.data.bg_color)
+        .unwrap_or(Color::BLACK);
     // Use full_work_size for draw canvas so it covers the entire window
     let draw = get_draw_setup(gfx, full_work_size, false, bg_color);
 
@@ -298,7 +302,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
     state.ui_offset = ui_panel_height_screen * scale_factor;
 
     // Calculate the reduced work size for the grid
-    let new_grid_work_size = vec2(state.full_work_size.x, state.full_work_size.y - state.ui_offset);
+    let new_grid_work_size = vec2(
+        state.full_work_size.x,
+        state.full_work_size.y - state.ui_offset,
+    );
 
     // If grid work size changed, resize the grid without changing cell data
     if (new_grid_work_size.x - state.grid_work_size.x).abs() > 0.1
@@ -312,7 +319,12 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
 
     if state.needs_redraw {
         // Use first cell's bg color for overall background
-        let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
+        let bg_color = state
+            .grid
+            .cells()
+            .next()
+            .map(|c| c.data.bg_color)
+            .unwrap_or(Color::BLACK);
         // Use full_work_size for the draw canvas so we can render the full height
         state.draw = get_draw_setup(gfx, state.full_work_size, false, bg_color);
 
@@ -323,7 +335,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
             let cell_y = cell.offset.y + state.ui_offset;
             state
                 .draw
-                .rect((cell.offset.x, cell_y), (cell.bounds.width, cell.bounds.height))
+                .rect(
+                    (cell.offset.x, cell_y),
+                    (cell.bounds.width, cell.bounds.height),
+                )
                 .color(smiley.bg_color)
                 .fill();
 
@@ -364,7 +379,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
             state
                 .draw
                 .ellipse(
-                    (right_eye_center_px.x, right_eye_center_px.y + state.ui_offset),
+                    (
+                        right_eye_center_px.x,
+                        right_eye_center_px.y + state.ui_offset,
+                    ),
                     (right_eye_radius_px.x, right_eye_radius_px.y),
                 )
                 .color(smiley.eye_color)
@@ -393,7 +411,12 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
     if state.capture_next_draw {
         // Use 2x supersampling for better antialiasing in captures
         let supersample_factor = 2.0;
-        let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
+        let bg_color = state
+            .grid
+            .cells()
+            .next()
+            .map(|c| c.data.bg_color)
+            .unwrap_or(Color::BLACK);
         let mut capture = CapturingTexture::new_with_supersample(
             gfx,
             &state.grid_work_size,
@@ -419,7 +442,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
         // Draw vertical lines
         for col in 0..=state.grid.cols() {
             let x = col as f32 * state.grid.cell_width();
-            state.draw.path()
+            state
+                .draw
+                .path()
                 .move_to(x, state.ui_offset)
                 .line_to(x, state.grid_work_size.y + state.ui_offset)
                 .stroke_color(grid_color)
@@ -429,7 +454,9 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
         // Draw horizontal lines
         for row in 0..=state.grid.rows() {
             let y = row as f32 * state.grid.cell_height() + state.ui_offset;
-            state.draw.path()
+            state
+                .draw
+                .path()
                 .move_to(0.0, y)
                 .line_to(state.grid_work_size.x, y)
                 .stroke_color(grid_color)
