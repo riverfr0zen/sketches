@@ -176,7 +176,8 @@ fn generate_smiley_data(
 struct State {
     rng: Random,
     current_seed: u64,
-    work_size: Vec2,
+    full_work_size: Vec2,  // Full canvas size including UI area
+    grid_work_size: Vec2,  // Reduced size for grid (excludes UI panel)
     ui_offset: f32,
     grid: Grid<SmileyData>,
     palette: PalettesSelection,
@@ -190,8 +191,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (mut rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
-    let work_size = get_work_size_for_screen(app, gfx);
-    log::info!("Work size: {:?}", work_size);
+    let full_work_size = get_work_size_for_screen(app, gfx);
+    // Start with same size for grid, will be adjusted in draw() based on actual UI height
+    let grid_work_size = full_work_size;
+    log::info!("Work size: {:?}", full_work_size);
 
     // Choose a color palette
     let palette: PalettesSelection = rng.gen();
@@ -202,7 +205,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let cols = dimensional_count;
 
     // Grid with cell data containing smiley faces (including colors)
-    let grid = Grid::builder(rows, cols, work_size)
+    let grid = Grid::builder(rows, cols, grid_work_size)
         .with_cell_data(|row, col, bounds, rng| {
             generate_smiley_data(row, col, bounds, &palette, rng)
         })
@@ -215,12 +218,13 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
     // Use background color from first cell (they can vary per cell now)
     let bg_color = grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
-    let draw = get_draw_setup(gfx, work_size, false, bg_color);
+    let draw = get_draw_setup(gfx, grid_work_size, false, bg_color);
 
     State {
         rng,
         current_seed: seed,
-        work_size,
+        full_work_size,
+        grid_work_size,
         ui_offset: 0.0, // Will be set dynamically in draw()
         grid,
         palette,
@@ -249,7 +253,7 @@ fn update(app: &mut App, state: &mut State) {
         let cols = dimensional_count;
 
         // Create grid with smiley data (including colors)
-        state.grid = Grid::builder(rows, cols, state.work_size)
+        state.grid = Grid::builder(rows, cols, state.grid_work_size)
             .with_cell_data(|row, col, bounds, rng| {
                 generate_smiley_data(row, col, bounds, &state.palette, rng)
             })
@@ -289,13 +293,34 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
     // Calculate the offset in work_size space
     // The UI is rendered in screen space, so we need to scale it to work_size
     let window_size = app.window().size();
-    let scale_factor = state.work_size.y / window_size.1 as f32;
+    let scale_factor = state.full_work_size.y / window_size.1 as f32;
     state.ui_offset = ui_panel_height_screen * scale_factor;
+
+    // Calculate the reduced work size for the grid
+    let new_grid_work_size = vec2(state.full_work_size.x, state.full_work_size.y - state.ui_offset);
+
+    // If grid work size changed, regenerate the grid
+    if (new_grid_work_size.x - state.grid_work_size.x).abs() > 0.1
+        || (new_grid_work_size.y - state.grid_work_size.y).abs() > 0.1
+    {
+        state.grid_work_size = new_grid_work_size;
+
+        // Regenerate grid with new work size
+        let rows = state.grid.rows();
+        let cols = state.grid.cols();
+        state.grid = Grid::builder(rows, cols, state.grid_work_size)
+            .with_cell_data(|row, col, bounds, rng| {
+                generate_smiley_data(row, col, bounds, &state.palette, rng)
+            })
+            .build(&mut state.rng);
+
+        state.needs_redraw = true;
+    }
 
     if state.needs_redraw {
         // Use first cell's bg color for overall background
         let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
-        state.draw = get_draw_setup(gfx, state.work_size, false, bg_color);
+        state.draw = get_draw_setup(gfx, state.grid_work_size, false, bg_color);
 
         for cell in state.grid.cells() {
             let smiley = &cell.data;
@@ -377,7 +402,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
         let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
         let mut capture = CapturingTexture::new_with_supersample(
             gfx,
-            &state.work_size,
+            &state.grid_work_size,
             bg_color,
             format!("renders/smiley_gen/{}", state.current_seed),
             0.0,
@@ -402,7 +427,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
             let x = col as f32 * state.grid.cell_width();
             state.draw.path()
                 .move_to(x, state.ui_offset)
-                .line_to(x, state.work_size.y + state.ui_offset)
+                .line_to(x, state.grid_work_size.y + state.ui_offset)
                 .stroke_color(grid_color)
                 .stroke(GRID_STROKE);
         }
@@ -412,7 +437,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut St
             let y = row as f32 * state.grid.cell_height() + state.ui_offset;
             state.draw.path()
                 .move_to(0.0, y)
-                .line_to(state.work_size.x, y)
+                .line_to(state.grid_work_size.x, y)
                 .stroke_color(grid_color)
                 .stroke(GRID_STROKE);
         }
