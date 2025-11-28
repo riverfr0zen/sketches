@@ -15,7 +15,7 @@ notan = { version = "0.13.0", features = [
 ] }
 # notan = { git = "https://github.com/Nazariglez/notan.git", branch = "c/glutin", features = ["extra", "text"] }
 # notan = { git = "https://github.com/Nazariglez/notan.git", branch = "f/wayland-nvidia", features = ["extra", "text", "nvidia-wayland"] }
-rapier2d = "0.30.1"
+rapier2d = "0.31.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 #uuid = { version = "1.2.2", features = ["v4", "fast-rng"] }
