@@ -1,4 +1,5 @@
 use notan::draw::*;
+use notan::egui::{self, *};
 use notan::log;
 use notan::math::{vec2, Rect, Vec2};
 use notan::prelude::*;
@@ -175,11 +176,12 @@ fn generate_smiley_data(
 struct State {
     rng: Random,
     current_seed: u64,
-    work_size: Vec2,
+    full_work_size: Vec2, // Full canvas size including UI area
+    grid_work_size: Vec2, // Reduced size for grid (excludes UI panel)
+    ui_offset: f32,
     grid: Grid<SmileyData>,
     palette: PalettesSelection,
     show_grid: bool,
-    needs_redraw: bool,
     capture_next_draw: bool,
     draw: Draw,
 }
@@ -188,8 +190,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let (mut rng, seed) = get_rng(None);
     log::info!("Seed: {}", seed);
 
-    let work_size = get_work_size_for_screen(app, gfx);
-    log::info!("Work size: {:?}", work_size);
+    let full_work_size = get_work_size_for_screen(app, gfx);
+    // Start with same size for grid, will be adjusted in draw() based on actual UI height
+    let grid_work_size = full_work_size;
+    log::info!("Work size: {:?}", full_work_size);
 
     // Choose a color palette
     let palette: PalettesSelection = rng.gen();
@@ -200,7 +204,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let cols = dimensional_count;
 
     // Grid with cell data containing smiley faces (including colors)
-    let grid = Grid::builder(rows, cols, work_size)
+    let grid = Grid::builder(rows, cols, grid_work_size)
         .with_cell_data(|row, col, bounds, rng| {
             generate_smiley_data(row, col, bounds, &palette, rng)
         })
@@ -212,17 +216,23 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Press C to capture");
 
     // Use background color from first cell (they can vary per cell now)
-    let bg_color = grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
-    let draw = get_draw_setup(gfx, work_size, false, bg_color);
+    let bg_color = grid
+        .cells()
+        .next()
+        .map(|c| c.data.bg_color)
+        .unwrap_or(Color::BLACK);
+    // Use full_work_size for draw canvas so it covers the entire window
+    let draw = get_draw_setup(gfx, full_work_size, true, bg_color);
 
     State {
         rng,
         current_seed: seed,
-        work_size,
+        full_work_size,
+        grid_work_size,
+        ui_offset: 0.0, // Will be set dynamically in draw()
         grid,
         palette,
         show_grid: false,
-        needs_redraw: true,
         capture_next_draw: false,
         draw,
     }
@@ -246,15 +256,13 @@ fn update(app: &mut App, state: &mut State) {
         let cols = dimensional_count;
 
         // Create grid with smiley data (including colors)
-        state.grid = Grid::builder(rows, cols, state.work_size)
+        state.grid = Grid::builder(rows, cols, state.grid_work_size)
             .with_cell_data(|row, col, bounds, rng| {
                 generate_smiley_data(row, col, bounds, &state.palette, rng)
             })
             .build(&mut state.rng);
 
         log::info!("Created {}x{} grid", rows, cols);
-
-        state.needs_redraw = true;
     }
 
     // C key - queue capture next draw
@@ -266,96 +274,134 @@ fn update(app: &mut App, state: &mut State) {
     if app.keyboard.was_pressed(KeyCode::G) {
         state.show_grid = !state.show_grid;
         log::debug!("Grid overlay: {}", state.show_grid);
-        // state.needs_redraw = true;
     }
 }
 
-fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
-    if state.needs_redraw {
-        // Use first cell's bg color for overall background
-        let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
-        state.draw = get_draw_setup(gfx, state.work_size, false, bg_color);
+fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
+    state.draw = get_draw_setup(gfx, state.full_work_size, true, Color::BLACK);
 
-        for cell in state.grid.cells() {
-            let smiley = &cell.data;
+    // Render egui UI first to get its actual height
+    let mut ui_panel_height_screen = 0.0;
+    let ui_output = plugins.egui(|ctx| {
+        let response = egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                ui.label("Seed:");
+                ui.label(state.current_seed.to_string());
+            });
+        });
+        ui_panel_height_screen = response.response.rect.height();
+    });
 
-            // Draw cell background (per-cell background color)
-            state
-                .draw
-                .rect((cell.offset.x, cell.offset.y), (cell.bounds.width, cell.bounds.height))
-                .color(smiley.bg_color)
-                .fill();
+    // Calculate the offset in work_size space
+    // The UI is rendered in screen space, so we need to scale it to work_size
+    let window_size = app.window().size();
+    let scale_factor = state.full_work_size.y / window_size.1 as f32;
+    state.ui_offset = ui_panel_height_screen * scale_factor;
 
-            // Draw face circle
-            let face_center_px = cell.to_px(smiley.face_center);
-            let face_radius_px = cell.bounds.width.min(cell.bounds.height) * smiley.face_radius;
+    // Calculate the reduced work size for the grid
+    let new_grid_work_size = vec2(
+        state.full_work_size.x,
+        state.full_work_size.y - state.ui_offset,
+    );
 
-            state
-                .draw
-                .circle(face_radius_px)
-                .position(face_center_px.x, face_center_px.y)
-                .color(smiley.face_color)
-                .fill();
+    // If grid work size changed, resize the grid without changing cell data
+    if (new_grid_work_size.x - state.grid_work_size.x).abs() > 0.1
+        || (new_grid_work_size.y - state.grid_work_size.y).abs() > 0.1
+    {
+        state.grid_work_size = new_grid_work_size;
+        // Use resize() to update dimensions without regenerating cell data
+        state.grid.resize(state.grid_work_size);
+    }
 
-            // Draw left eye
-            let left_eye_center_px = cell.to_px(smiley.left_eye.center);
-            let left_eye_radius_px = vec2(
-                cell.bounds.width * smiley.left_eye.radius.x,
-                cell.bounds.height * smiley.left_eye.radius.y,
-            );
+    for cell in state.grid.cells() {
+        let smiley = &cell.data;
 
-            state
-                .draw
-                .ellipse(
-                    (left_eye_center_px.x, left_eye_center_px.y),
-                    (left_eye_radius_px.x, left_eye_radius_px.y),
-                )
-                .color(smiley.eye_color)
-                .fill();
+        // Draw cell background (per-cell background color) with UI offset
+        let cell_y = cell.offset.y + state.ui_offset;
+        state
+            .draw
+            .rect(
+                (cell.offset.x, cell_y),
+                (cell.bounds.width, cell.bounds.height),
+            )
+            .color(smiley.bg_color)
+            .fill();
 
-            // Draw right eye
-            let right_eye_center_px = cell.to_px(smiley.right_eye.center);
-            let right_eye_radius_px = vec2(
-                cell.bounds.width * smiley.right_eye.radius.x,
-                cell.bounds.height * smiley.right_eye.radius.y,
-            );
+        // Draw face circle with UI offset
+        let face_center_px = cell.to_px(smiley.face_center);
+        let face_radius_px = cell.bounds.width.min(cell.bounds.height) * smiley.face_radius;
 
-            state
-                .draw
-                .ellipse(
-                    (right_eye_center_px.x, right_eye_center_px.y),
-                    (right_eye_radius_px.x, right_eye_radius_px.y),
-                )
-                .color(smiley.eye_color)
-                .fill();
+        state
+            .draw
+            .circle(face_radius_px)
+            .position(face_center_px.x, face_center_px.y + state.ui_offset)
+            .color(smiley.face_color)
+            .fill();
 
-            // Draw mouth
-            let mouth_center_px = cell.to_px(smiley.mouth.center);
-            let mouth_radius_px = vec2(
-                cell.bounds.width * smiley.mouth.radius.x,
-                cell.bounds.height * smiley.mouth.radius.y,
-            );
+        // Draw left eye with UI offset
+        let left_eye_center_px = cell.to_px(smiley.left_eye.center);
+        let left_eye_radius_px = vec2(
+            cell.bounds.width * smiley.left_eye.radius.x,
+            cell.bounds.height * smiley.left_eye.radius.y,
+        );
 
-            state
-                .draw
-                .ellipse(
-                    (mouth_center_px.x, mouth_center_px.y),
-                    (mouth_radius_px.x, mouth_radius_px.y),
-                )
-                .color(smiley.mouth_color)
-                .fill();
-        }
+        state
+            .draw
+            .ellipse(
+                (left_eye_center_px.x, left_eye_center_px.y + state.ui_offset),
+                (left_eye_radius_px.x, left_eye_radius_px.y),
+            )
+            .color(smiley.eye_color)
+            .fill();
 
-        state.needs_redraw = false;
+        // Draw right eye with UI offset
+        let right_eye_center_px = cell.to_px(smiley.right_eye.center);
+        let right_eye_radius_px = vec2(
+            cell.bounds.width * smiley.right_eye.radius.x,
+            cell.bounds.height * smiley.right_eye.radius.y,
+        );
+
+        state
+            .draw
+            .ellipse(
+                (
+                    right_eye_center_px.x,
+                    right_eye_center_px.y + state.ui_offset,
+                ),
+                (right_eye_radius_px.x, right_eye_radius_px.y),
+            )
+            .color(smiley.eye_color)
+            .fill();
+
+        // Draw mouth with UI offset
+        let mouth_center_px = cell.to_px(smiley.mouth.center);
+        let mouth_radius_px = vec2(
+            cell.bounds.width * smiley.mouth.radius.x,
+            cell.bounds.height * smiley.mouth.radius.y,
+        );
+
+        state
+            .draw
+            .ellipse(
+                (mouth_center_px.x, mouth_center_px.y + state.ui_offset),
+                (mouth_radius_px.x, mouth_radius_px.y),
+            )
+            .color(smiley.mouth_color)
+            .fill();
     }
 
     if state.capture_next_draw {
         // Use 2x supersampling for better antialiasing in captures
         let supersample_factor = 2.0;
-        let bg_color = state.grid.cells().next().map(|c| c.data.bg_color).unwrap_or(Color::BLACK);
+        let bg_color = state
+            .grid
+            .cells()
+            .next()
+            .map(|c| c.data.bg_color)
+            .unwrap_or(Color::BLACK);
         let mut capture = CapturingTexture::new_with_supersample(
             gfx,
-            &state.work_size,
+            &state.grid_work_size,
             bg_color,
             format!("renders/smiley_gen/{}", state.current_seed),
             0.0,
@@ -372,15 +418,38 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     }
 
     if state.show_grid {
-        state
-            .grid
-            .draw_overlay(&mut state.draw, Color::GREEN, GRID_STROKE);
+        // Draw grid overlay with UI offset
+        let grid_color = Color::GREEN;
 
-        // When grid is enabled, we always redraw to ensure reactivity to grid controls
-        state.needs_redraw = true;
+        // Draw vertical lines
+        for col in 0..=state.grid.cols() {
+            let x = col as f32 * state.grid.cell_width();
+            state
+                .draw
+                .path()
+                .move_to(x, state.ui_offset)
+                .line_to(x, state.grid_work_size.y + state.ui_offset)
+                .stroke_color(grid_color)
+                .stroke(GRID_STROKE);
+        }
+
+        // Draw horizontal lines
+        for row in 0..=state.grid.rows() {
+            let y = row as f32 * state.grid.cell_height() + state.ui_offset;
+            state
+                .draw
+                .path()
+                .move_to(0.0, y)
+                .line_to(state.grid_work_size.x, y)
+                .stroke_color(grid_color)
+                .stroke(GRID_STROKE);
+        }
     }
 
     gfx.render(&state.draw);
+
+    // Render the UI output we created earlier
+    gfx.render(&ui_output);
 }
 
 #[notan_main]
@@ -404,6 +473,7 @@ fn main() -> Result<(), String> {
         .add_config(log::LogConfig::debug())
         .add_config(win_config)
         .add_config(DrawConfig)
+        .add_config(EguiConfig)
         .update(update)
         .draw(draw)
         .build()

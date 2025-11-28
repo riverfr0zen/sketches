@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Code Formatting Requirement
+
+**CRITICAL**: After editing any Rust files, always format the code using nightly rustfmt:
+
+```bash
+cargo +nightly fmt
+```
+
+This applies the unstable formatting features defined in `.rustfmt.toml` (max_width=100, blank_lines_upper_bound=2), matching the rust-analyzer configuration in `sketches.code-workspace`.
+
+## Documentation Structure
+
 Documentation has been split into focused files for better context management. See the `claude_docs/` directory for detailed information:
 
 ## General Information

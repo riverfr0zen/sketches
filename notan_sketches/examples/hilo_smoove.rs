@@ -7,11 +7,11 @@ use notan_sketches::colors::Palettes;
 use notan_sketches::colors::PalettesSelection;
 use notan_sketches::enums;
 use notan_sketches::mathutils::mid;
-use notan_sketches::shaderutils::{CommonData, ShaderRenderTexture};
-#[cfg(debug_assertions)]
-use notan_sketches::shaderutils::{create_hot_shape_pipeline, ShaderReloadManager};
 #[cfg(not(debug_assertions))]
 use notan_sketches::shaderutils::create_shape_pipeline;
+#[cfg(debug_assertions)]
+use notan_sketches::shaderutils::{create_hot_shape_pipeline, ShaderReloadManager};
+use notan_sketches::shaderutils::{CommonData, ShaderRenderTexture};
 use notan_sketches::utils::{
     get_common_win_config, get_draw_setup, get_rng, get_work_size_for_screen, set_html_bgcolor,
     ScreenDimensions,
@@ -70,13 +70,19 @@ const CURVE_SAMPLES: usize = 32;
 #[derive(Copy, Clone)]
 struct CurveData {
     // Using 8 separate Vec4s instead of an array to avoid std140 limitations
-    s0: Vec4, s1: Vec4, s2: Vec4, s3: Vec4,
-    s4: Vec4, s5: Vec4, s6: Vec4, s7: Vec4,
-    strip_y: f32,                    // Base Y position of the strip
-    strip_height: f32,               // Height of the strip
-    num_samples: f32,                // Number of valid samples
-    _padding: f32,                   // Alignment padding
-    bg_color: Vec4,                  // Background color of the strip (rgba)
+    s0: Vec4,
+    s1: Vec4,
+    s2: Vec4,
+    s3: Vec4,
+    s4: Vec4,
+    s5: Vec4,
+    s6: Vec4,
+    s7: Vec4,
+    strip_y: f32,      // Base Y position of the strip
+    strip_height: f32, // Height of the strip
+    num_samples: f32,  // Number of valid samples
+    _padding: f32,     // Alignment padding
+    bg_color: Vec4,    // Background color of the strip (rgba)
 }
 
 #[derive(Debug)]
@@ -182,7 +188,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     let shader_pipeline = create_shape_pipeline(gfx, Some(&FRAG)).unwrap();
     #[cfg(debug_assertions)]
     let shader_pipeline =
-        create_hot_shape_pipeline(gfx, "examples/assets/shaders/horizontal_city.frag.glsl").unwrap();
+        create_hot_shape_pipeline(gfx, "examples/assets/shaders/horizontal_city.frag.glsl")
+            .unwrap();
 
     let shader_ubo = gfx
         .create_uniform_buffer(1, "Common")
@@ -234,12 +241,22 @@ fn add_strip(state: &mut State, gfx: &mut Graphics) {
     let use_shader = state.rng.gen_bool(0.3); // 30% chance of using shader
     let (shader_rt, shader_curve_ubo) = if use_shader {
         log::debug!("Strip at y={} will use shader", state.cursor.y);
-        let rt = Some(ShaderRenderTexture::new(gfx, state.work_size.x, state.work_size.y));
+        let rt = Some(ShaderRenderTexture::new(
+            gfx,
+            state.work_size.x,
+            state.work_size.y,
+        ));
         let curve_ubo = Some(
             gfx.create_uniform_buffer(2, "CurveData")
                 .with_data(&CurveData {
-                    s0: Vec4::ZERO, s1: Vec4::ZERO, s2: Vec4::ZERO, s3: Vec4::ZERO,
-                    s4: Vec4::ZERO, s5: Vec4::ZERO, s6: Vec4::ZERO, s7: Vec4::ZERO,
+                    s0: Vec4::ZERO,
+                    s1: Vec4::ZERO,
+                    s2: Vec4::ZERO,
+                    s3: Vec4::ZERO,
+                    s4: Vec4::ZERO,
+                    s5: Vec4::ZERO,
+                    s6: Vec4::ZERO,
+                    s7: Vec4::ZERO,
                     strip_y: 0.0,
                     strip_height: 0.0,
                     num_samples: CURVE_SAMPLES as f32,
@@ -518,19 +535,17 @@ fn sample_curve(strip: &Strip, work_size: Vec2, strip_height: f32) -> CurveData 
                     let mt2 = mt * mt;
                     let mt3 = mt2 * mt;
 
-                    y = mt3 * seg.from.y +
-                        3.0 * mt2 * t * seg.ctrl.y +
-                        3.0 * mt * t2 * seg.ctrl2.y +
-                        t3 * seg.to.y;
+                    y = mt3 * seg.from.y
+                        + 3.0 * mt2 * t * seg.ctrl.y
+                        + 3.0 * mt * t2 * seg.ctrl2.y
+                        + t3 * seg.to.y;
                 } else {
                     // Quadratic bezier formula: (1-t)^2 * P0 + 2(1-t) * t * P1 + t^2 * P2
                     let t2 = t * t;
                     let mt = 1.0 - t;
                     let mt2 = mt * mt;
 
-                    y = mt2 * seg.from.y +
-                        2.0 * mt * t * seg.ctrl.y +
-                        t2 * seg.to.y;
+                    y = mt2 * seg.from.y + 2.0 * mt * t * seg.ctrl.y + t2 * seg.to.y;
                 }
                 break;
             }

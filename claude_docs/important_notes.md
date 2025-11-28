@@ -1,5 +1,16 @@
 # Important Notes
 
+## Code Formatting
+
+**IMPORTANT**: All Rust code edits must be formatted using nightly rustfmt.
+
+After editing any Rust files, always run:
+```bash
+cargo +nightly fmt
+```
+
+This applies the unstable formatting features defined in `.rustfmt.toml` (max_width=100, blank_lines_upper_bound=2), matching the rust-analyzer configuration in `sketches.code-workspace`.
+
 ## Notan Version Synchronization
 
 When updating Notan, **always update both** `notan_sketches` and `notan_touchy` packages to the same version to avoid incompatibilities.

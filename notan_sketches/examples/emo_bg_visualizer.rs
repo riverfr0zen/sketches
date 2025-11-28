@@ -137,9 +137,10 @@ fn configure_egui_fonts(title_font_bytes: &'static [u8]) -> FontDefinitions {
     // Install my own font (maybe supporting non-latin characters).
     // .ttf and .otf files supported.
     let bytes = title_font_bytes.clone();
-    egui_fonts
-        .font_data
-        .insert("my_font".to_owned(), std::sync::Arc::new(egui::FontData::from_static(&bytes)));
+    egui_fonts.font_data.insert(
+        "my_font".to_owned(),
+        std::sync::Arc::new(egui::FontData::from_static(&bytes)),
+    );
 
     // Put my font first (highest priority) for proportional text:
     egui_fonts
@@ -578,7 +579,11 @@ fn draw_analysis_panel(ctx: &egui::Context, state: &mut State, work_size: Vec2) 
             .default_pos(egui::Pos2::new(work_size.x, 0.0))
             .default_width(work_size.x * 0.2)
             .collapsible(false)
-            .frame(egui::Frame::NONE.fill(panel_color).inner_margin(panel_inner_margin))
+            .frame(
+                egui::Frame::NONE
+                    .fill(panel_color)
+                    .inner_margin(panel_inner_margin),
+            )
             .show(ctx, |ui| {
                 state.visualizer.egui_metrics(ui, &analysis_panel_title);
             });
@@ -616,10 +621,9 @@ fn draw_with_main_panel<F>(
             // ui.vertical_centered(|ui| {
             ui.vertical(|ui| {
                 let heading_frame_margin = work_size.y * 0.02;
-                let heading_frame =
-                    egui::Frame::NONE
-                        .fill(ui_fill)
-                        .inner_margin(egui::Vec2::new(0.0, heading_frame_margin));
+                let heading_frame = egui::Frame::NONE
+                    .fill(ui_fill)
+                    .inner_margin(egui::Vec2::new(0.0, heading_frame_margin));
                 heading_frame.show(ui, |ui| {
                     let logo_text = RichText::new("emo bg visualizer").text_style(logo());
 
@@ -676,10 +680,9 @@ fn draw_settings_view(
             // |ctx, ui, state, work_size| {
             |_, ui, state, _| {
                 let margin = work_size.y * 0.02;
-                let mut heading_frame =
-                    egui::Frame::NONE
-                        .fill(ui_fill)
-                        .inner_margin(egui::Vec2::new(0.0, margin));
+                let mut heading_frame = egui::Frame::NONE
+                    .fill(ui_fill)
+                    .inner_margin(egui::Vec2::new(0.0, margin));
 
                 heading_frame.show(ui, |ui| {
                     ui.heading("General Options");
@@ -743,10 +746,9 @@ fn draw_home_view(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State, 
             // &draw_public_domain_menu_items,
             |ctx, ui, state, work_size| {
                 let heading_frame_margin = work_size.y * 0.01;
-                let heading_frame =
-                    egui::Frame::NONE
-                        .fill(ui_fill)
-                        .inner_margin(egui::Vec2::new(0.0, heading_frame_margin));
+                let heading_frame = egui::Frame::NONE
+                    .fill(ui_fill)
+                    .inner_margin(egui::Vec2::new(0.0, heading_frame_margin));
 
                 // ui.separator();
                 heading_frame.show(ui, |ui| {
