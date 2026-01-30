@@ -29,12 +29,12 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     // let ctrl = mid(from, to);
 
     let from = vec2(
-        rng.gen_range(0.0..work_size.x),
-        rng.gen_range(0.0..work_size.y),
+        rng.random_range(0.0..work_size.x),
+        rng.random_range(0.0..work_size.y),
     );
     let to = vec2(
-        rng.gen_range(0.0..work_size.x),
-        rng.gen_range(0.0..work_size.y),
+        rng.random_range(0.0..work_size.x),
+        rng.random_range(0.0..work_size.y),
     );
 
     State {
@@ -51,10 +51,10 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
     let ctrl = vec2(
         state
             .rng
-            .gen_range(state.from.x.min(state.to.x)..state.from.x.max(state.to.x)),
+            .random_range(state.from.x.min(state.to.x)..state.from.x.max(state.to.x)),
         state
             .rng
-            .gen_range(state.from.y.min(state.to.y)..state.from.y.max(state.to.y)),
+            .random_range(state.from.y.min(state.to.y)..state.from.y.max(state.to.y)),
     );
     draw.path()
         .move_to(state.from.x, state.from.y)

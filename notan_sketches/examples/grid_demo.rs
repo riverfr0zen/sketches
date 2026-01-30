@@ -53,15 +53,15 @@ fn generate_cell_data(
     // The grid utilities will handle conversion to pixels automatically
 
     let circle_pos = vec2(
-        rng.gen_range(0.2..0.8), // Keep away from edges
-        rng.gen_range(0.2..0.8),
+        rng.random_range(0.2..0.8), // Keep away from edges
+        rng.random_range(0.2..0.8),
     );
 
-    let rect_pos = vec2(rng.gen_range(0.1..0.9), rng.gen_range(0.1..0.9));
+    let rect_pos = vec2(rng.random_range(0.1..0.9), rng.random_range(0.1..0.9));
 
     let rect_size = vec2(
-        rng.gen_range(0.2..0.5), // 20-50% of cell width
-        rng.gen_range(0.2..0.5), // 20-50% of cell height
+        rng.random_range(0.2..0.5), // 20-50% of cell width
+        rng.random_range(0.2..0.5), // 20-50% of cell height
     );
 
     let circle_color = colors::Palettes::choose_color(palette);
@@ -86,7 +86,7 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Work size: {:?}", work_size);
 
     // Choose a color palette
-    let palette: PalettesSelection = rng.gen();
+    let palette: PalettesSelection = rng.random();
     log::info!("Palette: {:?}", palette);
 
     // Create grid using the builder pattern
@@ -110,13 +110,13 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
 fn update(app: &mut App, state: &mut State) {
     // R key - regenerate everything with new palette
-    if app.keyboard.was_pressed(KeyCode::R) {
-        let new_seed = state.rng.gen();
+    if app.keyboard.was_pressed(KeyCode::KeyR) {
+        let new_seed = state.rng.random();
         state.rng.reseed(new_seed);
         log::info!("New seed: {}", new_seed);
 
         // Choose new palette
-        state.palette = state.rng.gen();
+        state.palette = state.rng.random();
         log::info!("Palette: {:?}", state.palette);
 
         // Regenerate all cell data with ONE method call!
@@ -129,7 +129,7 @@ fn update(app: &mut App, state: &mut State) {
     }
 
     // G key - toggle grid overlay
-    if app.keyboard.was_pressed(KeyCode::G) {
+    if app.keyboard.was_pressed(KeyCode::KeyG) {
         state.show_grid = !state.show_grid;
         log::debug!("Grid overlay: {}", state.show_grid);
     }

@@ -121,7 +121,7 @@ fn spawn_body_segment(state: &mut State) {
 
     state.cp_spawned_segs.push(BodySegment {
         // color: Color::YELLOW,
-        color: state.cp_colors[state.rng.gen_range(0..state.cp_colors.len())],
+        color: state.cp_colors[state.rng.random_range(0..state.cp_colors.len())],
         pos: state.cp_head_pos,
         direction: state.cp_direction,
     });

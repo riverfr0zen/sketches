@@ -47,10 +47,10 @@ fn vary_color(color: Color, rng: &mut Random) -> Color {
     let mut hsv = Hsv::from_color(srgb);
 
     // Randomly darken or lighten
-    if rng.gen_bool(0.5) {
-        hsv = hsv.darken(rng.gen_range(0.0..DARKEN_MAX));
+    if rng.random_bool(0.5) {
+        hsv = hsv.darken(rng.random_range(0.0..DARKEN_MAX));
     } else {
-        hsv = hsv.lighten(rng.gen_range(0.0..LIGHTEN_MAX));
+        hsv = hsv.lighten(rng.random_range(0.0..LIGHTEN_MAX));
     }
 
     let result = Srgb::from_color(hsv);
@@ -97,13 +97,13 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Circle radius: {}", circle_radius);
 
     // Choose a random palette for circles
-    let palette: PalettesSelection = rng.gen();
+    let palette: PalettesSelection = rng.random();
     log::info!("Circle Palette: {:?}", palette);
 
     // Choose a different palette for backgrounds
-    let mut bg_palette: PalettesSelection = rng.gen();
+    let mut bg_palette: PalettesSelection = rng.random();
     while format!("{:?}", bg_palette) == format!("{:?}", palette) {
-        bg_palette = rng.gen();
+        bg_palette = rng.random();
     }
     log::info!("Background Palette: {:?}", bg_palette);
 
@@ -116,8 +116,8 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
     for _ in 0..(ROWS * COLS) {
         circle_positions.push(vec2(
-            rng.gen_range(circle_radius..(tile_width - circle_radius)),
-            rng.gen_range(circle_radius..(tile_height - circle_radius)),
+            rng.random_range(circle_radius..(tile_width - circle_radius)),
+            rng.random_range(circle_radius..(tile_height - circle_radius)),
         ));
         let parent_color = colors::Palettes::choose_color(&palette);
         circle_colors.push(parent_color);
@@ -127,11 +127,11 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
         tile_bg_colors.push(bg_color);
 
         // Generate child circles for this parent
-        let num_children = rng.gen_range(0..=MAX_CHILD_CIRCLES);
+        let num_children = rng.random_range(0..=MAX_CHILD_CIRCLES);
         let mut children = Vec::new();
         for _ in 0..num_children {
-            let angle = rng.gen_range(0.0..(2.0 * PI));
-            let child_radius = rng.gen_range(
+            let angle = rng.random_range(0.0..(2.0 * PI));
+            let child_radius = rng.random_range(
                 (circle_radius * CHILD_RADIUS_MOD_MIN)..(circle_radius * CHILD_RADIUS_MOD_MAX),
             );
             let child_color = vary_color(parent_color, &mut rng);
@@ -216,20 +216,20 @@ fn update(app: &mut App, state: &mut State) {
     #[cfg(debug_assertions)]
     state.hot_mgr.update();
 
-    if app.keyboard.was_pressed(KeyCode::R) {
+    if app.keyboard.was_pressed(KeyCode::KeyR) {
         // Reseed the RNG with a new random seed
-        let new_seed = state.rng.gen();
+        let new_seed = state.rng.random();
         state.rng.reseed(new_seed);
         log::info!("New seed: {}", new_seed);
 
         // Choose a new random palette for circles
-        state.palette = state.rng.gen();
+        state.palette = state.rng.random();
         log::info!("Circle Palette: {:?}", state.palette);
 
         // Choose a different palette for backgrounds
-        state.bg_palette = state.rng.gen();
+        state.bg_palette = state.rng.random();
         while format!("{:?}", state.bg_palette) == format!("{:?}", state.palette) {
-            state.bg_palette = state.rng.gen();
+            state.bg_palette = state.rng.random();
         }
         log::info!("Background Palette: {:?}", state.bg_palette);
 
@@ -243,10 +243,10 @@ fn update(app: &mut App, state: &mut State) {
             state.circle_positions.push(vec2(
                 state
                     .rng
-                    .gen_range(state.circle_radius..(state.tile_width - state.circle_radius)),
+                    .random_range(state.circle_radius..(state.tile_width - state.circle_radius)),
                 state
                     .rng
-                    .gen_range(state.circle_radius..(state.tile_height - state.circle_radius)),
+                    .random_range(state.circle_radius..(state.tile_height - state.circle_radius)),
             ));
             let parent_color = colors::Palettes::choose_color(&state.palette);
             state.circle_colors.push(parent_color);
@@ -256,13 +256,13 @@ fn update(app: &mut App, state: &mut State) {
             state.tile_bg_colors.push(bg_color);
 
             // Generate child circles for this parent
-            let num_children = state.rng.gen_range(0..=MAX_CHILD_CIRCLES);
+            let num_children = state.rng.random_range(0..=MAX_CHILD_CIRCLES);
             let mut children = Vec::new();
             for _ in 0..num_children {
-                let angle = state.rng.gen_range(0.0..(2.0 * PI));
+                let angle = state.rng.random_range(0.0..(2.0 * PI));
                 let child_radius = state
                     .rng
-                    .gen_range((state.circle_radius / 8.0)..(state.circle_radius / 3.0));
+                    .random_range((state.circle_radius / 8.0)..(state.circle_radius / 3.0));
                 let child_color = vary_color(parent_color, &mut state.rng);
                 children.push(ChildCircle {
                     angle,
@@ -277,7 +277,7 @@ fn update(app: &mut App, state: &mut State) {
         state.tile_colors_dirty = true;
     }
 
-    if app.keyboard.was_pressed(KeyCode::G) {
+    if app.keyboard.was_pressed(KeyCode::KeyG) {
         state.show_grid = !state.show_grid;
         log::debug!("Grid toggled: {}", state.show_grid);
     }

@@ -120,7 +120,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 //         let building_width = if remaining_space > BUILDING_MAX_WIDTH {
 //             state
 //                 .rng
-//                 .gen_range(state.building_spec.min_width..state.building_spec.max_width)
+//                 .random_range(state.building_spec.min_width..state.building_spec.max_width)
 //         } else {
 //             // It should correctly be `remaining_space`, but iirc there used to be
 //             // some kind of error before. Re-instate BUILDING_MAX_WIDTH if error recurrs.
@@ -128,7 +128,7 @@ fn draw(app: &mut App, gfx: &mut Graphics, state: &mut State) {
 //             remaining_space
 //         };
 //         let building_height = 200.0;
-//         // let building_height = rng.gen_range(building_min_height..building_max_height);
+//         // let building_height = rng.random_range(building_min_height..building_max_height);
 //         log::debug!("{} {}", building_width, building_height);
 //     }
 // }

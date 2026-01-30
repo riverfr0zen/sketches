@@ -253,17 +253,17 @@ fn update_read_view(app: &mut App, state: &mut State) {
         state.goto_read_end();
     }
 
-    if app.keyboard.was_pressed(KeyCode::Left) {
+    if app.keyboard.was_pressed(KeyCode::ArrowLeft) {
         log::debug!("left");
         state.goto_read_prev();
     }
 
-    if app.keyboard.was_pressed(KeyCode::Right) {
+    if app.keyboard.was_pressed(KeyCode::ArrowRight) {
         log::debug!("right");
         state.goto_read_next();
     }
 
-    if app.keyboard.was_pressed(KeyCode::A) {
+    if app.keyboard.was_pressed(KeyCode::KeyA) {
         log::debug!("a");
         state.show_analysis = !state.show_analysis;
     }
@@ -299,7 +299,7 @@ fn handle_read_view_touch_events(app: &mut App, state: &mut State, evt: Event) {
 }
 
 fn update(app: &mut App, state: &mut State) {
-    if app.keyboard.was_pressed(KeyCode::M) {
+    if app.keyboard.was_pressed(KeyCode::KeyM) {
         log::debug!("m");
         state.goto_home_view();
     }

@@ -136,7 +136,7 @@ impl<T> GridBuilder<T> {
     /// let grid = Grid::builder(10, 10, work_size)
     ///     .with_cell_data(|row, col, bounds, rng| {
     ///         CellData {
-    ///             position: vec2(rng.gen_range(0.0..1.0), rng.gen_range(0.0..1.0)),
+    ///             position: vec2(rng.random_range(0.0..1.0), rng.random_range(0.0..1.0)),
     ///             color: palette.choose(rng),
     ///         }
     ///     })
@@ -477,7 +477,7 @@ impl<T> Grid<T> {
     /// ```ignore
     /// grid.regenerate_cells(&mut rng, |row, col, bounds, rng| {
     ///     CellData {
-    ///         position: vec2(rng.gen_range(0.0..1.0), rng.gen_range(0.0..1.0)),
+    ///         position: vec2(rng.random_range(0.0..1.0), rng.random_range(0.0..1.0)),
     ///         color: palette.choose(rng),
     ///     }
     /// });

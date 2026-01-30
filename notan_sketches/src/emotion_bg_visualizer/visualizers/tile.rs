@@ -90,28 +90,28 @@ fn get_sentiment_enhanced_color(
     hsv_color = match emocolor.sentiment {
         Sentiment::POSITIVE => {
             if positive_sentiment > 0.0 {
-                hsv_color.lighten(rng.gen_range(0.0..(positive_sentiment * VALUE_MODIFIER)))
+                hsv_color.lighten(rng.random_range(0.0..(positive_sentiment * VALUE_MODIFIER)))
             } else {
                 // In some cases, with nrclex, it seems the sentiment score can be zero even if the
                 // emotion is associated to a sentiment. In such cases, use a very minimal range.
                 //
                 // @TODO: Investigate whether there is a bug/error in the emocat nrclex adapter
-                hsv_color.lighten(rng.gen_range(0.0..(MINIMAL_ENHANCEMENT * VALUE_MODIFIER)))
+                hsv_color.lighten(rng.random_range(0.0..(MINIMAL_ENHANCEMENT * VALUE_MODIFIER)))
             }
         }
         Sentiment::NEGATIVE => {
             if negative_sentiment > 0.0 {
-                hsv_color.darken(rng.gen_range(0.0..(negative_sentiment * VALUE_MODIFIER)))
+                hsv_color.darken(rng.random_range(0.0..(negative_sentiment * VALUE_MODIFIER)))
             } else {
                 // See comment in positive sentiment arm above
-                hsv_color.darken(rng.gen_range(0.0..(MINIMAL_ENHANCEMENT * VALUE_MODIFIER)))
+                hsv_color.darken(rng.random_range(0.0..(MINIMAL_ENHANCEMENT * VALUE_MODIFIER)))
             }
         }
         _ => {
             if positive_sentiment > negative_sentiment {
-                hsv_color.lighten(rng.gen_range(0.0..(positive_sentiment * VALUE_MODIFIER)))
+                hsv_color.lighten(rng.random_range(0.0..(positive_sentiment * VALUE_MODIFIER)))
             } else if negative_sentiment > positive_sentiment {
-                hsv_color.darken(rng.gen_range(0.0..(negative_sentiment * VALUE_MODIFIER)))
+                hsv_color.darken(rng.random_range(0.0..(negative_sentiment * VALUE_MODIFIER)))
             } else {
                 hsv_color
             }
@@ -184,7 +184,7 @@ impl TilesVisualizer {
                         if first_row_len == 1 {
                             transition_clone = self.layout.reprs[0][0].clone();
                         } else {
-                            let selection = self.rng.gen_range(0..first_row_len);
+                            let selection = self.rng.random_range(0..first_row_len);
                             transition_clone = self.layout.reprs[0][selection].clone();
                         }
                         self.layout.reprs[row].push(transition_clone);
@@ -213,9 +213,9 @@ impl TilesVisualizer {
             if self.tiles.len() > MAX_COLS {
                 self.layout.cols = self.tiles.len();
             } else {
-                self.layout.cols = self.rng.gen_range(self.tiles.len()..=MAX_COLS);
+                self.layout.cols = self.rng.random_range(self.tiles.len()..=MAX_COLS);
             }
-            self.layout.rows = self.rng.gen_range(1..=MAX_ROWS);
+            self.layout.rows = self.rng.random_range(1..=MAX_ROWS);
             self.layout.tile_size = vec2(
                 draw.width() / self.layout.cols as f32,
                 draw.height() / self.layout.rows as f32,
@@ -247,7 +247,7 @@ impl TilesVisualizer {
                 } else {
                     let lucky_tile;
                     if self.tiles.len() > 1 {
-                        lucky_tile = self.rng.gen_range(0..self.tiles.len());
+                        lucky_tile = self.rng.random_range(0..self.tiles.len());
                     } else {
                         lucky_tile = 0;
                     }

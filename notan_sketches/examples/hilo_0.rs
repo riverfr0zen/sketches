@@ -64,10 +64,10 @@ fn add_strip(state: &mut State) {
         let ctrl = vec2(
             state
                 .rng
-                .gen_range(state.cursor.x - state.seg_width..state.cursor.x),
+                .random_range(state.cursor.x - state.seg_width..state.cursor.x),
             state
                 .rng
-                .gen_range(state.cursor.y - y_displacement..state.cursor.y + y_displacement),
+                .random_range(state.cursor.y - y_displacement..state.cursor.y + y_displacement),
         );
         strip.push(Segment { from, to, ctrl });
     }
