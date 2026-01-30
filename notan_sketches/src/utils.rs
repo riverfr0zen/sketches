@@ -85,6 +85,10 @@ pub fn get_work_size_for_screen(app: &mut App, gfx: &mut Graphics) -> Vec2 {
     // container_size or window size from gfx.
     //
     // See: https://github.com/Nazariglez/notan/issues/362
+    //
+    // Also see `examples/test_wayland_size.rs` to examine how size reporting works on Wayland.
+    // If you want to avoid this workaround, you can restructure your app to do all work_size
+    // related initialization in update() instead of init().
     if screen_width == 0 || screen_height == 0 {
         log::debug!("Screen size is (0, 0), attempting fallback to container_size");
         (screen_width, screen_height) = app.window().container_size();
