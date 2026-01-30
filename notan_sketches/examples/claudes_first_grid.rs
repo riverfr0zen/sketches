@@ -56,10 +56,10 @@ fn vary_color(color: Color, rng: &mut Random) -> Color {
     let srgb = Srgb::new(color.r, color.g, color.b);
     let mut hsv = Hsv::from_color(srgb);
 
-    if rng.gen_bool(0.5) {
-        hsv = hsv.darken(rng.gen_range(0.0..DARKEN_MAX));
+    if rng.random_bool(0.5) {
+        hsv = hsv.darken(rng.random_range(0.0..DARKEN_MAX));
     } else {
-        hsv = hsv.lighten(rng.gen_range(0.0..LIGHTEN_MAX));
+        hsv = hsv.lighten(rng.random_range(0.0..LIGHTEN_MAX));
     }
 
     let result = Srgb::from_color(hsv);
@@ -103,19 +103,19 @@ fn generate_cell_data(
     let margin_y = circle_radius / cell_height;
 
     let position = vec2(
-        rng.gen_range(margin_x..(1.0 - margin_x)),
-        rng.gen_range(margin_y..(1.0 - margin_y)),
+        rng.random_range(margin_x..(1.0 - margin_x)),
+        rng.random_range(margin_y..(1.0 - margin_y)),
     );
 
     let color = colors::Palettes::choose_color(palette);
     let bg_color = colors::Palettes::choose_color(bg_palette);
 
     // Generate child circles
-    let num_children = rng.gen_range(0..=MAX_CHILD_CIRCLES);
+    let num_children = rng.random_range(0..=MAX_CHILD_CIRCLES);
     let mut children = Vec::new();
     for _ in 0..num_children {
-        let angle = rng.gen_range(0.0..(2.0 * PI));
-        let child_radius = rng.gen_range(
+        let angle = rng.random_range(0.0..(2.0 * PI));
+        let child_radius = rng.random_range(
             (circle_radius * CHILD_RADIUS_MOD_MIN)..(circle_radius * CHILD_RADIUS_MOD_MAX),
         );
         let child_color = vary_color(color, rng);
@@ -147,12 +147,12 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Circle radius: {}", circle_radius);
 
     // Choose palettes
-    let palette: PalettesSelection = rng.gen();
+    let palette: PalettesSelection = rng.random();
     log::info!("Circle Palette: {:?}", palette);
 
-    let mut bg_palette: PalettesSelection = rng.gen();
+    let mut bg_palette: PalettesSelection = rng.random();
     while format!("{:?}", bg_palette) == format!("{:?}", palette) {
-        bg_palette = rng.gen();
+        bg_palette = rng.random();
     }
     log::info!("Background Palette: {:?}", bg_palette);
 
@@ -227,18 +227,18 @@ fn update(app: &mut App, state: &mut State) {
     #[cfg(debug_assertions)]
     state.hot_mgr.update();
 
-    if app.keyboard.was_pressed(KeyCode::R) {
-        let new_seed = state.rng.gen();
+    if app.keyboard.was_pressed(KeyCode::KeyR) {
+        let new_seed = state.rng.random();
         state.rng.reseed(new_seed);
         log::info!("New seed: {}", new_seed);
 
         // Choose new palettes
-        state.palette = state.rng.gen();
+        state.palette = state.rng.random();
         log::info!("Circle Palette: {:?}", state.palette);
 
-        state.bg_palette = state.rng.gen();
+        state.bg_palette = state.rng.random();
         while format!("{:?}", state.bg_palette) == format!("{:?}", state.palette) {
-            state.bg_palette = state.rng.gen();
+            state.bg_palette = state.rng.random();
         }
         log::info!("Background Palette: {:?}", state.bg_palette);
 
@@ -260,7 +260,7 @@ fn update(app: &mut App, state: &mut State) {
         state.tile_colors_dirty = true;
     }
 
-    if app.keyboard.was_pressed(KeyCode::G) {
+    if app.keyboard.was_pressed(KeyCode::KeyG) {
         state.show_grid = !state.show_grid;
         log::debug!("Grid toggled: {}", state.show_grid);
     }

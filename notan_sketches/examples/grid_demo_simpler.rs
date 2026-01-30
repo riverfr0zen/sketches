@@ -51,11 +51,11 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Work size: {:?}", work_size);
 
     // // Choose a color palette
-    let palette: PalettesSelection = rng.gen();
+    let palette: PalettesSelection = rng.random();
     log::info!("Palette: {:?}", palette);
 
-    let rows = rng.gen_range(1..MAX_ROWS);
-    let cols = rng.gen_range(1..MAX_COLS);
+    let rows = rng.random_range(1..MAX_ROWS);
+    let cols = rng.random_range(1..MAX_COLS);
 
     // Very simple grid with no cell data
     let grid = Grid::builder(rows, cols, work_size)
@@ -82,18 +82,18 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
 fn update(app: &mut App, state: &mut State) {
     // R key - redraw
-    if app.keyboard.was_pressed(KeyCode::R) {
-        let new_seed = state.rng.gen();
+    if app.keyboard.was_pressed(KeyCode::KeyR) {
+        let new_seed = state.rng.random();
         state.rng.reseed(new_seed);
         log::info!("New seed: {}", new_seed);
 
         // Choose new palette
-        state.palette = state.rng.gen();
+        state.palette = state.rng.random();
         log::info!("Palette: {:?}", state.palette);
 
         // Create a new grid with different size
-        let rows = state.rng.gen_range(1..MAX_ROWS);
-        let cols = state.rng.gen_range(1..MAX_COLS);
+        let rows = state.rng.random_range(1..MAX_ROWS);
+        let cols = state.rng.random_range(1..MAX_COLS);
 
         state.grid = Grid::builder(rows, cols, state.work_size)
             // .with_cell_data(|row, col, bounds, rng| generate_cell_data(row, col, bounds, rng, &palette))
@@ -107,7 +107,7 @@ fn update(app: &mut App, state: &mut State) {
     }
 
     // G key - toggle grid overlay
-    if app.keyboard.was_pressed(KeyCode::G) {
+    if app.keyboard.was_pressed(KeyCode::KeyG) {
         state.show_grid = !state.show_grid;
         log::debug!("Grid overlay: {}", state.show_grid);
     }
@@ -144,20 +144,20 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
         state.draw = get_draw_setup(gfx, state.work_size, false, Color::WHITE);
         for cell in state.grid.cells() {
             let a = cell.to_px(vec2(
-                state.rng.gen_range(0.25..0.5),
-                state.rng.gen_range(0.0..0.25),
+                state.rng.random_range(0.25..0.5),
+                state.rng.random_range(0.0..0.25),
             ));
             let b = cell.to_px(vec2(
-                state.rng.gen_range(0.0..0.25),
-                state.rng.gen_range(0.75..1.0),
+                state.rng.random_range(0.0..0.25),
+                state.rng.random_range(0.75..1.0),
             ));
             let c = cell.to_px(vec2(
-                state.rng.gen_range(0.75..1.0),
-                state.rng.gen_range(0.75..1.0),
+                state.rng.random_range(0.75..1.0),
+                state.rng.random_range(0.75..1.0),
             ));
 
             // Draw shadow first
-            let offset_amt = state.rng.gen_range(0.025..0.2);
+            let offset_amt = state.rng.random_range(0.025..0.2);
             let shadow_offset = cell.norm_size(vec2(offset_amt, offset_amt));
             state
                 .draw

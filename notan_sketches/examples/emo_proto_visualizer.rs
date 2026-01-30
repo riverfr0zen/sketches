@@ -114,7 +114,7 @@ fn update(app: &mut App, state: &mut State) {
             .update_model(&state.emodoc.analyses[state.analysis - 1]);
     }
 
-    if app.keyboard.was_pressed(KeyCode::Left) && state.analysis > 0 {
+    if app.keyboard.was_pressed(KeyCode::ArrowLeft) && state.analysis > 0 {
         log::debug!("left");
         state.analysis -= 1;
         if state.analysis > 0 {
@@ -128,7 +128,8 @@ fn update(app: &mut App, state: &mut State) {
         }
     }
 
-    if app.keyboard.was_pressed(KeyCode::Right) && state.analysis < state.emodoc.analyses.len() {
+    if app.keyboard.was_pressed(KeyCode::ArrowRight) && state.analysis < state.emodoc.analyses.len()
+    {
         log::debug!("right");
         state.analysis += 1;
         state

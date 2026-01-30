@@ -190,7 +190,7 @@ fn init() -> State {
 }
 
 fn update(app: &mut App, state: &mut State) {
-    if app.keyboard.was_pressed(KeyCode::X) {
+    if app.keyboard.was_pressed(KeyCode::KeyX) {
         log::debug!("State reset");
         // Reset everything except sim_mode
         let prev_mode = state.sim_mode;
@@ -198,17 +198,17 @@ fn update(app: &mut App, state: &mut State) {
         state.sim_mode = prev_mode;
     }
 
-    if app.keyboard.was_pressed(KeyCode::P) {
+    if app.keyboard.was_pressed(KeyCode::KeyP) {
         log::debug!("Simulation paused");
         state.sim_mode = SimulationMode::PAUSED;
     }
 
-    if app.keyboard.was_pressed(KeyCode::R) {
+    if app.keyboard.was_pressed(KeyCode::KeyR) {
         log::debug!("Simulation running");
         state.sim_mode = SimulationMode::RUNNING;
     }
 
-    if app.keyboard.was_pressed(KeyCode::S) {
+    if app.keyboard.was_pressed(KeyCode::KeyS) {
         log::debug!("Simulation stepping. Press 's' for next step.");
         state.sim_mode = SimulationMode::STEP;
     }

@@ -91,17 +91,17 @@ pub fn update(app: &mut App, state: &mut State) {
         // if app.keyboard.is_down(KeyCode::W) {
         //     state.y -= MOVE_SPEED * app.timer.delta_f32();
         // }
-        if app.keyboard.was_pressed(KeyCode::Up) {
+        if app.keyboard.was_pressed(KeyCode::ArrowUp) {
             state.max_depth += 1;
             log::debug!("state.max_depth increased: {}", state.max_depth);
         }
 
-        if app.keyboard.was_pressed(KeyCode::Down) && state.max_depth > 0 {
+        if app.keyboard.was_pressed(KeyCode::ArrowDown) && state.max_depth > 0 {
             state.max_depth -= 1;
             log::debug!("state.max_depth decreased: {}", state.max_depth);
         }
 
-        if app.keyboard.was_pressed(KeyCode::R) {
+        if app.keyboard.was_pressed(KeyCode::KeyR) {
             state.max_depth = 0;
             log::debug!("state.max_depth reset: {}", state.max_depth);
         }

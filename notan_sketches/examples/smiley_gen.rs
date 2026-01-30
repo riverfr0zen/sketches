@@ -67,13 +67,13 @@ fn ellipse_fits_in_circle(
 
 fn generate_round_eyes(rng: &mut Random) -> (Eye, Eye) {
     // Generate left eye
-    let eye_radius_x = rng.gen_range(0.01..0.09);
-    let eye_radius_y = rng.gen_range(0.01..0.09);
+    let eye_radius_x = rng.random_range(0.01..0.09);
+    let eye_radius_y = rng.random_range(0.01..0.09);
 
     // Left eye: position on left side of face (x < face_center.x)
     // Keep within a safer zone: face is 0.1-0.9, center at 0.5
-    let eye_x = rng.gen_range(0.25..0.5);
-    let eye_y = rng.gen_range(0.25..0.45);
+    let eye_x = rng.random_range(0.25..0.5);
+    let eye_y = rng.random_range(0.25..0.45);
 
     let left_eye = Eye {
         center: vec2(eye_x, eye_y),
@@ -82,12 +82,12 @@ fn generate_round_eyes(rng: &mut Random) -> (Eye, Eye) {
 
 
     // Generate right eye
-    let eye_radius_x = rng.gen_range(0.01..0.09);
-    let eye_radius_y = rng.gen_range(0.01..0.09);
+    let eye_radius_x = rng.random_range(0.01..0.09);
+    let eye_radius_y = rng.random_range(0.01..0.09);
 
     // Right eye: position on right side of face (x > face_center.x)
-    let eye_x = rng.gen_range(0.5..0.75);
-    let eye_y = rng.gen_range(0.25..0.45);
+    let eye_x = rng.random_range(0.5..0.75);
+    let eye_y = rng.random_range(0.25..0.45);
 
     let right_eye = Eye {
         center: vec2(eye_x, eye_y),
@@ -123,9 +123,9 @@ fn generate_smiley_data(
             };
         }
 
-        let mouth_radius_x = rng.gen_range(0.01..0.15);
-        let mouth_radius_y: f32 = rng.gen_range(0.01..0.15);
-        let mouth_y_offset = rng.gen_range(0.05..0.4);
+        let mouth_radius_x = rng.random_range(0.01..0.15);
+        let mouth_radius_y: f32 = rng.random_range(0.01..0.15);
+        let mouth_y_offset = rng.random_range(0.05..0.4);
         let mouth_y = face_center.y + mouth_y_offset;
 
         let mouth = Mouth {
@@ -196,10 +196,10 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Work size: {:?}", full_work_size);
 
     // Choose a color palette
-    let palette: PalettesSelection = rng.gen();
+    let palette: PalettesSelection = rng.random();
     log::info!("Palette: {:?}", palette);
 
-    let dimensional_count = rng.gen_range(1..MAX_DIMENSION);
+    let dimensional_count = rng.random_range(1..MAX_DIMENSION);
     let rows = dimensional_count;
     let cols = dimensional_count;
 
@@ -240,18 +240,18 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
 fn update(app: &mut App, state: &mut State) {
     // R key - redraw
-    if app.keyboard.was_pressed(KeyCode::R) {
-        let new_seed = state.rng.gen();
+    if app.keyboard.was_pressed(KeyCode::KeyR) {
+        let new_seed = state.rng.random();
         state.rng.reseed(new_seed);
         state.current_seed = new_seed;
         log::info!("New seed: {}", new_seed);
 
         // Choose new palette
-        state.palette = state.rng.gen();
+        state.palette = state.rng.random();
         log::info!("Palette: {:?}", state.palette);
 
         // Create a new grid with different size
-        let dimensional_count = state.rng.gen_range(1..MAX_DIMENSION);
+        let dimensional_count = state.rng.random_range(1..MAX_DIMENSION);
         let rows = dimensional_count;
         let cols = dimensional_count;
 
@@ -266,12 +266,12 @@ fn update(app: &mut App, state: &mut State) {
     }
 
     // C key - queue capture next draw
-    if app.keyboard.was_pressed(KeyCode::C) {
+    if app.keyboard.was_pressed(KeyCode::KeyC) {
         state.capture_next_draw = true;
     }
 
     // G key - toggle grid overlay
-    if app.keyboard.was_pressed(KeyCode::G) {
+    if app.keyboard.was_pressed(KeyCode::KeyG) {
         state.show_grid = !state.show_grid;
         log::debug!("Grid overlay: {}", state.show_grid);
     }

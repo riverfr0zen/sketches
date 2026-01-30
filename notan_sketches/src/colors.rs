@@ -1,8 +1,8 @@
 use notan::app::Color;
 use notan::random::rand::{
-    distributions::{Distribution, Standard},
-    prelude::SliceRandom,
-    thread_rng, Rng,
+    distr::{Distribution, StandardUniform},
+    prelude::IndexedRandom,
+    rng, Rng,
 };
 
 
@@ -52,10 +52,10 @@ pub enum PalettesSelection {
 // Usage example with Notan rng:
 // let palette: PalettesSelection = rng.gen();
 //
-impl Distribution<PalettesSelection> for Standard {
+impl Distribution<PalettesSelection> for StandardUniform {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> PalettesSelection {
-        // match rng.gen_range(0, 3) { // rand 0.5, 0.6, 0.7
-        match rng.gen_range(0..=6) {
+        // match rng.random_range(0, 3) { // rand 0.5, 0.6, 0.7
+        match rng.random_range(0..=6) {
             // rand 0.8
             0 => PalettesSelection::Neon,
             1 => PalettesSelection::PurpleFade,
@@ -80,42 +80,42 @@ pub struct Palettes {
 
 impl Palettes {
     fn generate_random() -> Vec<Color> {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         vec![
             Color::new(
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
                 1.0,
             ),
             Color::new(
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
                 1.0,
             ),
             Color::new(
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
                 1.0,
             ),
             Color::new(
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
                 1.0,
             ),
             Color::new(
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
                 1.0,
             ),
             Color::new(
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
-                rng.gen_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
+                rng.random_range(0.0..=1.0),
                 1.0,
             ),
         ]
@@ -188,7 +188,7 @@ impl Palettes {
             PalettesSelection::PartySoho => palettes.party_soho,
             PalettesSelection::StabiloBossPastel => palettes.stabilo_boss_pastel,
         };
-        let mut rng = thread_rng();
+        let mut rng = rng();
         if let Some(color) = palette.choose(&mut rng) {
             return *color;
         }

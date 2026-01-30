@@ -127,8 +127,8 @@ fn init(gfx: &mut Graphics) -> State {
 
 fn update_color(color: &mut ColorSource, time_since_init: f32, rng: &mut Random) {
     if time_since_init - color.created > UPDATE_STEP {
-        color.uniform.pos.x = rng.gen_range(0.0..1.0);
-        color.uniform.pos.y = rng.gen_range(0.0..1.0);
+        color.uniform.pos.x = rng.random_range(0.0..1.0);
+        color.uniform.pos.y = rng.random_range(0.0..1.0);
         color.created = time_since_init;
     }
 }

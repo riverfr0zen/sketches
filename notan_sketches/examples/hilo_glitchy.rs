@@ -72,12 +72,12 @@ impl GenSettings {
 
     fn randomize(rng: &mut Random, work_size: &Vec2) -> Self {
         // default = Self::default(&work_size)
-        let seg_width = rng.gen_range(SEG_WIDTH) * work_size.x;
-        let strip_interval = rng.gen_range(STRIP_INTERVAL) * work_size.y;
-        let strip_height = rng.gen_range(STRIP_HEIGHT) * work_size.y;
-        let displacement_pos_step = rng.gen_range(DISPLACEMENT_POS_STEP);
-        let displacement_range = rng.gen_range(DISPLACEMENT_RANGE);
-        let palette: PalettesSelection = rng.gen();
+        let seg_width = rng.random_range(SEG_WIDTH) * work_size.x;
+        let strip_interval = rng.random_range(STRIP_INTERVAL) * work_size.y;
+        let strip_height = rng.random_range(STRIP_HEIGHT) * work_size.y;
+        let displacement_pos_step = rng.random_range(DISPLACEMENT_POS_STEP);
+        let displacement_range = rng.random_range(DISPLACEMENT_RANGE);
+        let palette: PalettesSelection = rng.random();
 
         Self {
             seg_width,
@@ -131,7 +131,7 @@ fn add_strip(state: &mut State) {
     let color = colors::Palettes::choose_color(&state.gen.palette);
     let stroke_color = Srgb::new(color.r, color.g, color.b);
     let mut stroke_color = Hsv::from_color(stroke_color);
-    match state.rng.gen_bool(0.5) {
+    match state.rng.random_bool(0.5) {
         true => {
             // log::info!("darken");
             stroke_color = stroke_color.darken(0.5);
@@ -228,20 +228,20 @@ fn shuffle(state: &mut State) {
 }
 
 fn update(app: &mut App, state: &mut State) {
-    if app.keyboard.was_pressed(KeyCode::P) {
+    if app.keyboard.was_pressed(KeyCode::KeyP) {
         state.paused = !state.paused;
         log::debug!("pause toggled");
     }
 
-    if app.keyboard.was_pressed(KeyCode::R) {
+    if app.keyboard.was_pressed(KeyCode::KeyR) {
         shuffle(state);
     }
 
-    if app.keyboard.was_pressed(KeyCode::D) {
+    if app.keyboard.was_pressed(KeyCode::KeyD) {
         state.show_displacement_pos = !state.show_displacement_pos;
     }
 
-    if app.keyboard.was_pressed(KeyCode::S) {
+    if app.keyboard.was_pressed(KeyCode::KeyS) {
         state.auto_shuffle = !state.auto_shuffle;
     }
 
@@ -279,11 +279,11 @@ fn update_strip(
             // );
         }
         let middle = mid(seg.from, seg.to);
-        seg.ctrl.x = rng.gen_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
-        seg.ctrl.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+        seg.ctrl.x = rng.random_range(seg.from.x.min(middle.x)..seg.from.x.max(middle.x));
+        seg.ctrl.y = rng.random_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
 
-        seg.ctrl2.x = rng.gen_range(middle.x.min(seg.to.x)..middle.x.max(seg.to.x));
-        seg.ctrl2.y = rng.gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+        seg.ctrl2.x = rng.random_range(middle.x.min(seg.to.x)..middle.x.max(seg.to.x));
+        seg.ctrl2.y = rng.random_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
     }
 }
 

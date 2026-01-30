@@ -201,7 +201,7 @@ pub fn event(app: &mut App, state: &mut State, event: Event) {
 }
 
 pub fn update_common(app: &mut App, state: &mut State) {
-    if state.events_focus.has_focus() && app.keyboard.was_pressed(KeyCode::R) {
+    if state.events_focus.has_focus() && app.keyboard.was_pressed(KeyCode::KeyR) {
         state.freeze = false;
         log::debug!("Freeze released");
     }
@@ -219,7 +219,7 @@ pub fn update_anim(
     expansion_freq: f32,
     stable_time_mod: f32,
 ) {
-    if app.keyboard.was_pressed(KeyCode::R) {
+    if app.keyboard.was_pressed(KeyCode::KeyR) {
         state.freeze = false;
         log::debug!("Freeze released");
     }
@@ -287,7 +287,7 @@ pub fn draw_basic(
         for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * state.rand_step;
             for col in 0..state.cols {
-                let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                let rand_val = state.rng.random_range(-rand_sum..rand_sum);
                 let xpos = col as f32 * state.tile_size + state.hpadding + (rand_val * dampen);
                 let ypos = row as f32 * state.tile_size + state.vpadding + (rand_val * dampen);
                 // let xpos = col as f32 * state.tile_size + state.hpadding;
@@ -329,7 +329,7 @@ pub fn draw_solid(
         for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * (state.rand_step * 0.05);
             for col in 0..state.cols {
-                let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                let rand_val = state.rng.random_range(-rand_sum..rand_sum);
 
                 let xpos = col as f32 * state.tile_size + state.hpadding;
                 let ypos = row as f32 * state.tile_size + state.vpadding;
@@ -354,7 +354,7 @@ pub fn draw_solid(
         for row in 0..state.rows {
             rand_sum += (row + 1) as f32 * state.rand_step;
             for col in 0..state.cols {
-                let rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                let rand_val = state.rng.random_range(-rand_sum..rand_sum);
 
                 let mut xpos = col as f32 * state.tile_size + state.hpadding;
                 let mut ypos = row as f32 * state.tile_size + state.vpadding;
@@ -403,7 +403,7 @@ pub fn _draw_solid2(
             for col in 0..state.cols {
                 let mut rand_val = 0.0;
                 if rand_sum > 0.0 {
-                    rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                    rand_val = state.rng.random_range(-rand_sum..rand_sum);
                 }
 
                 let xpos = col as f32 * state.tile_size + state.hpadding;
@@ -431,7 +431,7 @@ pub fn _draw_solid2(
             for col in 0..state.cols {
                 let mut rand_val = 0.0;
                 if rand_sum > 0.0 {
-                    rand_val = state.rng.gen_range(-rand_sum..rand_sum);
+                    rand_val = state.rng.random_range(-rand_sum..rand_sum);
                 }
 
                 let mut xpos = col as f32 * state.tile_size + state.hpadding;

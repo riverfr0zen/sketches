@@ -476,7 +476,7 @@ pub fn get_rng(seed: Option<u64>) -> (Random, u64) {
     if let Some(seed) = seed {
         _seed = seed;
     } else {
-        _seed = rng.gen();
+        _seed = rng.random();
     }
     // log::debug!("seed: {}", _seed);
     rng.reseed(_seed);

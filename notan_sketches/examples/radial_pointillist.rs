@@ -105,7 +105,7 @@ enum SpawnStrategy {
 
 impl SpawnStrategy {
     fn random(rng: &mut Random) -> Self {
-        match rng.gen_range(0..5) {
+        match rng.random_range(0..5) {
             3 => Self::Random,
             4 => Self::RandomAnyChild,
             _ => Self::RandomChildOfNode,
@@ -135,7 +135,7 @@ enum RadialRangeStyle {
 
 impl RadialRangeStyle {
     fn random(rng: &mut Random) -> Self {
-        match rng.gen_range(0..=13) {
+        match rng.random_range(0..=13) {
             13 => Self::SwapSpawnSpawn2,
             12 => Self::SwapParentSpawn2,
             11 => Self::SwapParentSpawn,
@@ -154,7 +154,7 @@ impl RadialRangeStyle {
     }
 
     fn random_large(rng: &mut Random) -> Self {
-        match rng.gen_range(0..=8) {
+        match rng.random_range(0..=8) {
             8 => Self::SwapParentSpawn2,
             7 => Self::SwapParentSpawn,
             6 => Self::MediumLargeMedium,
@@ -168,7 +168,7 @@ impl RadialRangeStyle {
     }
 
     fn random_medium(rng: &mut Random) -> Self {
-        match rng.gen_range(0..=2) {
+        match rng.random_range(0..=2) {
             2 => Self::MediumLargeMedium,
             1 => Self::MediumSmallMedium,
             _ => Self::Medium,
@@ -176,7 +176,7 @@ impl RadialRangeStyle {
     }
 
     fn random_small(rng: &mut Random) -> Self {
-        match rng.gen_range(0..=2) {
+        match rng.random_range(0..=2) {
             2 => Self::MediumSmallSmall,
             1 => Self::SmallMediumSmall,
             _ => Self::Small,
@@ -259,79 +259,79 @@ impl Settings {
 
         let (parent_radius, spawn_radius, spawn2_radius) = match &radial_range_style {
             RadialRangeStyle::Small => (
-                work_size.x * rng.gen_range(PARENT_RADIUS_SMALL),
-                work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS_SMALL),
+                work_size.x * rng.random_range(PARENT_RADIUS_SMALL),
+                work_size.x * rng.random_range(SPAWN_RADIUS_SMALL),
+                work_size.x * rng.random_range(SPAWN2_RADIUS_SMALL),
             ),
             RadialRangeStyle::Large => (
-                work_size.x * rng.gen_range(PARENT_RADIUS_LARGE),
-                work_size.x * rng.gen_range(SPAWN_RADIUS_LARGE),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS_LARGE),
+                work_size.x * rng.random_range(PARENT_RADIUS_LARGE),
+                work_size.x * rng.random_range(SPAWN_RADIUS_LARGE),
+                work_size.x * rng.random_range(SPAWN2_RADIUS_LARGE),
             ),
             RadialRangeStyle::SmallToLarge => (
-                work_size.x * rng.gen_range(PARENT_RADIUS_SMALL),
-                work_size.x * rng.gen_range(SPAWN_RADIUS),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS_LARGE),
+                work_size.x * rng.random_range(PARENT_RADIUS_SMALL),
+                work_size.x * rng.random_range(SPAWN_RADIUS),
+                work_size.x * rng.random_range(SPAWN2_RADIUS_LARGE),
             ),
             RadialRangeStyle::LargeToSmall => (
-                work_size.x * rng.gen_range(PARENT_RADIUS_LARGE),
-                work_size.x * rng.gen_range(SPAWN_RADIUS),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS_SMALL),
+                work_size.x * rng.random_range(PARENT_RADIUS_LARGE),
+                work_size.x * rng.random_range(SPAWN_RADIUS),
+                work_size.x * rng.random_range(SPAWN2_RADIUS_SMALL),
             ),
             RadialRangeStyle::LargeSmallLarge => (
-                work_size.x * rng.gen_range(PARENT_RADIUS_LARGE),
-                work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS_LARGE),
+                work_size.x * rng.random_range(PARENT_RADIUS_LARGE),
+                work_size.x * rng.random_range(SPAWN_RADIUS_SMALL),
+                work_size.x * rng.random_range(SPAWN2_RADIUS_LARGE),
             ),
             RadialRangeStyle::SmallLargeSmall => (
-                work_size.x * rng.gen_range(PARENT_RADIUS_SMALL),
-                work_size.x * rng.gen_range(SPAWN_RADIUS_LARGE),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS_SMALL),
+                work_size.x * rng.random_range(PARENT_RADIUS_SMALL),
+                work_size.x * rng.random_range(SPAWN_RADIUS_LARGE),
+                work_size.x * rng.random_range(SPAWN2_RADIUS_SMALL),
             ),
             RadialRangeStyle::MediumLargeMedium => (
-                work_size.x * rng.gen_range(PARENT_RADIUS),
-                work_size.x * rng.gen_range(SPAWN_RADIUS_LARGE),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS),
+                work_size.x * rng.random_range(PARENT_RADIUS),
+                work_size.x * rng.random_range(SPAWN_RADIUS_LARGE),
+                work_size.x * rng.random_range(SPAWN2_RADIUS),
             ),
             RadialRangeStyle::LargeMediumLarge => (
-                work_size.x * rng.gen_range(PARENT_RADIUS_LARGE),
-                work_size.x * rng.gen_range(SPAWN_RADIUS),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS_LARGE),
+                work_size.x * rng.random_range(PARENT_RADIUS_LARGE),
+                work_size.x * rng.random_range(SPAWN_RADIUS),
+                work_size.x * rng.random_range(SPAWN2_RADIUS_LARGE),
             ),
             RadialRangeStyle::SmallMediumSmall => (
-                work_size.x * rng.gen_range(PARENT_RADIUS_SMALL),
-                work_size.x * rng.gen_range(SPAWN_RADIUS),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS_SMALL),
+                work_size.x * rng.random_range(PARENT_RADIUS_SMALL),
+                work_size.x * rng.random_range(SPAWN_RADIUS),
+                work_size.x * rng.random_range(SPAWN2_RADIUS_SMALL),
             ),
             RadialRangeStyle::MediumSmallMedium => (
-                work_size.x * rng.gen_range(PARENT_RADIUS),
-                work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS),
+                work_size.x * rng.random_range(PARENT_RADIUS),
+                work_size.x * rng.random_range(SPAWN_RADIUS_SMALL),
+                work_size.x * rng.random_range(SPAWN2_RADIUS),
             ),
             RadialRangeStyle::MediumSmallSmall => (
-                work_size.x * rng.gen_range(PARENT_RADIUS),
-                work_size.x * rng.gen_range(SPAWN_RADIUS_SMALL),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS_SMALL),
+                work_size.x * rng.random_range(PARENT_RADIUS),
+                work_size.x * rng.random_range(SPAWN_RADIUS_SMALL),
+                work_size.x * rng.random_range(SPAWN2_RADIUS_SMALL),
             ),
             RadialRangeStyle::SwapParentSpawn => (
-                work_size.x * rng.gen_range(SPAWN_RADIUS),
-                work_size.x * rng.gen_range(PARENT_RADIUS),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS),
+                work_size.x * rng.random_range(SPAWN_RADIUS),
+                work_size.x * rng.random_range(PARENT_RADIUS),
+                work_size.x * rng.random_range(SPAWN2_RADIUS),
             ),
             RadialRangeStyle::SwapParentSpawn2 => (
-                work_size.x * rng.gen_range(SPAWN2_RADIUS),
-                work_size.x * rng.gen_range(SPAWN_RADIUS),
-                work_size.x * rng.gen_range(PARENT_RADIUS),
+                work_size.x * rng.random_range(SPAWN2_RADIUS),
+                work_size.x * rng.random_range(SPAWN_RADIUS),
+                work_size.x * rng.random_range(PARENT_RADIUS),
             ),
             RadialRangeStyle::SwapSpawnSpawn2 => (
-                work_size.x * rng.gen_range(PARENT_RADIUS),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS),
-                work_size.x * rng.gen_range(SPAWN_RADIUS),
+                work_size.x * rng.random_range(PARENT_RADIUS),
+                work_size.x * rng.random_range(SPAWN2_RADIUS),
+                work_size.x * rng.random_range(SPAWN_RADIUS),
             ),
             _ => (
-                work_size.x * rng.gen_range(PARENT_RADIUS),
-                work_size.x * rng.gen_range(SPAWN_RADIUS),
-                work_size.x * rng.gen_range(SPAWN2_RADIUS),
+                work_size.x * rng.random_range(PARENT_RADIUS),
+                work_size.x * rng.random_range(SPAWN_RADIUS),
+                work_size.x * rng.random_range(SPAWN2_RADIUS),
             ),
         };
         (
@@ -346,22 +346,22 @@ impl Settings {
         // return Settings::default(work_size, brushes);
 
         let mut vary_spawn_distance = true;
-        if rng.gen_range(0..10) > 7 {
+        if rng.random_range(0..10) > 7 {
             vary_spawn_distance = false;
         }
 
-        let parent_brush = brushes[rng.gen_range(0..brushes.len())].clone();
-        let spawn_brush = brushes[rng.gen_range(0..brushes.len())].clone();
-        let spawn2_brush = brushes[rng.gen_range(0..brushes.len())].clone();
-        let use_assigned_brushes: bool = rng.gen();
+        let parent_brush = brushes[rng.random_range(0..brushes.len())].clone();
+        let spawn_brush = brushes[rng.random_range(0..brushes.len())].clone();
+        let spawn2_brush = brushes[rng.random_range(0..brushes.len())].clone();
+        let use_assigned_brushes: bool = rng.random();
 
         // let mut palette = PALETTE.to_vec();
-        // let parent_color = palette.remove(rng.gen_range(0..palette.len()));
-        // let spawn_color = palette.remove(rng.gen_range(0..palette.len()));
-        // let spawn2_color = palette.remove(rng.gen_range(0..palette.len()));
+        // let parent_color = palette.remove(rng.random_range(0..palette.len()));
+        // let spawn_color = palette.remove(rng.random_range(0..palette.len()));
+        // let spawn2_color = palette.remove(rng.random_range(0..palette.len()));
 
         let (parent_color, spawn_color, spawn2_color) = Settings::choose_colors(rng);
-        let color_change_chance = rng.gen_range(COLOR_CHANGE_CHANCE_RANGE);
+        let color_change_chance = rng.random_range(COLOR_CHANGE_CHANCE_RANGE);
 
         let (radial_range_style, parent_radius, spawn_radius, spawn2_radius) =
             Self::gen_radial_ranges(rng, work_size, Some(0.0));
@@ -369,17 +369,17 @@ impl Settings {
         Self {
             spawn_strategy: SpawnStrategy::random(rng),
             vary_spawn_distance,
-            radial_change_step: rng.gen_range(RADIAL_CHANGE_INTERVAL),
+            radial_change_step: rng.random_range(RADIAL_CHANGE_INTERVAL),
             radial_range_style,
             parent_radius,
             spawn_radius,
             spawn2_radius,
-            spawn_angle_step: rng.gen_range(SPAWN_ANGLE_STEP),
-            spawn2_angle_step: rng.gen_range(SPAWN2_ANGLE_STEP),
-            spawn2_wave_freq: rng.gen_range(SPAWN2_WAVE_FREQ),
-            parent_alpha_freq: rng.gen_range(ALPHA_FREQ),
-            spawn_alpha_freq: rng.gen_range(ALPHA_FREQ),
-            spawn2_alpha_freq: rng.gen_range(ALPHA_FREQ),
+            spawn_angle_step: rng.random_range(SPAWN_ANGLE_STEP),
+            spawn2_angle_step: rng.random_range(SPAWN2_ANGLE_STEP),
+            spawn2_wave_freq: rng.random_range(SPAWN2_WAVE_FREQ),
+            parent_alpha_freq: rng.random_range(ALPHA_FREQ),
+            spawn_alpha_freq: rng.random_range(ALPHA_FREQ),
+            spawn2_alpha_freq: rng.random_range(ALPHA_FREQ),
             parent_color,
             spawn_color,
             spawn2_color,
@@ -394,14 +394,14 @@ impl Settings {
     fn choose_colors(rng: &mut Random) -> (Color, Color, Color) {
         let mut palette = PALETTE.to_vec();
         (
-            palette.remove(rng.gen_range(0..palette.len())),
-            palette.remove(rng.gen_range(0..palette.len())),
-            palette.remove(rng.gen_range(0..palette.len())),
+            palette.remove(rng.random_range(0..palette.len())),
+            palette.remove(rng.random_range(0..palette.len())),
+            palette.remove(rng.random_range(0..palette.len())),
         )
     }
 
     fn change_colors(&mut self, rng: &mut Random) {
-        let roll = rng.gen_range(0.0..1.0);
+        let roll = rng.random_range(0.0..1.0);
         if roll < self.color_change_chance {
             (self.parent_color, self.spawn_color, self.spawn2_color) = Settings::choose_colors(rng);
             log::debug!(
@@ -434,9 +434,9 @@ impl Settings {
         let mut hsv_color = Hsv::from_color(srgb);
 
         // Randomly decide whether to lighten or darken (50% chance each)
-        let lighten = rng.gen_bool(0.5);
+        let lighten = rng.random_bool(0.5);
         // Random adjustment factor between 0.05 and 0.2 (5% to 20%)
-        let factor = rng.gen_range(0.05..0.2);
+        let factor = rng.random_range(0.05..0.2);
 
         hsv_color = if lighten {
             // Lighten: increases value while preserving hue and saturation
@@ -737,8 +737,8 @@ fn spawn_random(state: &mut State) {
         class: NodeClass::PARENT,
         alpha: state.draw_parent_alpha,
         pos: vec2(
-            state.rng.gen_range(0.0..state.work_size.x),
-            state.rng.gen_range(0.0..state.work_size.y),
+            state.rng.random_range(0.0..state.work_size.x),
+            state.rng.random_range(0.0..state.work_size.y),
         ),
         active: true,
         ..Default::default()
@@ -755,7 +755,7 @@ fn spawn_random_any_child(state: &mut State) {
         .collect();
     if candidates.len() > 0 {
         // select random candidate
-        let candidate_index = state.rng.gen_range(0..candidates.len());
+        let candidate_index = state.rng.random_range(0..candidates.len());
         let candidate = &mut candidates[candidate_index];
         // set candidate to parent
         candidate.class = NodeClass::PARENT;
@@ -778,7 +778,7 @@ fn spawn_random_node_child(state: &mut State, parent: Node) {
         .collect();
     if candidates.len() > 0 {
         // select random candidate
-        let candidate_index = state.rng.gen_range(0..candidates.len());
+        let candidate_index = state.rng.random_range(0..candidates.len());
         let candidate = &mut candidates[candidate_index];
         // set candidate to parent
         candidate.class = NodeClass::PARENT;
@@ -826,17 +826,17 @@ fn event(app: &mut App, state: &mut State, evt: Event) {
 
 fn update(app: &mut App, state: &mut State) {
     if state.events_focus.has_focus() {
-        if app.keyboard.was_pressed(KeyCode::R) {
+        if app.keyboard.was_pressed(KeyCode::KeyR) {
             log::debug!("R");
             state.reinit_next_draw = true;
         }
 
-        if app.keyboard.was_pressed(KeyCode::C) {
+        if app.keyboard.was_pressed(KeyCode::KeyC) {
             log::debug!("C");
             state.capture_next_draw = true;
         }
 
-        if app.keyboard.was_pressed(KeyCode::S) {
+        if app.keyboard.was_pressed(KeyCode::KeyS) {
             log::debug!("S");
             open_source_code(app);
         }
@@ -868,7 +868,7 @@ fn update(app: &mut App, state: &mut State) {
             let max_distance = min_distance * state.spawn_max_distance_mod;
             let distance: f32;
             if state.settings.vary_spawn_distance {
-                distance = state.rng.gen_range(min_distance..max_distance);
+                distance = state.rng.random_range(min_distance..max_distance);
             } else {
                 distance = max_distance;
             }
@@ -941,7 +941,7 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
     for node in state.nodes.iter_mut().filter(|node| !node.rendered) {
         let size: f32;
         let color: Color;
-        let brush_chance = state.rng.gen_range(0..15);
+        let brush_chance = state.rng.random_range(0..15);
         let mut texture = match brush_chance {
             11 => &state.brushes[BRUSH_RECTS],
             10 => &state.brushes[BRUSH_SCRAPE],
@@ -952,7 +952,7 @@ fn draw_nodes(draw: &mut Draw, state: &mut State) {
             3..=5 => &state.brushes[BRUSH_CIRCLE],
             _ => &state.brushes[BRUSH_BASIC],
         };
-        let texture_angle: f32 = state.rng.gen_range(0.0..=360.0);
+        let texture_angle: f32 = state.rng.random_range(0.0..=360.0);
         match node.class {
             NodeClass::PARENT => {
                 if state.settings.use_assigned_brushes {

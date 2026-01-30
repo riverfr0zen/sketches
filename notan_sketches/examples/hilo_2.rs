@@ -2,8 +2,8 @@ use notan::draw::*;
 use notan::log;
 use notan::math::{vec2, Vec2};
 use notan::prelude::*;
-use notan::random::rand::prelude::SliceRandom;
-use notan::random::rand::thread_rng;
+use notan::random::rand::prelude::{IndexedRandom, SliceRandom};
+use notan::random::rand::rng;
 use notan_sketches::colors;
 use notan_sketches::enums;
 use notan_sketches::mathutils::mid;
@@ -141,7 +141,7 @@ fn move_displacement(state: &mut State) {
 
 fn choose_color() -> Color {
     if !MONOCHROME {
-        let mut rng = thread_rng();
+        let mut rng = rng();
         if let Some(color) = PALETTE.choose(&mut rng) {
             return *color;
         }
@@ -182,10 +182,10 @@ fn draw(_app: &mut App, gfx: &mut Graphics, state: &mut State) {
             }
             seg.ctrl.x = state
                 .rng
-                .gen_range(seg.from.x.min(seg.to.x)..seg.from.x.max(seg.to.x));
+                .random_range(seg.from.x.min(seg.to.x)..seg.from.x.max(seg.to.x));
             seg.ctrl.y = state
                 .rng
-                .gen_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
+                .random_range(seg.from.y - y_displacement..seg.from.y + y_displacement);
 
             path.quadratic_bezier_to((seg.ctrl.x, seg.ctrl.y), (seg.to.x, seg.to.y))
                 .color(strip.color)

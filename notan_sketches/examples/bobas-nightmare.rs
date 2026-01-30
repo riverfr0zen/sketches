@@ -54,7 +54,7 @@ fn calculate_influence_point_count(total_cells: usize) -> usize {
 /// Generate random influence points in normalized canvas space (0.0-1.0).
 fn generate_influence_points(count: usize, rng: &mut Random) -> Vec<Vec2> {
     (0..count)
-        .map(|_| vec2(rng.gen_range(0.0..1.0), rng.gen_range(0.0..1.0)))
+        .map(|_| vec2(rng.random_range(0.0..1.0), rng.random_range(0.0..1.0)))
         .collect()
 }
 
@@ -127,11 +127,11 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
     log::info!("Work size: {:?}", work_size);
 
     // // Choose a color palette
-    let palette: PalettesSelection = rng.gen();
+    let palette: PalettesSelection = rng.random();
     log::info!("Palette: {:?}", palette);
 
-    let rows = rng.gen_range(1..MAX_ROWS);
-    let cols = rng.gen_range(1..MAX_COLS);
+    let rows = rng.random_range(1..MAX_ROWS);
+    let cols = rng.random_range(1..MAX_COLS);
 
     // Generate influence points
     let total_cells = (rows * cols) as usize;
@@ -175,19 +175,19 @@ fn init(app: &mut App, gfx: &mut Graphics) -> State {
 
 fn update(app: &mut App, state: &mut State) {
     // R key - redraw
-    if app.keyboard.was_pressed(KeyCode::R) {
-        let new_seed = state.rng.gen();
+    if app.keyboard.was_pressed(KeyCode::KeyR) {
+        let new_seed = state.rng.random();
         state.rng.reseed(new_seed);
         state.current_seed = new_seed;
         log::info!("New seed: {}", new_seed);
 
         // Choose new palette
-        state.palette = state.rng.gen();
+        state.palette = state.rng.random();
         log::info!("Palette: {:?}", state.palette);
 
         // Create a new grid with different size
-        let rows = state.rng.gen_range(1..MAX_ROWS);
-        let cols = state.rng.gen_range(1..MAX_COLS);
+        let rows = state.rng.random_range(1..MAX_ROWS);
+        let cols = state.rng.random_range(1..MAX_COLS);
 
         // Generate new influence points
         let total_cells = (rows * cols) as usize;
@@ -223,12 +223,12 @@ fn update(app: &mut App, state: &mut State) {
     }
 
     // C key - queue capture next draw
-    if app.keyboard.was_pressed(KeyCode::C) {
+    if app.keyboard.was_pressed(KeyCode::KeyC) {
         state.capture_next_draw = true;
     }
 
     // G key - toggle grid overlay
-    if app.keyboard.was_pressed(KeyCode::G) {
+    if app.keyboard.was_pressed(KeyCode::KeyG) {
         state.show_grid = !state.show_grid;
         log::debug!("Grid overlay: {}", state.show_grid);
     }
@@ -247,7 +247,7 @@ fn generate_cell_data_influenced(
     let distance = distance_to_nearest_influence(cell_center_norm, influence_points);
 
     // Randomly choose whether horizontal or vertical teeth react to influence
-    let horizontal_influenced = rng.gen_bool(0.5);
+    let horizontal_influenced = rng.random_bool(0.5);
 
     // Calculate max heights for influenced and non-influenced teeth
     let max_height_influenced = calculate_max_height_from_influence(distance);
@@ -266,7 +266,7 @@ fn generate_cell_data_influenced(
             max_height_base
         };
         let min_height = MIN_TOOTH_HEIGHT.min(max_height * 0.5);
-        let tooth_height = rng.gen_range(min_height..max_height);
+        let tooth_height = rng.random_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(boundary - 0.05, 1.0 - tooth_height);
         let start = vec2(boundary - tooth_width, 1.0 - padding);
@@ -274,7 +274,7 @@ fn generate_cell_data_influenced(
         teeth.push(Tooth { start, mid, end });
 
         // Top teeth (horizontal)
-        let tooth_height = rng.gen_range(min_height..max_height);
+        let tooth_height = rng.random_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(boundary - 0.05, tooth_height);
         let start = vec2(boundary - tooth_width, padding);
@@ -288,7 +288,7 @@ fn generate_cell_data_influenced(
             max_height_influenced
         };
         let min_height = MIN_TOOTH_HEIGHT.min(max_height * 0.5);
-        let tooth_height = rng.gen_range(min_height..max_height);
+        let tooth_height = rng.random_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(tooth_height, boundary - 0.05);
         let start = vec2(padding, boundary - tooth_width);
@@ -296,7 +296,7 @@ fn generate_cell_data_influenced(
         teeth.push(Tooth { start, mid, end });
 
         // Right teeth (vertical)
-        let tooth_height = rng.gen_range(min_height..max_height);
+        let tooth_height = rng.random_range(min_height..max_height);
         let boundary: f32 = i as f32 / 10.0;
         let mid = vec2(1.0 - tooth_height, boundary - 0.05);
         let start = vec2(1.0 - padding, boundary - tooth_width);
