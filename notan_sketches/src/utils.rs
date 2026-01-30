@@ -80,6 +80,34 @@ pub fn get_work_size_for_screen(app: &mut App, gfx: &mut Graphics) -> Vec2 {
         gfx.limits(),
     );
     let (mut screen_width, mut screen_height) = app.window().screen_size();
+
+    // Workaround for Wayland: Wayland may report (0, 0) initially. Fall back to
+    // container_size or window size from gfx.
+    //
+    // See: https://github.com/Nazariglez/notan/issues/362
+    if screen_width == 0 || screen_height == 0 {
+        log::debug!("Screen size is (0, 0), attempting fallback to container_size");
+        (screen_width, screen_height) = app.window().container_size();
+
+        // If container_size is also (0, 0), fall back to graphics size
+        if screen_width == 0 || screen_height == 0 {
+            log::debug!(
+                "Container size is also (0, 0), falling back to gfx.size() {:?}",
+                gfx.size()
+            );
+            let (w, h) = gfx.size();
+            screen_width = w as i32;
+            screen_height = h as i32;
+        }
+
+        // If still (0, 0), use a reasonable default
+        if screen_width == 0 || screen_height == 0 {
+            log::warn!("All size queries returned (0, 0), using default resolution");
+            screen_width = ScreenDimensions::DEFAULT.x as i32;
+            screen_height = ScreenDimensions::DEFAULT.y as i32;
+        }
+    }
+
     let mut work_size: Vec2 = vec2(screen_width as f32, screen_height as f32);
     if gfx.limits().max_texture_size as i32 / screen_width.max(screen_height) > 2 {
         if (screen_width.max(screen_height) as f32) < ScreenDimensions::RES_1080P.x {
