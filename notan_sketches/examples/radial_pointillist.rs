@@ -1028,8 +1028,10 @@ fn main() -> Result<(), String> {
         .set_vsync(true)
         .set_size(
             // let win_config = get_common_win_config().high_dpi(true).size(
-            ScreenDimensions::RES_4KISH.x as u32,
-            ScreenDimensions::RES_4KISH.y as u32,
+            // ScreenDimensions::RES_4KISH.x as u32,
+            // ScreenDimensions::RES_4KISH.y as u32,
+            ScreenDimensions::RES_4K.x as u32,
+            ScreenDimensions::RES_4K.y as u32,
             // ScreenDimensions::RES_HDPLUS.x as i32,
             // ScreenDimensions::RES_HDPLUS.y as i32,
             // ScreenDimensions::RES_1080P.x as u32,
