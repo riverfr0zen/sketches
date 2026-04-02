@@ -1886,7 +1886,7 @@ dependencies = [
  "notan",
  "notan_touchy",
  "palette",
- "rand 0.9.2",
+ "rand 0.10.0",
  "rapier2d",
  "serde",
  "serde_json",
